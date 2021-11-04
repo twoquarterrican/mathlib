@@ -80,6 +80,7 @@ begin
     rw smul_eq_mul, },
 end
 
+/-- Auxiliary lemma for `convex_on_exp` -/
 lemma convex_on_exp_of_lt {x y a b : ℝ} (ha_nonneg : 0 ≤ a) (hb_nonneg : 0 ≤ b)
   (hab_add : a + b = 1) (h_lt : x < y) :
   exp (a • x + b • y) ≤ a • exp x + b • exp y :=
