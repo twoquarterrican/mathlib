@@ -253,7 +253,12 @@ by simp only [one_div, integral_inv_of_neg ha hb]
 
 @[simp]
 lemma integral_exp : ∫ x in a..b, exp x = exp b - exp a :=
-by rw integral_deriv_eq_sub'; norm_num [continuous_on_exp]
+begin
+  rw integral_deriv_eq_sub',
+  { exact deriv_exp, },
+  { exact λ x _, differentiable_at_exp, },
+  { exact continuous_on_exp, },
+end
 
 @[simp]
 lemma integral_log (h : (0:ℝ) ∉ [a, b]) :
