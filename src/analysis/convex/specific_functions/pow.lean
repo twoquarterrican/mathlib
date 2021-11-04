@@ -11,22 +11,15 @@ import analysis.special_functions.pow
 
 In this file we prove that the following functions are convex:
 
-* `convex_on_exp` : the exponential function is convex on $(-∞, +∞)$;
 * `convex_on_pow_of_even` : given an even natural number $n$, the function $f(x)=x^n$
   is convex on $(-∞, +∞)$;
 * `convex_on_pow` : for a natural $n$, the function $f(x)=x^n$ is convex on $[0, +∞)$;
 * `convex_on_zpow` : for an integer $m$, the function $f(x)=x^m$ is convex on $(0, +∞)$.
 * `convex_on_rpow : ∀ p : ℝ, 1 ≤ p → convex_on ℝ (Ici 0) (λ x, x ^ p)`
-* `concave_on_log_Ioi` and `concave_on_log_Iio`: log is concave on `Ioi 0` and `Iio 0` respectively.
 -/
 
 open real set
 open_locale big_operators
-
-/-- `exp` is convex on the whole real line -/
-lemma convex_on_exp : convex_on ℝ univ exp :=
-convex_on_univ_of_deriv2_nonneg differentiable_exp (by simp)
-  (assume x, (iter_deriv_exp 2).symm ▸ le_of_lt (exp_pos x))
 
 /-- `x^n`, `n : ℕ` is convex on the whole real line whenever `n` is even -/
 lemma convex_on_pow_of_even {n : ℕ} (hn : even n) : convex_on ℝ set.univ (λ x : ℝ, x^n) :=
@@ -106,40 +99,4 @@ begin
     suffices : 0 ≤ p * ((p - 1) * x ^ (p - 1 - 1)), by simpa [ne_of_gt hx, A],
     apply mul_nonneg (le_trans zero_le_one hp),
     exact mul_nonneg (sub_nonneg_of_le hp) (rpow_nonneg_of_nonneg (le_of_lt hx) _) }
-end
-
-lemma concave_on_log_Ioi : concave_on ℝ (Ioi 0) log :=
-begin
-  have h₁ : Ioi 0 ⊆ ({0} : set ℝ)ᶜ,
-  { intros x hx hx',
-    rw [mem_singleton_iff] at hx',
-    rw [hx'] at hx,
-    exact lt_irrefl 0 hx },
-  refine concave_on_open_of_deriv2_nonpos (convex_Ioi 0) is_open_Ioi _ _ _,
-  { exact differentiable_on_log.mono h₁ },
-  { refine ((times_cont_diff_on_log.deriv_of_open _ le_top).differentiable_on le_top).mono h₁,
-    exact is_open_compl_singleton },
-  { intros x hx,
-    rw [function.iterate_succ, function.iterate_one],
-    change (deriv (deriv log)) x ≤ 0,
-    rw [deriv_log', deriv_inv],
-    exact neg_nonpos.mpr (inv_nonneg.mpr (sq_nonneg x)) }
-end
-
-lemma concave_on_log_Iio : concave_on ℝ (Iio 0) log :=
-begin
-  have h₁ : Iio 0 ⊆ ({0} : set ℝ)ᶜ,
-  { intros x hx hx',
-    rw [mem_singleton_iff] at hx',
-    rw [hx'] at hx,
-    exact lt_irrefl 0 hx },
-  refine concave_on_open_of_deriv2_nonpos (convex_Iio 0) is_open_Iio _ _ _,
-  { exact differentiable_on_log.mono h₁ },
-  { refine ((times_cont_diff_on_log.deriv_of_open _ le_top).differentiable_on le_top).mono h₁,
-    exact is_open_compl_singleton },
-  { intros x hx,
-    rw [function.iterate_succ, function.iterate_one],
-    change (deriv (deriv log)) x ≤ 0,
-    rw [deriv_log', deriv_inv],
-    exact neg_nonpos.mpr (inv_nonneg.mpr (sq_nonneg x)) }
 end
