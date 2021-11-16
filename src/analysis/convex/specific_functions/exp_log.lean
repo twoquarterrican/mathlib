@@ -178,17 +178,3 @@ begin
   { rw [exp_log_of_neg hx_neg, exp_log_of_neg hy_neg],
     simp, },
 end
-
-/-!
-lemma strict_concave_on_log_Iio : strict_concave_on ℝ (Iio 0) log :=
-begin
-  have h₁ : Iio 0 ⊆ ({0} : set ℝ)ᶜ,
-  { exact λ x (hx : x < 0) (hx' : x = 0), hx.ne hx' },
-  refine strict_concave_on_open_of_deriv2_neg (convex_Iio 0) is_open_Iio
-    (differentiable_on_log.mono h₁) (λ x (hx : x < 0), _),
-  rw [function.iterate_succ, function.iterate_one],
-  change (deriv (deriv log)) x < 0,
-  rw [deriv_log', deriv_inv],
-  exact neg_neg_of_pos (inv_pos.2 $ sq_pos_of_ne_zero _ hx.ne),
-end
--/
