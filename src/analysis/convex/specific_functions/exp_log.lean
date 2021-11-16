@@ -11,8 +11,9 @@ import analysis.convex.function
 # Convexity of the exponential and logarithm
 
 In this file we prove that the following functions are convex:
-* `convex_on_exp` : the exponential function is convex on $(-∞, +∞)$;
-* `concave_on_log_Ioi` and `concave_on_log_Iio`: log is concave on `Ioi 0` and `Iio 0` respectively.
+* `strict_convex_on_exp` : The exponential function is strictly convex.
+* `strict_concave_on_log_Ioi`, `strict_concave_on_log_Iio`: `real.log` is strictly concave on
+  $(0, +∞)$ and $(-∞, 0)$ respectively.
 
 This file uses direct proofs instead of using the sign of the second derivative in order to avoid
 importing derivatives.
@@ -185,3 +186,29 @@ begin
   rw [exp_log_of_neg hx_neg, exp_log_of_neg hy_neg],
   simp,
 end
+
+/-!
+lemma strict_concave_on_log_Ioi : strict_concave_on ℝ (Ioi 0) log :=
+begin
+  have h₁ : Ioi 0 ⊆ ({0} : set ℝ)ᶜ,
+  { exact λ x (hx : 0 < x) (hx' : x = 0), hx.ne' hx' },
+  refine strict_concave_on_open_of_deriv2_neg (convex_Ioi 0) is_open_Ioi
+    (differentiable_on_log.mono h₁) (λ x (hx : 0 < x), _),
+  rw [function.iterate_succ, function.iterate_one],
+  change (deriv (deriv log)) x < 0,
+  rw [deriv_log', deriv_inv],
+  exact neg_neg_of_pos (inv_pos.2 $ sq_pos_of_ne_zero _ hx.ne'),
+end
+
+lemma strict_concave_on_log_Iio : strict_concave_on ℝ (Iio 0) log :=
+begin
+  have h₁ : Iio 0 ⊆ ({0} : set ℝ)ᶜ,
+  { exact λ x (hx : x < 0) (hx' : x = 0), hx.ne hx' },
+  refine strict_concave_on_open_of_deriv2_neg (convex_Iio 0) is_open_Iio
+    (differentiable_on_log.mono h₁) (λ x (hx : x < 0), _),
+  rw [function.iterate_succ, function.iterate_one],
+  change (deriv (deriv log)) x < 0,
+  rw [deriv_log', deriv_inv],
+  exact neg_neg_of_pos (inv_pos.2 $ sq_pos_of_ne_zero _ hx.ne),
+end
+-/
