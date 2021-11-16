@@ -40,27 +40,61 @@ begin
       rw if_neg hni, }, },
 end
 
-lemma exp_mul_le_sub_add_mul_exp {x : ℝ} (hx : 0 < x) {b : ℝ} (hb_nonneg : 0 ≤ b) (hb_le : b ≤ 1) :
-  exp (b * x) ≤ 1 - b + b * exp x :=
+lemma pow_lt_pow_of_pos_of_lt_one {α} [ordered_semiring α] {x : α} (hx_pos : 0 < x) (hx_lt : x < 1)
+  {n m : ℕ} (hmn : m < n) :
+  x ^ n < x ^ m :=
+begin
+  suffices : x ^ (n-m) < 1,
+  { have hn_eq : n = (n - m) + m, from (nat.sub_add_cancel hmn.le).symm,
+    rw [hn_eq, pow_add],
+    nth_rewrite 1 ← one_mul (x ^ m),
+    refine mul_lt_mul this le_rfl _ zero_le_one,
+    simp [hx_pos], },
+  refine pow_lt_one hx_pos.le hx_lt _,
+  simp only [tsub_eq_zero_iff_le, not_le, ne.def, hmn],
+end
+
+lemma pow_lt_self {α} [ordered_semiring α] {x : α} (hx_pos : 0 < x) (hx_lt : x < 1)
+  {n : ℕ} (hn : 2 ≤ n) :
+  x ^ n < x :=
+begin
+  nth_rewrite 1 ← pow_one x,
+  exact pow_lt_pow_of_pos_of_lt_one hx_pos hx_lt (one_lt_two.trans_le hn),
+end
+
+/-- Auxiliary lemma for `strict_convex_on_exp` -/
+lemma exp_mul_lt_sub_add_mul_exp {x : ℝ} (hx : 0 < x) {b : ℝ} (hb_pos : 0 < b) (hb_lt : b < 1) :
+  exp (b * x) < 1 - b + b * exp x :=
 begin
   have hb_n_le : ∀ n : ℕ, 1 ≤ n → b ^ n ≤ b,
-    by { intros h hn, nth_rewrite 1 ← pow_one b, exact pow_le_pow_of_le_one hb_nonneg hb_le hn, },
+  { intros h hn,
+    nth_rewrite 1 ← pow_one b,
+    exact pow_le_pow_of_le_one hb_pos.le hb_lt.le hn, },
   rw [real.exp_eq_exp_ℝ_ℝ, exp_eq_tsum],
   dsimp only,
   rw [← tsum_mul_left, const_add_tsum _ 0],
   swap, { apply_instance, },
   swap, { apply_instance, },
   swap, { refine summable.mul_left b _, exact exp_series_summable' x, },
-  refine tsum_le_tsum (λ n, _) _ _,
+  refine tsum_lt_tsum (λ n, _) _ _ _,
+  { exact 2, },
   { by_cases hn0 : n = 0,
     { simp [hn0], },
     simp only [hn0, one_div, if_false, smul_eq_mul],
     rw [mul_pow, ← mul_assoc, mul_comm _ (b ^ n), mul_assoc],
-    refine mul_le_mul (hb_n_le n _) le_rfl _ hb_nonneg,
+    refine mul_le_mul (hb_n_le n _) le_rfl _ hb_pos.le,
     { rw nat.succ_le_iff,
       exact lt_of_le_of_ne zero_le' (ne.symm hn0), },
     { refine mul_nonneg (inv_nonneg.mpr _) (pow_nonneg hx.le n),
-      norm_cast, exact zero_le', } },
+      norm_cast,
+      exact zero_le', } },
+  { simp only [one_div, nat.one_ne_zero, algebra.id.smul_eq_mul, nat.cast_bit0, nat.factorial_two,
+      if_false, bit0_eq_zero, nat.cast_one],
+    rw mul_pow,
+    have hb_sq_lt : b^2 < b, from pow_lt_self hb_pos hb_lt le_rfl,
+    rw [mul_comm (2 : ℝ)⁻¹, mul_comm (2 : ℝ)⁻¹, mul_assoc],
+    refine mul_lt_mul hb_sq_lt le_rfl _ hb_pos.le,
+    simp [hx], },
   { exact exp_series_summable' (b * x), },
   { refine (finset.summable_compl_iff {(0 : ℕ)}).mp _,
     have : (λ (m : {x : ℕ // x ∉ {(0 : ℕ)}}),
@@ -71,29 +105,27 @@ begin
       have hm : (m : ℕ) ≠ (0 : ℕ), from mt finset.mem_singleton.mpr m.prop,
       simp only [hm, one_div, mul_eq_mul_left_iff, if_false, smul_eq_mul],
       exact or.inl (or.inl rfl), },
-    rw this,
-    rw @finset.summable_compl_iff _ _ _ _ _
-      (λ m, b * (1 / ((m : ℕ)! : ℝ) * x ^ (m : ℕ))) {(0 : ℕ)},
+    rw [this, @finset.summable_compl_iff _ _ _ _ _
+      (λ m, b * (1 / ((m : ℕ)! : ℝ) * x ^ (m : ℕ))) {(0 : ℕ)}],
     refine summable.mul_left b _,
     convert exp_series_summable' x,
     ext1 n,
     rw smul_eq_mul, },
 end
 
-/-- Auxiliary lemma for `convex_on_exp` -/
-lemma convex_on_exp_of_lt {x y a b : ℝ} (ha_nonneg : 0 ≤ a) (hb_nonneg : 0 ≤ b)
+/-- Auxiliary lemma for `strict_convex_on_exp` -/
+lemma strict_convex_on_exp_of_lt {x y a b : ℝ} (ha_pos : 0 < a) (hb_pos : 0 < b)
   (hab_add : a + b = 1) (h_lt : x < y) :
-  exp (a • x + b • y) ≤ a • exp x + b • exp y :=
+  exp (a • x + b • y) < a • exp x + b • exp y :=
 begin
   have ha_eq : a = 1 - b, from eq_sub_iff_add_eq.mpr hab_add,
   simp_rw [ha_eq, smul_eq_mul],
   rw [sub_mul, one_mul],
-  have hb_le_one : b ≤ 1, by linarith,
+  have hb_lt_one : b < 1, by linarith,
   calc exp (x - b * x + b * y) = exp x * exp (b * (y - x)) :
     by { rw ← real.exp_add, congr' 1, ring, }
-  ... ≤ exp x * (1 - b + b * exp (y - x)) : mul_le_mul le_rfl
-    (exp_mul_le_sub_add_mul_exp (sub_pos.mpr h_lt) hb_nonneg hb_le_one)
-    (exp_pos _).le (exp_pos _).le
+  ... < exp x * (1 - b + b * exp (y - x)) : mul_lt_mul' le_rfl
+    (exp_mul_lt_sub_add_mul_exp (sub_pos.mpr h_lt) hb_pos hb_lt_one) (exp_pos _).le (exp_pos _)
   ... = (1 - b) * exp x + b * exp y : begin
     rw [mul_add, mul_comm],
     congr' 1,
@@ -101,18 +133,19 @@ begin
   end,
 end
 
-/-- `exp` is convex on the whole real line -/
-lemma convex_on_exp : convex_on ℝ univ exp :=
+/-- `exp` is strictly convex on the whole real line -/
+lemma strict_convex_on_exp : strict_convex_on ℝ univ exp :=
 begin
-  refine ⟨convex_univ, λ x y _ _ a b ha_nonneg hb_nonneg hab_add, _⟩,
-  rcases lt_trichotomy x y with h_lt|h_eq|h_lt,
-  { exact convex_on_exp_of_lt ha_nonneg hb_nonneg hab_add h_lt, },
-  { simp_rw [h_eq, ← add_smul],
-    rw [hab_add, one_smul, one_smul], },
+  refine ⟨convex_univ, λ x y _ _ hxy a b ha_pos hb_pos hab_add, _⟩,
+  cases lt_or_gt_of_ne hxy with h_lt h_lt,
+  { exact strict_convex_on_exp_of_lt ha_pos hb_pos hab_add h_lt, },
   { rw add_comm at hab_add ⊢,
     rw add_comm (a • exp x),
-    exact convex_on_exp_of_lt hb_nonneg ha_nonneg hab_add h_lt, },
+    exact strict_convex_on_exp_of_lt hb_pos ha_pos hab_add h_lt, },
 end
+
+/-- `exp` is convex on the whole real line -/
+lemma convex_on_exp : convex_on ℝ univ exp := strict_convex_on_exp.convex_on
 
 /-- `log` is concave on [0, +∞) -/
 lemma concave_on_log_Ioi : concave_on ℝ (Ioi 0) log :=
