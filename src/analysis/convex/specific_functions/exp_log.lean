@@ -149,57 +149,37 @@ end
 lemma convex_on_exp : convex_on ℝ univ exp := strict_convex_on_exp.convex_on
 
 /-- `log` is concave on [0, +∞) -/
-lemma concave_on_log_Ioi : concave_on ℝ (Ioi 0) log :=
+lemma strict_concave_on_log_Ioi : strict_concave_on ℝ (Ioi 0) log :=
 begin
-  refine ⟨convex_Ioi 0, λ x y hx hy a b ha_nonneg hb_nonneg hab_add, _⟩,
+  refine ⟨convex_Ioi 0, λ x y hx hy hxy a b ha_pos hb_pos hab_add, _⟩,
   have hx_pos : 0 < x, from mem_Ioi.mp hx,
   have hy_pos : 0 < y, from mem_Ioi.mp hy,
-  rw ← exp_le_exp,
-  by_cases ha0 : a = 0,
-  { have hb : b = 1, by rwa [ha0, zero_add] at hab_add,
-    simp [ha0, hb], },
-  have ha_pos : 0 < a, from lt_of_le_of_ne ha_nonneg (ne.symm ha0),
-  rw exp_log,
+  rw [← exp_lt_exp, exp_log],
   swap, { simp_rw smul_eq_mul,
-    exact add_pos_of_pos_of_nonneg (mul_pos ha_pos hx_pos) (mul_nonneg hb_nonneg hy_pos.le), },
-  refine (convex_on_exp.2 (mem_univ _) (mem_univ _) ha_nonneg hb_nonneg hab_add).trans _,
-  rw [exp_log hx_pos, exp_log hy_pos],
+    exact add_pos_of_pos_of_nonneg (mul_pos ha_pos hx_pos) (mul_nonneg hb_pos.le hy_pos.le), },
+  refine (strict_convex_on_exp.2 (mem_univ _) (mem_univ _) _ ha_pos hb_pos hab_add).trans_le _,
+  { exact mt (log_inj_on_pos hx hy) hxy, },
+  { rw [exp_log hx_pos, exp_log hy_pos], },
 end
 
 /-- `log` is concave on (-∞, 0] -/
-lemma concave_on_log_Iio : concave_on ℝ (Iio 0) log :=
+lemma strict_concave_on_log_Iio : strict_concave_on ℝ (Iio 0) log :=
 begin
-  refine ⟨convex_Iio 0, λ x y hx hy a b ha_nonneg hb_nonneg hab_add, _⟩,
+  refine ⟨convex_Iio 0, λ x y hx hy hxy a b ha_pos hb_pos hab_add, _⟩,
   have hx_neg : x < 0, from mem_Iio.mp hx,
   have hy_neg : y < 0, from mem_Iio.mp hy,
-  rw ← exp_le_exp,
-  by_cases ha0 : a = 0,
-  { have hb : b = 1, by rwa [ha0, zero_add] at hab_add,
-    simp [ha0, hb], },
-  have ha_pos : 0 < a, from lt_of_le_of_ne ha_nonneg (ne.symm ha0),
-  rw exp_log_of_neg,
+  rw [← exp_lt_exp, exp_log_of_neg],
   swap, { rw [smul_eq_mul, smul_eq_mul, ← neg_pos, neg_add, neg_mul_eq_mul_neg, neg_mul_eq_mul_neg],
-    refine add_pos_of_pos_of_nonneg (mul_pos ha_pos _) (mul_nonneg hb_nonneg _),
+    refine add_pos_of_pos_of_nonneg (mul_pos ha_pos _) (mul_nonneg hb_pos.le _),
     { exact right.neg_pos_iff.mpr hx_neg, },
     { exact (right.neg_pos_iff.mpr hy_neg).le, }, },
-  refine (convex_on_exp.2 (mem_univ _) (mem_univ _) ha_nonneg hb_nonneg hab_add).trans _,
-  rw [exp_log_of_neg hx_neg, exp_log_of_neg hy_neg],
-  simp,
+  refine (strict_convex_on_exp.2 (mem_univ _) (mem_univ _) _ ha_pos hb_pos hab_add).trans_le _,
+  { exact mt (log_inj_on_neg hx hy) hxy, },
+  { rw [exp_log_of_neg hx_neg, exp_log_of_neg hy_neg],
+    simp, },
 end
 
 /-!
-lemma strict_concave_on_log_Ioi : strict_concave_on ℝ (Ioi 0) log :=
-begin
-  have h₁ : Ioi 0 ⊆ ({0} : set ℝ)ᶜ,
-  { exact λ x (hx : 0 < x) (hx' : x = 0), hx.ne' hx' },
-  refine strict_concave_on_open_of_deriv2_neg (convex_Ioi 0) is_open_Ioi
-    (differentiable_on_log.mono h₁) (λ x (hx : 0 < x), _),
-  rw [function.iterate_succ, function.iterate_one],
-  change (deriv (deriv log)) x < 0,
-  rw [deriv_log', deriv_inv],
-  exact neg_neg_of_pos (inv_pos.2 $ sq_pos_of_ne_zero _ hx.ne'),
-end
-
 lemma strict_concave_on_log_Iio : strict_concave_on ℝ (Iio 0) log :=
 begin
   have h₁ : Iio 0 ⊆ ({0} : set ℝ)ᶜ,
