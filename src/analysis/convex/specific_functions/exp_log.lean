@@ -133,29 +133,27 @@ lemma convex_on_exp : convex_on ℝ univ exp := strict_convex_on_exp.convex_on
 lemma strict_concave_on_log_Ioi : strict_concave_on ℝ (Ioi 0) log :=
 begin
   refine ⟨convex_Ioi 0, λ x y hx hy hxy a b ha_pos hb_pos hab_add, _⟩,
-  have hx_pos : 0 < x, from mem_Ioi.mp hx,
-  have hy_pos : 0 < y, from mem_Ioi.mp hy,
   rw [← exp_lt_exp, exp_log],
   swap, { simp_rw smul_eq_mul,
-    exact add_pos_of_pos_of_nonneg (mul_pos ha_pos hx_pos) (mul_nonneg hb_pos.le hy_pos.le), },
-  refine (strict_convex_on_exp.2 (mem_univ _) (mem_univ _) _ ha_pos hb_pos hab_add).trans_le _,
-  { exact mt (log_inj_on_pos hx hy) hxy, },
-  { rw [exp_log hx_pos, exp_log hy_pos], },
+    exact add_pos_of_pos_of_nonneg (mul_pos ha_pos hx) (mul_nonneg hb_pos.le (le_of_lt hy)), },
+  calc exp (a • log x + b • log y)
+      < a • exp (log x) + b • exp (log y) : strict_convex_on_exp.2
+    (mem_univ _) (mem_univ _) (mt (log_inj_on_pos hx hy) hxy) ha_pos hb_pos hab_add
+  ... = a • x + b • y : by { rw [exp_log hx, exp_log hy], },
 end
 
 /-- `log` is concave on (-∞, 0] -/
 lemma strict_concave_on_log_Iio : strict_concave_on ℝ (Iio 0) log :=
 begin
   refine ⟨convex_Iio 0, λ x y hx hy hxy a b ha_pos hb_pos hab_add, _⟩,
-  have hx_neg : x < 0, from mem_Iio.mp hx,
-  have hy_neg : y < 0, from mem_Iio.mp hy,
   rw [← exp_lt_exp, exp_log_of_neg],
   swap, { rw [smul_eq_mul, smul_eq_mul, ← neg_pos, neg_add, neg_mul_eq_mul_neg, neg_mul_eq_mul_neg],
-    refine add_pos_of_pos_of_nonneg (mul_pos ha_pos _) (mul_nonneg hb_pos.le _),
-    { exact right.neg_pos_iff.mpr hx_neg, },
-    { exact (right.neg_pos_iff.mpr hy_neg).le, }, },
-  refine (strict_convex_on_exp.2 (mem_univ _) (mem_univ _) _ ha_pos hb_pos hab_add).trans_le _,
-  { exact mt (log_inj_on_neg hx hy) hxy, },
-  { rw [exp_log_of_neg hx_neg, exp_log_of_neg hy_neg],
-    simp, },
+    exact add_pos_of_pos_of_nonneg (mul_pos ha_pos (right.neg_pos_iff.mpr hx))
+      (mul_nonneg hb_pos.le (right.neg_pos_iff.mpr hy).le), },
+  calc exp (a • log x + b • log y)
+      < a • exp (log x) + b • exp (log y) : strict_convex_on_exp.2
+    (mem_univ _) (mem_univ _) (mt (log_inj_on_neg hx hy) hxy) ha_pos hb_pos hab_add
+  ... = - (a • x + b • y) : by
+  { rw [exp_log_of_neg hx, exp_log_of_neg hy],
+    simp only [algebra.id.smul_eq_mul, mul_neg_eq_neg_mul_symm, neg_add], },
 end
