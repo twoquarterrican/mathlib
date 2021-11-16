@@ -61,55 +61,38 @@ lemma pow_lt_self {α} [ordered_semiring α] {x : α} (hx_pos : 0 < x) (hx_lt : 
 calc x ^ n < x ^ 1 : pow_lt_pow_of_pos_of_lt_one hx_pos hx_lt (one_lt_two.trans_le hn)
        ... = x     : pow_one x
 
+lemma pow_le_self {α} [ordered_semiring α] {x : α} (hx_nonneg : 0 ≤ x) (hx_le : x ≤ 1)
+  {n : ℕ} (hn : 1 ≤ n) :
+  x ^ n ≤ x :=
+calc x ^ n ≤ x ^ 1 : pow_le_pow_of_le_one hx_nonneg hx_le hn
+       ... = x     : pow_one x
+
 /-- Auxiliary lemma for `strict_convex_on_exp` -/
 lemma exp_mul_lt_sub_add_mul_exp {x : ℝ} (hx : 0 < x) {b : ℝ} (hb_pos : 0 < b) (hb_lt : b < 1) :
   exp (b * x) < 1 - b + b * exp x :=
 begin
-  have hb_n_le : ∀ n : ℕ, 1 ≤ n → b ^ n ≤ b,
-  { intros h hn,
-    nth_rewrite 1 ← pow_one b,
-    exact pow_le_pow_of_le_one hb_pos.le hb_lt.le hn, },
   rw [real.exp_eq_exp_ℝ_ℝ, exp_eq_tsum],
   dsimp only,
-  rw [← tsum_mul_left, const_add_tsum _ 0],
-  swap, { apply_instance, },
-  swap, { apply_instance, },
-  swap, { refine summable.mul_left b _, exact exp_series_summable' x, },
-  refine tsum_lt_tsum (λ n, _) _ _ _,
+  rw [← tsum_mul_left, const_add_tsum ((exp_series_summable' x).mul_left b) 0],
+  simp only [mul_one, nat.factorial, nat.factorial_zero, sub_add_cancel, nat.cast_one, div_one,
+    pow_zero, algebra.id.smul_eq_mul (1 : ℝ)],
+  refine tsum_lt_tsum (λ n, _) _ (exp_series_summable' (b * x)) _,
   { exact 2, },
   { by_cases hn0 : n = 0,
     { simp [hn0], },
-    simp only [hn0, one_div, if_false, smul_eq_mul],
-    rw [mul_pow, ← mul_assoc, mul_comm _ (b ^ n), mul_assoc],
-    refine mul_le_mul (hb_n_le n _) le_rfl _ hb_pos.le,
-    { rw nat.succ_le_iff,
-      exact lt_of_le_of_ne zero_le' (ne.symm hn0), },
-    { refine mul_nonneg (inv_nonneg.mpr _) (pow_nonneg hx.le n),
-      norm_cast,
-      exact zero_le', } },
-  { simp only [one_div, nat.one_ne_zero, algebra.id.smul_eq_mul, nat.cast_bit0, nat.factorial_two,
-      if_false, bit0_eq_zero, nat.cast_one],
-    rw mul_pow,
-    have hb_sq_lt : b^2 < b, from pow_lt_self hb_pos hb_lt le_rfl,
-    rw [mul_comm (2 : ℝ)⁻¹, mul_comm (2 : ℝ)⁻¹, mul_assoc],
-    refine mul_lt_mul hb_sq_lt le_rfl _ hb_pos.le,
+    simp only [hn0, one_div, if_false, mul_pow, smul_eq_mul],
+    rw [← mul_assoc, mul_comm _ (b ^ n), mul_assoc],
+    refine mul_le_mul (pow_le_self hb_pos.le hb_lt.le _) le_rfl _ hb_pos.le,
+    { exact nat.succ_le_iff.mpr (lt_of_le_of_ne zero_le' (ne.symm hn0)), },
+    { exact mul_nonneg (inv_nonneg.mpr (nat.cast_nonneg _)) (pow_nonneg hx.le n), } },
+  { simp only [one_div, nat.one_ne_zero, nat.cast_bit0, nat.factorial_two, if_false,
+      bit0_eq_zero, nat.cast_one, smul_eq_mul],
+    ring_nf,
+    refine mul_lt_mul' le_rfl (pow_lt_self hb_pos hb_lt le_rfl) (sq_nonneg _) _,
     simp [hx], },
-  { exact exp_series_summable' (b * x), },
-  { refine (finset.summable_compl_iff {(0 : ℕ)}).mp _,
-    have : (λ (m : {x : ℕ // x ∉ {(0 : ℕ)}}),
-        ite ((m : ℕ) = 0) (1 - b + b * (1 / ((0 : ℕ)! : ℝ)) • x ^ 0)
-          (b * (1 / ((m : ℕ)! : ℝ)) • x ^ (m : ℕ)))
-      = (λ (m : {x : ℕ // x ∉ ({(0 : ℕ)} : finset ℕ)}), (b * (1 / ((m : ℕ)! : ℝ) * x ^ (m : ℕ)))),
-    { ext1 m,
-      have hm : (m : ℕ) ≠ (0 : ℕ), from mt finset.mem_singleton.mpr m.prop,
-      simp only [hm, one_div, mul_eq_mul_left_iff, if_false, smul_eq_mul],
-      exact or.inl (or.inl rfl), },
-    rw [this, @finset.summable_compl_iff _ _ _ _ _
-      (λ m, b * (1 / ((m : ℕ)! : ℝ) * x ^ (m : ℕ))) {(0 : ℕ)}],
-    refine summable.mul_left b _,
-    convert exp_series_summable' x,
-    ext1 n,
-    rw smul_eq_mul, },
+  { suffices : summable (function.update (λ (n : ℕ), b * (1 / ((n : ℕ)! : ℝ)) • x ^ n) 0 1),
+    { convert this, ext, rw function.update_apply, },
+    exact ((exp_series_summable' x).mul_left b).update 0 1, },
 end
 
 /-- Auxiliary lemma for `strict_convex_on_exp` -/
