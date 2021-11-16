@@ -58,10 +58,8 @@ end
 lemma pow_lt_self {α} [ordered_semiring α] {x : α} (hx_pos : 0 < x) (hx_lt : x < 1)
   {n : ℕ} (hn : 2 ≤ n) :
   x ^ n < x :=
-begin
-  nth_rewrite 1 ← pow_one x,
-  exact pow_lt_pow_of_pos_of_lt_one hx_pos hx_lt (one_lt_two.trans_le hn),
-end
+calc x ^ n < x ^ 1 : pow_lt_pow_of_pos_of_lt_one hx_pos hx_lt (one_lt_two.trans_le hn)
+       ... = x     : pow_one x
 
 /-- Auxiliary lemma for `strict_convex_on_exp` -/
 lemma exp_mul_lt_sub_add_mul_exp {x : ℝ} (hx : 0 < x) {b : ℝ} (hb_pos : 0 < b) (hb_lt : b < 1) :
