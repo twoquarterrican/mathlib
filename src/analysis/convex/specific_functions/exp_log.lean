@@ -100,8 +100,7 @@ lemma strict_convex_on_exp_of_lt {x y a b : ℝ} (ha_pos : 0 < a) (hb_pos : 0 < 
   (hab_add : a + b = 1) (h_lt : x < y) :
   exp (a • x + b • y) < a • exp x + b • exp y :=
 begin
-  have ha_eq : a = 1 - b, from eq_sub_iff_add_eq.mpr hab_add,
-  simp_rw [ha_eq, smul_eq_mul],
+  simp_rw [eq_sub_iff_add_eq.mpr hab_add, smul_eq_mul],
   rw [sub_mul, one_mul],
   have hb_lt_one : b < 1, by linarith,
   calc exp (x - b * x + b * y) = exp x * exp (b * (y - x)) :
