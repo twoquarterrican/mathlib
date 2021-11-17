@@ -470,6 +470,10 @@ by rw hk; exact pow_le_pow_of_le_one_aux h ha _ _
 lemma pow_le_of_le_one (h₀ : 0 ≤ a) (h₁ : a ≤ 1) {n : ℕ} (hn : n ≠ 0) : a ^ n ≤ a :=
 (pow_one a).subst (pow_le_pow_of_le_one h₀ h₁ (nat.pos_of_ne_zero hn))
 
+lemma pow_lt_of_lt_one (ha_pos : 0 < a) (ha_lt : a < 1) {n : ℕ} (hn : 2 ≤ n) : a ^ n < a :=
+calc a ^ n < a ^ 1 : pow_lt_pow_of_lt_one ha_pos ha_lt (one_lt_two.trans_le hn)
+       ... = a     : pow_one a
+
 lemma sq_le (h₀ : 0 ≤ a) (h₁ : a ≤ 1) : a ^ 2 ≤ a := pow_le_of_le_one h₀ h₁ two_ne_zero
 
 end ordered_semiring

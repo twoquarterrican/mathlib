@@ -41,32 +41,6 @@ begin
       rw if_neg hni, }, },
 end
 
-lemma pow_lt_pow_of_pos_of_lt_one {α} [ordered_semiring α] {x : α} (hx_pos : 0 < x) (hx_lt : x < 1)
-  {n m : ℕ} (hmn : m < n) :
-  x ^ n < x ^ m :=
-begin
-  suffices : x ^ (n-m) < 1,
-  { have hn_eq : n = (n - m) + m, from (nat.sub_add_cancel hmn.le).symm,
-    rw [hn_eq, pow_add],
-    nth_rewrite 1 ← one_mul (x ^ m),
-    refine mul_lt_mul this le_rfl _ zero_le_one,
-    simp [hx_pos], },
-  refine pow_lt_one hx_pos.le hx_lt _,
-  simp only [tsub_eq_zero_iff_le, not_le, ne.def, hmn],
-end
-
-lemma pow_lt_self {α} [ordered_semiring α] {x : α} (hx_pos : 0 < x) (hx_lt : x < 1)
-  {n : ℕ} (hn : 2 ≤ n) :
-  x ^ n < x :=
-calc x ^ n < x ^ 1 : pow_lt_pow_of_pos_of_lt_one hx_pos hx_lt (one_lt_two.trans_le hn)
-       ... = x     : pow_one x
-
-lemma pow_le_self {α} [ordered_semiring α] {x : α} (hx_nonneg : 0 ≤ x) (hx_le : x ≤ 1)
-  {n : ℕ} (hn : 1 ≤ n) :
-  x ^ n ≤ x :=
-calc x ^ n ≤ x ^ 1 : pow_le_pow_of_le_one hx_nonneg hx_le hn
-       ... = x     : pow_one x
-
 /-- Auxiliary lemma for `strict_convex_on_exp` -/
 lemma exp_mul_lt_sub_add_mul_exp {x : ℝ} (hx : 0 < x) {b : ℝ} (hb_pos : 0 < b) (hb_lt : b < 1) :
   exp (b * x) < 1 - b + b * exp x :=
@@ -82,7 +56,7 @@ begin
     { simp [hn0], },
     simp only [hn0, one_div, if_false, mul_pow, smul_eq_mul],
     rw [← mul_assoc, mul_comm _ (b ^ n), mul_assoc],
-    refine mul_le_mul (pow_le_self hb_pos.le hb_lt.le _) le_rfl _ hb_pos.le,
+    refine mul_le_mul (pow_le_of_le_one hb_pos.le hb_lt.le _) le_rfl _ hb_pos.le,
     { exact nat.succ_le_iff.mpr (lt_of_le_of_ne zero_le' (ne.symm hn0)), },
     { exact mul_nonneg (inv_nonneg.mpr (nat.cast_nonneg _)) (pow_nonneg hx.le n), } },
   { simp only [one_div, nat.one_ne_zero, nat.cast_bit0, nat.factorial_two, if_false,
