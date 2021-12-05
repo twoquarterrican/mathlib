@@ -155,6 +155,10 @@ lemma neg_one : (1 : α)⁻ = 1 := by rw [m_neg_part_def, one_inv, sup_idem]
 lemma neg_eq_inv_inf_one [covariant_class α α (*) (≤)] (a : α) : a⁻ = (a ⊓ 1)⁻¹ :=
 by rw [m_neg_part_def, ← inv_inj, inv_sup_eq_inv_inf_inv, inv_inv, inv_inv, one_inv]
 
+@[to_additive]
+lemma abs_inv (x : α) : |x⁻¹| = |x| :=
+by { unfold has_abs.abs, rw [sup_comm, inv_inv], }
+
 @[to_additive le_abs]
 lemma le_mabs (a : α) : a ≤ |a| := le_sup_left
 
@@ -469,6 +473,13 @@ begin
   have h := mabs_inf_div_inf_le_mabs x 1 1,
   simp only [div_one', inf_idem] at h,
   exact h,
+end
+
+@[to_additive abs_neg_le]
+lemma mabs_neg_le [covariant_class α α (*) (≤)] (x : α) : |x⁻| ≤ |x| :=
+begin
+  rw neg_eq_pos_inv _,
+  refine (mabs_pos_le _).trans (le_of_eq (abs_inv x)),
 end
 
 -- Commutative case, Zaanen, 3rd lecture
