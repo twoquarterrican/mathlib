@@ -455,6 +455,22 @@ begin
   { exact one_le_abs _, },
 end
 
+@[to_additive abs_pos_le]
+lemma mabs_pos_le [covariant_class α α (*) (≤)] (x : α) : |x⁺| ≤ |x| :=
+begin
+  have h := mabs_sup_div_sup_le_mabs x 1 1,
+  simp only [div_one', sup_idem] at h,
+  exact h,
+end
+
+@[to_additive abs_inf_zero_le]
+lemma mabs_inf_one_le [covariant_class α α (*) (≤)] (x : α) : |x ⊓ 1| ≤ |x| :=
+begin
+  have h := mabs_inf_div_inf_le_mabs x 1 1,
+  simp only [div_one', inf_idem] at h,
+  exact h,
+end
+
 -- Commutative case, Zaanen, 3rd lecture
 -- For the non-commutative case, see Birkhoff Theorem 19 (27)
 -- |(a ⊔ c) - (b ⊔ c)| ⊔ |(a ⊓ c) - (b ⊓ c)| ≤ |a - b|

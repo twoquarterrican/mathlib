@@ -177,3 +177,67 @@ calc ∥2•(a⊔b) - 2•(c⊔d)∥ = ∥(a + b + |b - a|) - (c + d + |d - c|)�
     by apply add_le_add_left (norm_sub_le (b-d) (a-c)  )
   ... = 2*∥a - c∥ + 2*∥b - d∥ :
     by { ring, }
+
+
+lemma norm_sup_sub_sup_le_norm (x y z : α) : ∥x ⊔ z - (y ⊔ z)∥ ≤ ∥x - y∥ :=
+solid (abs_sup_sub_sup_le_abs x y z)
+
+lemma norm_inf_sub_inf_le_norm (x y z : α) : ∥x ⊓ z - (y ⊓ z)∥ ≤ ∥x - y∥ :=
+solid (abs_inf_sub_inf_le_abs x y z)
+
+lemma norm_sup_le_add_norm (x y : α) : ∥x ⊔ y∥ ≤ ∥x∥ + ∥y∥ :=
+begin
+  rw ← sub_le_iff_le_add,
+  have h_norm_sub : ∥x ⊔ y - (0 ⊔ y)∥ ≤ ∥x - 0∥, from norm_sup_sub_sup_le_norm x 0 y,
+  have h_sub_norm : ∥x ⊔ y∥ - ∥0 ⊔ y∥ ≤ ∥x - 0∥, from (norm_sub_norm_le _ _).trans h_norm_sub,
+  rw sub_zero at h_sub_norm,
+  refine le_trans _ h_sub_norm,
+  refine sub_le_sub le_rfl (solid _),
+  rw sup_comm,
+  exact abs_pos_le _,
+end
+
+lemma norm_inf_le_add_norm (x y : α) : ∥x ⊓ y∥ ≤ ∥x∥ + ∥y∥ :=
+begin
+  rw ← sub_le_iff_le_add,
+  have h_norm_sub : ∥x ⊓ y - (0 ⊓ y)∥ ≤ ∥x - 0∥, from norm_inf_sub_inf_le_norm x 0 y,
+  have h_sub_norm : ∥x ⊓ y∥ - ∥0 ⊓ y∥ ≤ ∥x - 0∥, from (norm_sub_norm_le _ _).trans h_norm_sub,
+  rw sub_zero at h_sub_norm,
+  refine le_trans _ h_sub_norm,
+  refine sub_le_sub le_rfl (solid _),
+  rw inf_comm,
+  exact abs_inf_zero_le _,
+end
+
+lemma lipschitz_with_sup_right (z : α) : lipschitz_with 1 (λ x, x ⊔ z) :=
+lipschitz_with.of_dist_le_mul $ λ x y, by
+{ rw [nonneg.coe_one, one_mul, dist_eq_norm, dist_eq_norm], exact norm_sup_sub_sup_le_norm x y z, }
+
+lemma lipschitz_with_pos : lipschitz_with 1 (has_pos_part.pos : α → α) :=
+lipschitz_with_sup_right 0
+
+lemma continuous_pos : continuous (has_pos_part.pos : α → α) :=
+lipschitz_with.continuous lipschitz_with_pos
+
+lemma continuous_neg' : continuous (has_neg_part.neg : α → α) :=
+continuous_pos.comp continuous_neg
+
+lemma is_closed_nonneg : is_closed {x : α | 0 ≤ x} :=
+begin
+  suffices : {x : α | 0 ≤ x} = has_neg_part.neg ⁻¹' {(0 : α)},
+  by { rw this, exact is_closed.preimage continuous_neg' is_closed_singleton, },
+  ext1 x,
+  simp only [set.mem_preimage, set.mem_singleton_iff, set.mem_set_of_eq, neg_eq_zero_iff],
+end
+
+lemma is_closed_le_of_is_closed_nonneg {G} [ordered_add_comm_group G] [topological_space G]
+  [has_continuous_sub G] (h : is_closed {x : G | 0 ≤ x}) :
+  is_closed {p : G × G | p.fst ≤ p.snd} :=
+begin
+  rw show {p : G × G | p.fst ≤ p.snd} = (λ p : G × G, p.snd - p.fst) ⁻¹' {x : G | 0 ≤ x},
+    by { ext1 p, simp only [sub_nonneg, set.preimage_set_of_eq], },
+  exact is_closed.preimage (continuous_snd.sub continuous_fst) h,
+end
+
+instance normed_lattice_add_comm_group.order_closed_topology : order_closed_topology α :=
+⟨is_closed_le_of_is_closed_nonneg is_closed_nonneg⟩
