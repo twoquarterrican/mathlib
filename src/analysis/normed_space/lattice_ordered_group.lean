@@ -241,5 +241,6 @@ begin
   exact is_closed.preimage (continuous_snd.sub continuous_fst) h,
 end
 
+@[priority 100]
 instance normed_lattice_add_comm_group.order_closed_topology : order_closed_topology α :=
 ⟨is_closed_le_of_is_closed_nonneg lattice_ordered_comm_group.is_closed_nonneg⟩
