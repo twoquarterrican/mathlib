@@ -136,9 +136,8 @@ Let `α` be a normed lattice ordered group. Then `α` is a topological lattice i
 instance normed_lattice_add_comm_group_topological_lattice : topological_lattice α :=
 topological_lattice.mk
 
-lemma norm_abs_sub_abs (a b : α) :
-  ∥ |a| - |b| ∥ ≤ ∥a-b∥ :=
-solid (lattice_ordered_comm_group.abs_abs_sub_abs_le _ _)
+lemma norm_abs_sub_abs (a b : α) : ∥ |a| - |b| ∥ ≤ ∥a-b∥ :=
+solid (abs_abs_sub_abs_le _ _)
 
 lemma norm_two_inf_sub_two_inf_le (a b c d : α) :
   ∥2•(a⊓b)-2•(c⊓d)∥ ≤ 2*∥a - c∥ + 2*∥b - d∥ :=
@@ -178,6 +177,7 @@ calc ∥2•(a⊔b) - 2•(c⊔d)∥ = ∥(a + b + |b - a|) - (c + d + |d - c|)�
   ... = 2*∥a - c∥ + 2*∥b - d∥ :
     by { ring, }
 
+namespace lattice_ordered_comm_group
 
 lemma norm_sup_sub_sup_le_norm (x y z : α) : ∥x ⊔ z - (y ⊔ z)∥ ≤ ∥x - y∥ :=
 solid (abs_sup_sub_sup_le_abs x y z)
@@ -230,6 +230,8 @@ begin
   simp only [set.mem_preimage, set.mem_singleton_iff, set.mem_set_of_eq, neg_eq_zero_iff],
 end
 
+end lattice_ordered_comm_group
+
 lemma is_closed_le_of_is_closed_nonneg {G} [ordered_add_comm_group G] [topological_space G]
   [has_continuous_sub G] (h : is_closed {x : G | 0 ≤ x}) :
   is_closed {p : G × G | p.fst ≤ p.snd} :=
@@ -240,4 +242,4 @@ begin
 end
 
 instance normed_lattice_add_comm_group.order_closed_topology : order_closed_topology α :=
-⟨is_closed_le_of_is_closed_nonneg is_closed_nonneg⟩
+⟨is_closed_le_of_is_closed_nonneg lattice_ordered_comm_group.is_closed_nonneg⟩
