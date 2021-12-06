@@ -159,20 +159,19 @@ solid (abs_abs_sub_abs_le _ _)
 
 namespace lattice_ordered_comm_group
 
-lemma norm_sup_sub_sup_le_norm (x y z : α) : ∥x ⊔ z - (y ⊔ z)∥ ≤ ∥x - y∥ :=
+lemma norm_sup_sub_sup_le_norm (x y z : α) : ∥(x ⊔ z) - (y ⊔ z)∥ ≤ ∥x - y∥ :=
 solid (abs_sup_sub_sup_le_abs x y z)
 
-lemma norm_inf_sub_inf_le_norm (x y z : α) : ∥x ⊓ z - (y ⊓ z)∥ ≤ ∥x - y∥ :=
+lemma norm_inf_sub_inf_le_norm (x y z : α) : ∥(x ⊓ z) - (y ⊓ z)∥ ≤ ∥x - y∥ :=
 solid (abs_inf_sub_inf_le_abs x y z)
 
 lemma norm_sup_le_add_norm (x y : α) : ∥x ⊔ y∥ ≤ ∥x∥ + ∥y∥ :=
 begin
   rw ← sub_le_iff_le_add,
-  have h_norm_sub : ∥x ⊔ y - (0 ⊔ y)∥ ≤ ∥x - 0∥, from norm_sup_sub_sup_le_norm x 0 y,
+  have h_norm_sub : ∥(x ⊔ y) - (0 ⊔ y)∥ ≤ ∥x - 0∥, from norm_sup_sub_sup_le_norm x 0 y,
   have h_sub_norm : ∥x ⊔ y∥ - ∥0 ⊔ y∥ ≤ ∥x - 0∥, from (norm_sub_norm_le _ _).trans h_norm_sub,
   rw sub_zero at h_sub_norm,
-  refine le_trans _ h_sub_norm,
-  refine sub_le_sub le_rfl (solid _),
+  refine (sub_le_sub le_rfl (solid _)).trans h_sub_norm,
   rw sup_comm,
   exact abs_pos_le _,
 end
@@ -180,11 +179,10 @@ end
 lemma norm_inf_le_add_norm (x y : α) : ∥x ⊓ y∥ ≤ ∥x∥ + ∥y∥ :=
 begin
   rw ← sub_le_iff_le_add,
-  have h_norm_sub : ∥x ⊓ y - (0 ⊓ y)∥ ≤ ∥x - 0∥, from norm_inf_sub_inf_le_norm x 0 y,
+  have h_norm_sub : ∥(x ⊓ y) - (0 ⊓ y)∥ ≤ ∥x - 0∥, from norm_inf_sub_inf_le_norm x 0 y,
   have h_sub_norm : ∥x ⊓ y∥ - ∥0 ⊓ y∥ ≤ ∥x - 0∥, from (norm_sub_norm_le _ _).trans h_norm_sub,
   rw sub_zero at h_sub_norm,
-  refine le_trans _ h_sub_norm,
-  refine sub_le_sub le_rfl (solid _),
+  refine (sub_le_sub le_rfl (solid _)).trans h_sub_norm,
   rw inf_comm,
   exact abs_inf_zero_le _,
 end
