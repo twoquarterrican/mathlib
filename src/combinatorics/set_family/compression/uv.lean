@@ -237,4 +237,26 @@ begin
   { refl }
 end
 
+/-- If `A` is not in the original family but is in the compressed family, then `A` has been
+compressed, and its original was in the original family. -/
+lemma compress_moved (h₁ : A ∈ 𝓒 U V 𝒜) (h₂ : A ∉ 𝒜) :
+  U ⊆ A ∧ disjoint V A ∧ (A ∪ V) \ U ∈ 𝒜 :=
+begin
+  rw mem_compression at h₁,
+  obtain _ | ⟨_, B, H, HB⟩ := h₁,
+  { tauto },
+  { unfold compress at HB,
+    split_ifs at HB,
+    { rw ← HB at *,
+      refine ⟨_, disjoint_sdiff, _⟩,
+        have : disjoint U V := disjoint_of_subset_right h.2 h.1,
+        rw sup_sdiff,
+        rw sdiff_eq_self_of_disjoint this,
+        apply subset_union_right _ _,
+      rwa [sdiff_union_of_subset, sup_sdiff_right_self,
+            sdiff_eq_self_of_disjoint h.1.symm],
+      apply trans h.2 (subset_union_left _ _) },
+    { rw HB at *, tauto } }
+end
+
 end uv
