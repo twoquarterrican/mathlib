@@ -68,8 +68,7 @@ variables {α : Type*}
 
 /-- Normalization monoid: multiplying with `norm_unit` gives a normal form for associated
 elements. -/
-@[protect_proj] class normalization_monoid (α : Type*)
-  [cancel_comm_monoid_with_zero α] :=
+@[protect_proj] class normalization_monoid (α : Type*) [monoid_with_zero α] :=
 (norm_unit : α → units α)
 (norm_unit_zero      : norm_unit 0 = 1)
 (norm_unit_mul       : ∀{a b}, a ≠ 0 → b ≠ 0 → norm_unit (a * b) = norm_unit a * norm_unit b)
@@ -206,7 +205,7 @@ end associates
 `lcm` (least common multiple) operations, determined up to a unit. The type class focuses on `gcd`
 and we derive the corresponding `lcm` facts from `gcd`.
 -/
-@[protect_proj] class gcd_monoid (α : Type*) [cancel_comm_monoid_with_zero α] :=
+@[protect_proj] class gcd_monoid (α : Type*) [monoid_with_zero α] :=
 (gcd : α → α → α)
 (lcm : α → α → α)
 (gcd_dvd_left   : ∀a b, gcd a b ∣ a)
@@ -233,32 +232,30 @@ export gcd_monoid (gcd lcm gcd_dvd_left gcd_dvd_right dvd_gcd  lcm_zero_left lcm
 attribute [simp] lcm_zero_left lcm_zero_right
 
 section gcd_monoid
-variables [cancel_comm_monoid_with_zero α]
-
-@[simp] theorem normalize_gcd [normalized_gcd_monoid α] : ∀a b:α, normalize (gcd a b) = gcd a b :=
+@[simp] theorem normalize_gcd [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] : ∀a b:α, normalize (gcd a b) = gcd a b :=
 normalized_gcd_monoid.normalize_gcd
 
-theorem gcd_mul_lcm [gcd_monoid α] : ∀a b:α, associated (gcd a b * lcm a b) (a * b) :=
+theorem gcd_mul_lcm [monoid_with_zero α] [gcd_monoid α] : ∀a b:α, associated (gcd a b * lcm a b) (a * b) :=
 gcd_monoid.gcd_mul_lcm
 
 section gcd
 
-theorem dvd_gcd_iff [gcd_monoid α] (a b c : α) : a ∣ gcd b c ↔ (a ∣ b ∧ a ∣ c) :=
+theorem dvd_gcd_iff [monoid_with_zero α] [gcd_monoid α] (a b c : α) : a ∣ gcd b c ↔ (a ∣ b ∧ a ∣ c) :=
 iff.intro
   (assume h, ⟨h.trans (gcd_dvd_left _ _), h.trans (gcd_dvd_right _ _)⟩)
   (assume ⟨hab, hac⟩, dvd_gcd hab hac)
 
-theorem gcd_comm [normalized_gcd_monoid α] (a b : α) : gcd a b = gcd b a :=
+theorem gcd_comm [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a b : α) : gcd a b = gcd b a :=
 dvd_antisymm_of_normalize_eq (normalize_gcd _ _) (normalize_gcd _ _)
   (dvd_gcd (gcd_dvd_right _ _) (gcd_dvd_left _ _))
   (dvd_gcd (gcd_dvd_right _ _) (gcd_dvd_left _ _))
 
-theorem gcd_comm' [gcd_monoid α] (a b : α) : associated (gcd a b) (gcd b a) :=
+theorem gcd_comm' [cancel_monoid_with_zero α] [gcd_monoid α] (a b : α) : associated (gcd a b) (gcd b a) :=
 associated_of_dvd_dvd
   (dvd_gcd (gcd_dvd_right _ _) (gcd_dvd_left _ _))
   (dvd_gcd (gcd_dvd_right _ _) (gcd_dvd_left _ _))
 
-theorem gcd_assoc [normalized_gcd_monoid α] (m n k : α) : gcd (gcd m n) k = gcd m (gcd n k) :=
+theorem gcd_assoc [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (m n k : α) : gcd (gcd m n) k = gcd m (gcd n k) :=
 dvd_antisymm_of_normalize_eq (normalize_gcd _ _) (normalize_gcd _ _)
   (dvd_gcd
     ((gcd_dvd_left (gcd m n) k).trans (gcd_dvd_left m n))
@@ -268,7 +265,7 @@ dvd_antisymm_of_normalize_eq (normalize_gcd _ _) (normalize_gcd _ _)
     (dvd_gcd (gcd_dvd_left m (gcd n k)) ((gcd_dvd_right m (gcd n k)).trans (gcd_dvd_left n k)))
     ((gcd_dvd_right m (gcd n k)).trans (gcd_dvd_right n k)))
 
-theorem gcd_assoc' [gcd_monoid α] (m n k : α) : associated (gcd (gcd m n) k) (gcd m (gcd n k)) :=
+theorem gcd_assoc' [cancel_monoid_with_zero α] [gcd_monoid α] (m n k : α) : associated (gcd (gcd m n) k) (gcd m (gcd n k)) :=
 associated_of_dvd_dvd
   (dvd_gcd
     ((gcd_dvd_left (gcd m n) k).trans (gcd_dvd_left m n))
@@ -278,27 +275,27 @@ associated_of_dvd_dvd
     (dvd_gcd (gcd_dvd_left m (gcd n k)) ((gcd_dvd_right m (gcd n k)).trans (gcd_dvd_left n k)))
     ((gcd_dvd_right m (gcd n k)).trans (gcd_dvd_right n k)))
 
-instance [normalized_gcd_monoid α] : is_commutative α gcd := ⟨gcd_comm⟩
-instance [normalized_gcd_monoid α] : is_associative α gcd := ⟨gcd_assoc⟩
+instance [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] : is_commutative α gcd := ⟨gcd_comm⟩
+instance [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] : is_associative α gcd := ⟨gcd_assoc⟩
 
-theorem gcd_eq_normalize [normalized_gcd_monoid α] {a b c : α}
+theorem gcd_eq_normalize [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] {a b c : α}
   (habc : gcd a b ∣ c) (hcab : c ∣ gcd a b) :
   gcd a b = normalize c :=
 normalize_gcd a b ▸ normalize_eq_normalize habc hcab
 
-@[simp] theorem gcd_zero_left [normalized_gcd_monoid α] (a : α) : gcd 0 a = normalize a :=
+@[simp] theorem gcd_zero_left [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a : α) : gcd 0 a = normalize a :=
 gcd_eq_normalize (gcd_dvd_right 0 a) (dvd_gcd (dvd_zero _) (dvd_refl a))
 
-theorem gcd_zero_left' [gcd_monoid α] (a : α) : associated (gcd 0 a) a :=
+theorem gcd_zero_left' [cancel_monoid_with_zero α] [gcd_monoid α] (a : α) : associated (gcd 0 a) a :=
 associated_of_dvd_dvd (gcd_dvd_right 0 a) (dvd_gcd (dvd_zero _) (dvd_refl a))
 
-@[simp] theorem gcd_zero_right [normalized_gcd_monoid α] (a : α) : gcd a 0 = normalize a :=
+@[simp] theorem gcd_zero_right [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a : α) : gcd a 0 = normalize a :=
 gcd_eq_normalize (gcd_dvd_left a 0) (dvd_gcd (dvd_refl a) (dvd_zero _))
 
-theorem gcd_zero_right' [gcd_monoid α] (a : α) : associated (gcd a 0) a :=
+theorem gcd_zero_right' [cancel_monoid_with_zero α] [gcd_monoid α] (a : α) : associated (gcd a 0) a :=
 associated_of_dvd_dvd (gcd_dvd_left a 0) (dvd_gcd (dvd_refl a) (dvd_zero _))
 
-@[simp] theorem gcd_eq_zero_iff [gcd_monoid α] (a b : α) : gcd a b = 0 ↔ a = 0 ∧ b = 0 :=
+@[simp] theorem gcd_eq_zero_iff [monoid_with_zero α] [gcd_monoid α] (a b : α) : gcd a b = 0 ↔ a = 0 ∧ b = 0 :=
 iff.intro
   (assume h, let ⟨ca, ha⟩ := gcd_dvd_left a b, ⟨cb, hb⟩ := gcd_dvd_right a b in
     by rw [h, zero_mul] at ha hb; exact ⟨ha, hb⟩)
@@ -306,25 +303,25 @@ iff.intro
     { rw [ha, hb, ←zero_dvd_iff],
       apply dvd_gcd; refl })
 
-@[simp] theorem gcd_one_left [normalized_gcd_monoid α] (a : α) : gcd 1 a = 1 :=
+@[simp] theorem gcd_one_left [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a : α) : gcd 1 a = 1 :=
 dvd_antisymm_of_normalize_eq (normalize_gcd _ _) normalize_one (gcd_dvd_left _ _) (one_dvd _)
 
-@[simp] theorem gcd_one_left' [gcd_monoid α] (a : α) : associated (gcd 1 a) 1 :=
+@[simp] theorem gcd_one_left' [cancel_monoid_with_zero α] [gcd_monoid α] (a : α) : associated (gcd 1 a) 1 :=
 associated_of_dvd_dvd (gcd_dvd_left _ _) (one_dvd _)
 
-@[simp] theorem gcd_one_right [normalized_gcd_monoid α] (a : α) : gcd a 1 = 1 :=
+@[simp] theorem gcd_one_right [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a : α) : gcd a 1 = 1 :=
 dvd_antisymm_of_normalize_eq (normalize_gcd _ _) normalize_one (gcd_dvd_right _ _) (one_dvd _)
 
-@[simp] theorem gcd_one_right' [gcd_monoid α] (a : α) : associated (gcd a 1) 1 :=
+@[simp] theorem gcd_one_right' [cancel_monoid_with_zero α] [gcd_monoid α] (a : α) : associated (gcd a 1) 1 :=
 associated_of_dvd_dvd (gcd_dvd_right _ _) (one_dvd _)
 
-theorem gcd_dvd_gcd [gcd_monoid α] {a b c d: α} (hab : a ∣ b) (hcd : c ∣ d) : gcd a c ∣ gcd b d :=
+theorem gcd_dvd_gcd [monoid_with_zero α] [gcd_monoid α] {a b c d: α} (hab : a ∣ b) (hcd : c ∣ d) : gcd a c ∣ gcd b d :=
 dvd_gcd ((gcd_dvd_left _ _).trans hab) ((gcd_dvd_right _ _).trans hcd)
 
-@[simp] theorem gcd_same [normalized_gcd_monoid α] (a : α) : gcd a a = normalize a :=
+@[simp] theorem gcd_same [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a : α) : gcd a a = normalize a :=
 gcd_eq_normalize (gcd_dvd_left _ _) (dvd_gcd (dvd_refl a) (dvd_refl a))
 
-@[simp] theorem gcd_mul_left [normalized_gcd_monoid α] (a b c : α) :
+@[simp] theorem gcd_mul_left [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a b c : α) :
   gcd (a * b) (a * c) = normalize a * gcd b c :=
 classical.by_cases (by rintro rfl; simp only [zero_mul, gcd_zero_left, normalize_zero]) $
 assume ha : a ≠ 0,
@@ -340,7 +337,7 @@ gcd_eq_normalize
     (mul_dvd_mul_left a $ gcd_dvd_left _ _)
     (mul_dvd_mul_left a $ gcd_dvd_right _ _))
 
-theorem gcd_mul_left' [gcd_monoid α] (a b c : α) : associated (gcd (a * b) (a * c)) (a * gcd b c) :=
+theorem gcd_mul_left' [cancel_comm_monoid_with_zero α] [gcd_monoid α] (a b c : α) : associated (gcd (a * b) (a * c)) (a * gcd b c) :=
 begin
   obtain rfl|ha := eq_or_ne a 0,
   { simp only [zero_mul, gcd_zero_left'] },
@@ -356,58 +353,58 @@ begin
       (mul_dvd_mul_left a $ gcd_dvd_right _ _)) },
 end
 
-@[simp] theorem gcd_mul_right [normalized_gcd_monoid α] (a b c : α) :
+@[simp] theorem gcd_mul_right [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a b c : α) :
   gcd (b * a) (c * a) = gcd b c * normalize a :=
 by simp only [mul_comm, gcd_mul_left]
 
-@[simp] theorem gcd_mul_right' [gcd_monoid α] (a b c : α) :
+@[simp] theorem gcd_mul_right' [cancel_comm_monoid_with_zero α] [gcd_monoid α] (a b c : α) :
   associated (gcd (b * a) (c * a)) (gcd b c * a) :=
 by simp only [mul_comm, gcd_mul_left']
 
-theorem gcd_eq_left_iff [normalized_gcd_monoid α] (a b : α) (h : normalize a = a) :
+theorem gcd_eq_left_iff [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a b : α) (h : normalize a = a) :
   gcd a b = a ↔ a ∣ b :=
 iff.intro (assume eq, eq ▸ gcd_dvd_right _ _) $
   assume hab, dvd_antisymm_of_normalize_eq (normalize_gcd _ _) h (gcd_dvd_left _ _)
     (dvd_gcd (dvd_refl a) hab)
 
-theorem gcd_eq_right_iff [normalized_gcd_monoid α] (a b : α) (h : normalize b = b) :
+theorem gcd_eq_right_iff [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] (a b : α) (h : normalize b = b) :
   gcd a b = b ↔ b ∣ a :=
 by simpa only [gcd_comm a b] using gcd_eq_left_iff b a h
 
-theorem gcd_dvd_gcd_mul_left [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd (k * m) n :=
+theorem gcd_dvd_gcd_mul_left [comm_monoid_with_zero α] [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd (k * m) n :=
 gcd_dvd_gcd (dvd_mul_left _ _) dvd_rfl
 
-theorem gcd_dvd_gcd_mul_right [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd (m * k) n :=
+theorem gcd_dvd_gcd_mul_right [monoid_with_zero α] [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd (m * k) n :=
 gcd_dvd_gcd (dvd_mul_right _ _) dvd_rfl
 
-theorem gcd_dvd_gcd_mul_left_right [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd m (k * n) :=
+theorem gcd_dvd_gcd_mul_left_right [comm_monoid_with_zero α] [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd m (k * n) :=
 gcd_dvd_gcd dvd_rfl (dvd_mul_left _ _)
 
-theorem gcd_dvd_gcd_mul_right_right [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd m (n * k) :=
+theorem gcd_dvd_gcd_mul_right_right [monoid_with_zero α] [gcd_monoid α] (m n k : α) : gcd m n ∣ gcd m (n * k) :=
 gcd_dvd_gcd dvd_rfl (dvd_mul_right _ _)
 
-theorem associated.gcd_eq_left [normalized_gcd_monoid α] {m n : α} (h : associated m n) (k : α) :
+theorem associated.gcd_eq_left [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] {m n : α} (h : associated m n) (k : α) :
   gcd m k = gcd n k :=
 dvd_antisymm_of_normalize_eq (normalize_gcd _ _) (normalize_gcd _ _)
   (gcd_dvd_gcd h.dvd dvd_rfl)
   (gcd_dvd_gcd h.symm.dvd dvd_rfl)
 
-theorem associated.gcd_eq_right [normalized_gcd_monoid α] {m n : α} (h : associated m n) (k : α) :
+theorem associated.gcd_eq_right [cancel_comm_monoid_with_zero α] [normalized_gcd_monoid α] {m n : α} (h : associated m n) (k : α) :
   gcd k m = gcd k n :=
 dvd_antisymm_of_normalize_eq (normalize_gcd _ _) (normalize_gcd _ _)
   (gcd_dvd_gcd dvd_rfl h.dvd)
   (gcd_dvd_gcd dvd_rfl h.symm.dvd)
 
-lemma dvd_gcd_mul_of_dvd_mul [gcd_monoid α] {m n k : α} (H : k ∣ m * n) : k ∣ (gcd k m) * n :=
+lemma dvd_gcd_mul_of_dvd_mul [cancel_comm_monoid_with_zero α] [gcd_monoid α] {m n k : α} (H : k ∣ m * n) : k ∣ (gcd k m) * n :=
 (dvd_gcd (dvd_mul_right _ n) H).trans (gcd_mul_right' n k m).dvd
 
-lemma dvd_mul_gcd_of_dvd_mul [gcd_monoid α] {m n k : α} (H : k ∣ m * n) : k ∣ m * gcd k n :=
+lemma dvd_mul_gcd_of_dvd_mul [cancel_comm_monoid_with_zero α] [gcd_monoid α] {m n k : α} (H : k ∣ m * n) : k ∣ m * gcd k n :=
 by { rw mul_comm at H ⊢, exact dvd_gcd_mul_of_dvd_mul H }
 
 /-- Represent a divisor of `m * n` as a product of a divisor of `m` and a divisor of `n`.
 
  Note: In general, this representation is highly non-unique. -/
-lemma exists_dvd_and_dvd_of_dvd_mul [gcd_monoid α] {m n k : α} (H : k ∣ m * n) :
+lemma exists_dvd_and_dvd_of_dvd_mul [cancel_comm_monoid_with_zero α] [gcd_monoid α] {m n k : α} (H : k ∣ m * n) :
   ∃ d₁ (hd₁ : d₁ ∣ m) d₂ (hd₂ : d₂ ∣ n), k = d₁ * d₂ :=
 begin
   by_cases h0 : gcd k m = 0,
@@ -426,7 +423,7 @@ begin
     exact dvd_gcd_mul_of_dvd_mul H }
 end
 
-theorem gcd_mul_dvd_mul_gcd [gcd_monoid α] (k m n : α) : gcd k (m * n) ∣ gcd k m * gcd k n :=
+theorem gcd_mul_dvd_mul_gcd [cancel_comm_monoid_with_zero α] [gcd_monoid α] (k m n : α) : gcd k (m * n) ∣ gcd k m * gcd k n :=
 begin
   obtain ⟨m', hm', n', hn', h⟩ := (exists_dvd_and_dvd_of_dvd_mul $ gcd_dvd_right k (m * n)),
   replace h : gcd k (m * n) = m' * n' := h,
@@ -439,7 +436,7 @@ begin
     exact dvd_gcd hn'k hn' }
 end
 
-theorem gcd_pow_right_dvd_pow_gcd [gcd_monoid α] {a b : α} {k : ℕ} :
+theorem gcd_pow_right_dvd_pow_gcd [cancel_comm_monoid_with_zero α] [gcd_monoid α] {a b : α} {k : ℕ} :
   gcd a (b ^ k) ∣ (gcd a b) ^ k :=
 begin
   by_cases hg : gcd a b = 0,
@@ -456,14 +453,14 @@ begin
     exact (mul_dvd_mul_iff_left hg).mpr hk }
 end
 
-theorem gcd_pow_left_dvd_pow_gcd [gcd_monoid α] {a b : α} {k : ℕ} :
+theorem gcd_pow_left_dvd_pow_gcd [cancel_comm_monoid_with_zero α] [gcd_monoid α] {a b : α} {k : ℕ} :
   gcd (a ^ k) b ∣ (gcd a b) ^ k :=
 calc gcd (a ^ k) b
     ∣ gcd b (a ^ k) : (gcd_comm' _ _).dvd
 ... ∣ (gcd b a) ^ k : gcd_pow_right_dvd_pow_gcd
 ... ∣ (gcd a b) ^ k : pow_dvd_pow_of_dvd (gcd_comm' _ _).dvd _
 
-theorem pow_dvd_of_mul_eq_pow [gcd_monoid α] {a b c d₁ d₂ : α} (ha : a ≠ 0)
+theorem pow_dvd_of_mul_eq_pow [cancel_comm_monoid_with_zero α] [gcd_monoid α] {a b c d₁ d₂ : α} (ha : a ≠ 0)
   (hab : is_unit (gcd a b)) {k : ℕ} (h : a * b = c ^ k) (hc : c = d₁ * d₂)
   (hd₁ : d₁ ∣ a) : d₁ ^ k ≠ 0 ∧ d₁ ^ k ∣ a :=
 begin
@@ -484,7 +481,7 @@ begin
   exact ⟨h4, h3⟩,
 end
 
-theorem exists_associated_pow_of_mul_eq_pow [gcd_monoid α] {a b c : α}
+theorem exists_associated_pow_of_mul_eq_pow [cancel_comm_monoid_with_zero α] [gcd_monoid α] {a b c : α}
   (hab : is_unit (gcd a b)) {k : ℕ}
   (h : a * b = c ^ k) : ∃ (d : α), associated (d ^ k) a :=
 begin
@@ -519,7 +516,7 @@ begin
   rw [units.coe_mk_of_mul_eq_one, ha']
 end
 
-theorem exists_eq_pow_of_mul_eq_pow [gcd_monoid α] [unique (units α)] {a b c : α}
+theorem exists_eq_pow_of_mul_eq_pow [cancel_comm_monoid_with_zero α] [gcd_monoid α] [unique (units α)] {a b c : α}
   (hab : is_unit (gcd a b)) {k : ℕ}
   (h : a * b = c ^ k) : ∃ (d : α), a = d ^ k :=
 let ⟨d, hd⟩ := exists_associated_pow_of_mul_eq_pow hab h in ⟨d, (associated_iff_eq.mp hd).symm⟩
@@ -527,6 +524,8 @@ let ⟨d, hd⟩ := exists_associated_pow_of_mul_eq_pow hab h in ⟨d, (associate
 end gcd
 
 section lcm
+
+variable [cancel_comm_monoid_with_zero α]
 
 lemma lcm_dvd_iff [gcd_monoid α] {a b c : α} : lcm a b ∣ c ↔ a ∣ c ∧ b ∣ c :=
 begin
@@ -679,7 +678,7 @@ end lcm
 
 namespace gcd_monoid
 
-theorem prime_of_irreducible [gcd_monoid α] {x : α} (hi: irreducible x) : prime x :=
+theorem prime_of_irreducible [cancel_comm_monoid_with_zero α] [gcd_monoid α] {x : α} (hi: irreducible x) : prime x :=
 ⟨hi.ne_zero, ⟨hi.1, λ a b h,
 begin
   cases gcd_dvd_left x a with y hy,
@@ -692,7 +691,7 @@ begin
     exact dvd_trans (associated_mul_unit_left _ _ hu).dvd (gcd_dvd_right x a) }
 end ⟩⟩
 
-theorem irreducible_iff_prime [gcd_monoid α] {p : α} : irreducible p ↔ prime p :=
+theorem irreducible_iff_prime [cancel_comm_monoid_with_zero α] [gcd_monoid α] {p : α} : irreducible p ↔ prime p :=
 ⟨prime_of_irreducible, prime.irreducible⟩
 
 end gcd_monoid
