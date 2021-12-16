@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Simon Hudon
 -/
 import tactic.hint
+import tactic.itauto
 
 namespace tactic
 
@@ -251,7 +252,9 @@ The variant `tautology!` uses the law of excluded middle.
 that it is unable to solve before failing.
 -/
 meta def tautology (c : parse $ (tk "!")?) (cfg : tactic.tauto_cfg := {}) :=
-tactic.tautology $ { classical := c.is_some, ..cfg }
+(`[itauto] >> trace "1") <|>
+(`[itauto!] >> trace "2") <|>
+(tactic.tautology $ { classical := c.is_some, ..cfg }) >> trace "3"
 
 -- Now define a shorter name for the tactic `tautology`.
 
