@@ -187,7 +187,11 @@ begin
   have hV₂x : V₂ ∈ 𝓝 x := is_open.mem_nhds V₂_op x_in₂,
   apply V'_closed.mem_of_tendsto x_in₁,
   use V₂,
-  tauto,
+  split,
+  {exact hV₂x}, -- itauto here times out
+  {intros x hx,
+   apply hV₂,
+   exact hx}
 end
 
 lemma continuous_extend [regular_space γ] {f : α → γ} (di : dense_inducing i)
