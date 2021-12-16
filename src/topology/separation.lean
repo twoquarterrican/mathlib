@@ -1034,7 +1034,8 @@ begin
   rcases nhds_is_closed (is_open.mem_nhds U₂_op y_in) with ⟨V₂, V₂_in, h₂, V₂_closed⟩,
   use [U₁, V₁, mem_of_superset V₁_in h₁, V₁_in,
        U₂, V₂, mem_of_superset V₂_in h₂, V₂_in],
-  tauto
+  clear h V₁_in V₂_in,
+  itauto,
 end
 
 end regularity
