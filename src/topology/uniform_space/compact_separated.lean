@@ -146,7 +146,7 @@ def uniform_space_of_compact_t2 [topological_space γ] [compact_space γ] [t2_sp
           cases hx with hx hx ; [left, right] ; split ; tauto },
         { right,
           rw mem_prod,
-          tauto }, },
+          split; solve_by_elim }, },
       all_goals { simp only [is_open.prod, *] } },
     -- So W ○ W ∈ F by definition of F
     have : W ○ W ∈ F, by simpa only using mem_lift' W_in,
