@@ -3,6 +3,7 @@ Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Mario Carneiro, Yury Kudryashov
 -/
+import order.filter.pi
 import topology.bases
 import data.finset.order
 import data.set.accumulate
@@ -49,7 +50,7 @@ open set filter classical topological_space
 open_locale classical topological_space filter
 
 universes u v
-variables {α : Type u} {β : Type v} [topological_space α] {s t : set α}
+variables {α : Type u} {β : Type v}  {ι : Type*} {π : ι → Type*} [topological_space α] {s t : set α}
 
 /- compact sets -/
 section compact
@@ -720,31 +721,43 @@ lemma exists_subset_nhd_of_compact_space [compact_space α] {ι : Type*} [nonemp
   {U : set α} (hU : ∀ x ∈ ⋂ i, V i, U ∈ 𝓝 x) : ∃ i, V i ⊆ U :=
 exists_subset_nhd_of_compact' hV (λ i, (hV_closed i).is_compact) hV_closed hU
 
-lemma embedding.is_compact_iff_is_compact_image {f : α → β} (hf : embedding f) :
-  is_compact s ↔ is_compact (f '' s) :=
-iff.intro (assume h, h.image hf.continuous) $ assume h, begin
-  rw is_compact_iff_ultrafilter_le_nhds at ⊢ h,
-  intros u us',
-  have : ↑(u.map f) ≤ 𝓟 (f '' s), begin
-    rw [ultrafilter.coe_map, map_le_iff_le_comap, comap_principal], convert us',
-    exact preimage_image_eq _ hf.inj
-  end,
-  rcases h (u.map f) this with ⟨_, ⟨a, ha, ⟨⟩⟩, _⟩,
-  refine ⟨a, ha, _⟩,
-  rwa [hf.induced, nhds_induced, ←map_le_iff_le_comap]
+/-- If `f : α → β` is an `inducing` map, then the image `f '' s` of a set `s` is compact if and only
+if the set `s` is closed. -/
+lemma inducing.is_compact_iff {f : α → β} (hf : inducing f) {s : set α} :
+  is_compact (f '' s) ↔ is_compact s :=
+begin
+  refine ⟨_, λ hs, hs.image hf.continuous⟩,
+  introsI hs F F_ne_bot F_le,
+  obtain ⟨_, ⟨x, x_in : x ∈ s, rfl⟩, hx : cluster_pt (f x) (map f F)⟩ :=
+    hs (calc map f F ≤ map f (𝓟 s) : map_mono F_le
+                ... = 𝓟 (f '' s) : map_principal),
+  use [x, x_in],
+  suffices : (map f (𝓝 x ⊓ F)).ne_bot, by simpa [filter.map_ne_bot_iff],
+  rwa calc map f (𝓝 x ⊓ F) = map f ((comap f $ 𝓝 $ f x) ⊓ F) : by rw hf.nhds_eq_comap
+                        ... = 𝓝 (f x) ⊓ map f F : filter.push_pull' _ _ _
 end
 
-/-- A closed embedding is proper, ie, inverse images of compact sets are contained in compacts. -/
+/-- If `f : α → β` is an `embedding` (or more generally, an `inducing` map, see
+`inducing.is_compact_iff`), then the image `f '' s` of a set `s` is compact if and only if the set
+`s` is closed. -/
+lemma embedding.is_compact_iff_is_compact_image {f : α → β} (hf : embedding f) :
+  is_compact s ↔ is_compact (f '' s) :=
+hf.to_inducing.is_compact_iff.symm
+
+/-- The preimage of a compact set under a closed embedding is a compact set. -/
+lemma closed_embedding.is_compact_preimage {f : α → β} (hf : closed_embedding f) {K : set β}
+  (hK : is_compact K) : is_compact (f ⁻¹' K) :=
+begin
+  replace hK := hK.inter_right hf.closed_range,
+  rwa [← hf.to_inducing.is_compact_iff, image_preimage_eq_inter_range]
+end
+
+/-- A closed embedding is proper, ie, inverse images of compact sets are contained in compacts.
+Moreover, the preimage of a compact set is compact, see `closed_embedding.is_compact_preimage`. -/
 lemma closed_embedding.tendsto_cocompact
   {f : α → β} (hf : closed_embedding f) : tendsto f (filter.cocompact α) (filter.cocompact β) :=
-begin
-  rw filter.has_basis_cocompact.tendsto_iff filter.has_basis_cocompact,
-  intros K hK,
-  refine ⟨f ⁻¹' (K ∩ (set.range f)), _, λ x hx, by simpa using hx⟩,
-  apply hf.to_embedding.is_compact_iff_is_compact_image.mpr,
-  rw set.image_preimage_eq_of_subset (set.inter_subset_right _ _),
-  exact hK.inter_right hf.closed_range,
-end
+filter.has_basis_cocompact.tendsto_right_iff.mpr $ λ K hK,
+  (hf.is_compact_preimage hK).compl_mem_cocompact
 
 lemma compact_iff_compact_in_subtype {p : α → Prop} {s : set {a // p a}} :
   is_compact s ↔ is_compact ((coe : _ → α) '' s) :=
@@ -780,22 +793,6 @@ begin
   rw nhds_prod_eq, exact le_inf ha hb
 end
 
-lemma inducing.is_compact_iff {f : α → β} (hf : inducing f) {s : set α} :
-  is_compact (f '' s) ↔ is_compact s :=
-begin
-  split,
-  { introsI hs F F_ne_bot F_le,
-    obtain ⟨_, ⟨x, x_in : x ∈ s, rfl⟩, hx : cluster_pt (f x) (map f F)⟩ :=
-      hs (calc map f F ≤ map f (𝓟 s) : map_mono F_le
-                  ... = 𝓟 (f '' s) : map_principal),
-    use [x, x_in],
-    suffices : (map f (𝓝 x ⊓ F)).ne_bot, by simpa [filter.map_ne_bot_iff],
-    rwa calc map f (𝓝 x ⊓ F) = map f ((comap f $ 𝓝 $ f x) ⊓ F) : by rw hf.nhds_eq_comap
-                          ... = 𝓝 (f x) ⊓ map f F : filter.push_pull' _ _ _ },
-  { intro hs,
-    exact hs.image hf.continuous }
-end
-
 /-- Finite topological spaces are compact. -/
 @[priority 100] instance fintype.compact_space [fintype α] : compact_space α :=
 { compact_univ := finite_univ.is_compact }
@@ -810,6 +807,14 @@ instance [compact_space α] [compact_space β] : compact_space (α ⊕ β) :=
   rw ← range_inl_union_range_inr,
   exact (is_compact_range continuous_inl).union (is_compact_range continuous_inr)
 end⟩
+
+instance [fintype ι] [Π i, topological_space (π i)] [∀ i, compact_space (π i)] :
+  compact_space (Σ i, π i) :=
+begin
+  refine ⟨_⟩,
+  rw sigma.univ,
+  exact compact_Union (λ i, is_compact_range continuous_sigma_mk),
+end
 
 /-- The coproduct of the cocompact filters on two topological spaces is the cocompact filter on
 their product. -/
@@ -852,26 +857,26 @@ instance prod.noncompact_space_right [nonempty α] [noncompact_space β] : nonco
 prod.noncompact_space_iff.2 (or.inr ⟨‹_›, ‹_›⟩)
 
 section tychonoff
-variables {ι : Type*} {π : ι → Type*} [∀ i, topological_space (π i)]
+variables [Π i, topological_space (π i)]
 
 /-- **Tychonoff's theorem** -/
 lemma is_compact_pi_infinite {s : Π i, set (π i)} :
   (∀ i, is_compact (s i)) → is_compact {x : Π i, π i | ∀ i, x i ∈ s i} :=
 begin
-  simp only [is_compact_iff_ultrafilter_le_nhds, nhds_pi, exists_prop, mem_set_of_eq, le_infi_iff,
-    le_principal_iff],
+  simp only [is_compact_iff_ultrafilter_le_nhds, nhds_pi, filter.pi, exists_prop, mem_set_of_eq,
+    le_infi_iff, le_principal_iff],
   intros h f hfs,
   have : ∀i:ι, ∃a, a∈s i ∧ tendsto (λx:Πi:ι, π i, x i) f (𝓝 a),
   { refine λ i, h i (f.map _) (mem_map.2 _),
     exact mem_of_superset hfs (λ x hx, hx i) },
   choose a ha,
-  exact  ⟨a, assume i, (ha i).left, assume i, (ha i).right.le_comap⟩
+  exact ⟨a, assume i, (ha i).left, assume i, (ha i).right.le_comap⟩
 end
 
 /-- A version of Tychonoff's theorem that uses `set.pi`. -/
 lemma is_compact_univ_pi {s : Π i, set (π i)} (h : ∀ i, is_compact (s i)) :
   is_compact (pi univ s) :=
-by { convert is_compact_pi_infinite h, simp only [pi, forall_prop_of_true, mem_univ] }
+by { convert is_compact_pi_infinite h, simp only [← mem_univ_pi, set_of_mem_eq] }
 
 instance pi.compact_space [∀ i, compact_space (π i)] : compact_space (Πi, π i) :=
 ⟨by { rw [← pi_univ univ], exact is_compact_univ_pi (λ i, compact_univ) }⟩
@@ -880,33 +885,14 @@ instance pi.compact_space [∀ i, compact_space (π i)] : compact_space (Πi, π
 lemma filter.Coprod_cocompact {δ : Type*} {κ : δ → Type*} [Π d, topological_space (κ d)] :
   filter.Coprod (λ d, filter.cocompact (κ d)) = filter.cocompact (Π d, κ d) :=
 begin
-  ext S,
-  simp only [mem_coprod_iff, exists_prop, mem_comap, filter.mem_cocompact],
+  ext S, rcases compl_surjective S with ⟨S, rfl⟩,
+  simp_rw [compl_mem_Coprod_iff, filter.mem_cocompact, compl_subset_compl],
   split,
-  { intros h,
-    rw filter.mem_Coprod_iff at h,
-    choose t ht1 ht2 using h,
-    choose t1 ht11 ht12 using λ d, filter.mem_cocompact.mp (ht1 d),
-    refine ⟨set.pi set.univ t1, _, _⟩,
-    { convert is_compact_pi_infinite ht11,
-      ext,
-      simp },
-    { refine subset.trans _ (set.Union_subset ht2),
-      intros x,
-      simp only [mem_Union, mem_univ_pi, exists_imp_distrib, mem_compl_eq, not_forall],
-      intros d h,
-      exact ⟨d, ht12 d h⟩ } },
-  { rintros ⟨t, h1, h2⟩,
-    rw filter.mem_Coprod_iff,
-    intros d,
-    refine ⟨((λ (k : Π (d : δ), κ d), k d) '' t)ᶜ, _, _⟩,
-    { rw filter.mem_cocompact,
-      refine ⟨(λ (k : Π (d : δ), κ d), k d) '' t, _, set.subset.refl _⟩,
-      exact is_compact.image h1 (continuous_pi_iff.mp (continuous_id) d) },
-    refine subset.trans _ h2,
-    intros x hx,
-    simp only [not_exists, mem_image, mem_preimage, mem_compl_eq] at hx,
-    simpa using mt (hx x) },
+  { rintro ⟨t, H, hSt⟩, choose K hKc htK using H,
+    exact ⟨set.pi univ K, is_compact_univ_pi hKc, hSt.trans $ pi_mono $ λ i _, htK i⟩ },
+  { rintro ⟨K, hKc, hSK⟩,
+    exact ⟨λ i, function.eval i '' K, λ i, ⟨_, hKc.image (continuous_apply i), subset.rfl⟩,
+      hSK.trans $ subset_pi_eval_image _ _⟩ }
 end
 
 end tychonoff
@@ -970,6 +956,37 @@ begin
     exact interior_mono (subset_bUnion_of_mem hyt) hy },
   { exact λ _, is_open_interior }
 end
+
+protected lemma closed_embedding.locally_compact_space [locally_compact_space β] {f : α → β}
+  (hf : closed_embedding f) : locally_compact_space α :=
+begin
+  have : ∀ x : α, (𝓝 x).has_basis (λ s, s ∈ 𝓝 (f x) ∧ is_compact s) (λ s, f ⁻¹' s),
+  { intro x,
+    rw hf.to_embedding.to_inducing.nhds_eq_comap,
+    exact (compact_basis_nhds _).comap _ },
+  exact locally_compact_space_of_has_basis this (λ x s hs, hf.is_compact_preimage hs.2)
+end
+
+protected lemma is_closed.locally_compact_space [locally_compact_space α] {s : set α}
+  (hs : is_closed s) : locally_compact_space s :=
+(closed_embedding_subtype_coe hs).locally_compact_space
+
+protected lemma open_embedding.locally_compact_space [locally_compact_space β] {f : α → β}
+  (hf : open_embedding f) : locally_compact_space α :=
+begin
+  have : ∀ x : α, (𝓝 x).has_basis (λ s, (s ∈ 𝓝 (f x) ∧ is_compact s) ∧ s ⊆ range f) (λ s, f ⁻¹' s),
+  { intro x,
+    rw hf.to_embedding.to_inducing.nhds_eq_comap,
+    exact ((compact_basis_nhds _).restrict_subset $
+      hf.open_range.mem_nhds $ mem_range_self _).comap _ },
+  refine locally_compact_space_of_has_basis this (λ x s hs, _),
+  rw [← hf.to_inducing.is_compact_iff, image_preimage_eq_of_subset hs.2],
+  exact hs.1.2
+end
+
+protected lemma is_open.locally_compact_space [locally_compact_space α] {s : set α}
+  (hs : is_open s) : locally_compact_space s :=
+hs.open_embedding_subtype_coe.locally_compact_space
 
 lemma ultrafilter.le_nhds_Lim [compact_space α] (F : ultrafilter α) :
   ↑F ≤ 𝓝 (@Lim _ _ (F : filter α).nonempty_of_ne_bot F) :=
@@ -1071,7 +1088,7 @@ Union_eq_univ_iff.mp (Union_compact_covering α) x
 
 /-- If `α` is a `σ`-compact space, then a locally finite family of nonempty sets of `α` can have
 only countably many elements, `set.countable` version. -/
-lemma locally_finite.countable_of_sigma_compact {ι : Type*} {f : ι → set α} (hf : locally_finite f)
+protected lemma locally_finite.countable_univ {ι : Type*} {f : ι → set α} (hf : locally_finite f)
   (hne : ∀ i, (f i).nonempty) :
   countable (univ : set ι) :=
 begin
@@ -1081,6 +1098,12 @@ begin
   rcases Union_eq_univ_iff.1 (Union_compact_covering α) x with ⟨n, hn⟩,
   exact mem_Union.2 ⟨n, x, hx, hn⟩
 end
+
+/-- If `f : ι → set α` is a locally finite covering of a σ-compact topological space by nonempty
+sets, then the index type `ι` is encodable. -/
+protected noncomputable def locally_finite.encodable {ι : Type*} {f : ι → set α}
+  (hf : locally_finite f) (hne : ∀ i, (f i).nonempty) : encodable ι :=
+@encodable.of_equiv _ _ (hf.countable_univ hne).to_encodable (equiv.set.univ _).symm
 
 /-- In a topological space with sigma compact topology, if `f` is a function that sends each point
 `x` of a closed set `s` to a neighborhood of `x` within `s`, then for some countable set `t ⊆ s`,
@@ -1266,6 +1289,10 @@ end
 
 @[simp] lemma is_clopen_discrete [discrete_topology α] (x : set α) : is_clopen x :=
 ⟨is_open_discrete _, is_closed_discrete _⟩
+
+lemma clopen_range_sigma_mk {ι : Type*} {σ : ι → Type*} [Π i, topological_space (σ i)] {i : ι} :
+  is_clopen (set.range (@sigma.mk ι σ i)) :=
+⟨open_embedding_sigma_mk.open_range, closed_embedding_sigma_mk.closed_range⟩
 
 end clopen
 

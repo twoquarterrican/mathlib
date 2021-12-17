@@ -546,13 +546,13 @@ lemma nndist_eq_nnnorm (a b : E) : nndist a b = ∥a - b∥₊ := nnreal.eq $ di
 nnreal.eq norm_zero
 
 lemma nnnorm_add_le (g h : E) : ∥g + h∥₊ ≤ ∥g∥₊ + ∥h∥₊ :=
-nnreal.coe_le_coe.2 $ norm_add_le g h
+nnreal.coe_le_coe.1 $ norm_add_le g h
 
 @[simp] lemma nnnorm_neg (g : E) : ∥-g∥₊ = ∥g∥₊ :=
 nnreal.eq $ norm_neg g
 
 lemma nndist_nnnorm_nnnorm_le (g h : E) : nndist ∥g∥₊ ∥h∥₊ ≤ ∥g - h∥₊ :=
-nnreal.coe_le_coe.2 $ dist_norm_norm_le g h
+nnreal.coe_le_coe.1 $ dist_norm_norm_le g h
 
 lemma of_real_norm_eq_coe_nnnorm (x : E) : ennreal.of_real ∥x∥ = (∥x∥₊ : ℝ≥0∞) :=
 ennreal.of_real_eq_coe_nnreal _
@@ -568,7 +568,7 @@ by rw [emetric.mem_ball, edist_eq_coe_nnnorm]
 
 lemma nndist_add_add_le (g₁ g₂ h₁ h₂ : E) :
   nndist (g₁ + g₂) (h₁ + h₂) ≤ nndist g₁ h₁ + nndist g₂ h₂ :=
-nnreal.coe_le_coe.2 $ dist_add_add_le g₁ g₂ h₁ h₂
+nnreal.coe_le_coe.1 $ dist_add_add_le g₁ g₂ h₁ h₂
 
 lemma edist_add_add_le (g₁ g₂ h₁ h₂ : E) :
   edist (g₁ + g₂) (h₁ + h₂) ≤ edist g₁ h₁ + edist g₂ h₂ :=
@@ -1014,7 +1014,7 @@ by simpa only [← dist_zero_right] using dist_pi_const a 0
   ∥(λ i : ι, a)∥₊ = ∥a∥₊ :=
 nnreal.eq $ pi_norm_const a
 
-lemma tendsto_norm_nhds_within_zero : tendsto (norm : E → ℝ) (𝓝[{0}ᶜ] 0) (𝓝[set.Ioi 0] 0) :=
+lemma tendsto_norm_nhds_within_zero : tendsto (norm : E → ℝ) (𝓝[≠] 0) (𝓝[>] 0) :=
 (continuous_norm.tendsto' (0 : E) 0 norm_zero).inf $ tendsto_principal_principal.2 $
   λ x, norm_pos_iff.2
 

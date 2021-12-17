@@ -414,8 +414,8 @@ lemma is_integral.pow {x : A} (h : is_integral R x) (n : ℕ) : is_integral R (x
 lemma is_integral.nsmul {x : A} (h : is_integral R x) (n : ℕ) : is_integral R (n • x) :=
 (integral_closure R A).nsmul_mem h n
 
-lemma is_integral.gsmul {x : A} (h : is_integral R x) (n : ℤ) : is_integral R (n • x) :=
-(integral_closure R A).gsmul_mem h n
+lemma is_integral.zsmul {x : A} (h : is_integral R x) (n : ℤ) : is_integral R (n • x) :=
+(integral_closure R A).zsmul_mem h n
 
 lemma is_integral.multiset_prod {s : multiset A} (h : ∀ x ∈ s, is_integral R x) :
   is_integral R s.prod :=
@@ -653,12 +653,12 @@ begin
 end
 
 lemma is_integral_quotient_of_is_integral {I : ideal A} (hRA : is_integral R A) :
-  is_integral (I.comap (algebra_map R A)).quotient I.quotient :=
+  is_integral (R ⧸ I.comap (algebra_map R A)) (A ⧸ I) :=
 (algebra_map R A).is_integral_quotient_of_is_integral hRA
 
 lemma is_integral_quotient_map_iff {I : ideal S} :
   (ideal.quotient_map I f le_rfl).is_integral ↔
-    ((ideal.quotient.mk I).comp f : R →+* I.quotient).is_integral :=
+    ((ideal.quotient.mk I).comp f : R →+* S ⧸ I).is_integral :=
 begin
   let g := ideal.quotient.mk (I.comap f),
   have := ideal.quotient_map_comp_mk le_rfl,

@@ -3,32 +3,95 @@ Copyright (c) 2018 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau, Yury Kudryashov
 -/
-import algebra.iterate_hom
-import data.equiv.ring_aut
 import algebra.module.basic
 import linear_algebra.basic
 import tactic.abel
+import data.equiv.ring_aut
 
 /-!
 # Algebras over commutative semirings
 
-In this file we define `algebra`s over commutative (semi)rings, algebra homomorphisms `alg_hom`,
-and algebra equivalences `alg_equiv`.
-We also define the usual operations on `alg_hom`s (`id`, `comp`).
+In this file we define associative unital `algebra`s over commutative (semi)rings, algebra
+homomorphisms `alg_hom`, and algebra equivalences `alg_equiv`.
 
 `subalgebra`s are defined in `algebra.algebra.subalgebra`.
 
-If `S` is an `R`-algebra and `A` is an `S`-algebra then `algebra.comap.algebra R S A` can be used
-to provide `A` with a structure of an `R`-algebra. Other than that, `algebra.comap` is now
-deprecated and replaced with `is_scalar_tower`.
-
 For the category of `R`-algebras, denoted `Algebra R`, see the file
 `algebra/category/Algebra/basic.lean`.
+
+See the implementation notes for remarks about non-associative and non-unital algebras.
+
+## Main definitions:
+
+* `algebra R A`: the algebra typeclass.
+* `alg_hom R A B`: the type of `R`-algebra morphisms from `A` to `B`.
+* `alg_equiv R A B`: the type of `R`-algebra isomorphisms between `A` to `B`.
+* `algebra_map R A : R →+* A`: the canonical map from `R` to `A`, as a `ring_hom`. This is the
+  preferred spelling of this map.
+* `algebra.linear_map R A : R →ₗ[R] A`: the canonical map from `R` to `A`, as a `linear_map`.
+* `algebra.of_id R A : R →ₐ[R] A`: the canonical map from `R` to `A`, as n `alg_hom`.
+* Instances of `algebra` in this file:
+  * `algebra.id`
+  * `pi.algebra`
+  * `prod.algebra`
+  * `algebra_nat`
+  * `algebra_int`
+  * `algebra_rat`
+  * `opposite.algebra`
+  * `module.End.algebra`
 
 ## Notations
 
 * `A →ₐ[R] B` : `R`-algebra homomorphism from `A` to `B`.
 * `A ≃ₐ[R] B` : `R`-algebra equivalence from `A` to `B`.
+
+## Implementation notes
+
+Given a commutative (semi)ring `R`, there are two ways to define an `R`-algebra structure on a
+(possibly noncommutative) (semi)ring `A`:
+* By endowing `A` with a morphism of rings `R →+* A` denoted `algebra_map R A` which lands in the
+  center of `A`.
+* By requiring `A` be an `R`-module such that the action associates and commutes with multiplication
+  as `r • (a₁ * a₂) = (r • a₁) * a₂ = a₁ * (r • a₂)`.
+
+We define `algebra R A` in a way that subsumes both definitions, by extending `has_scalar R A` and
+requiring that this scalar action `r • x` must agree with left multiplication by the image of the
+structure morphism `algebra_map R A r * x`.
+
+As a result, there are two ways to talk about an `R`-algebra `A` when `A` is a semiring:
+1. ```lean
+   variables [comm_semiring R] [semiring A]
+   variables [algebra R A]
+   ```
+2. ```lean
+   variables [comm_semiring R] [semiring A]
+   variables [module R A] [smul_comm_class R A A] [is_scalar_tower R A A]
+   ```
+The first approach implies the second via typeclass search; so any lemma stated with the second set
+of arguments will automatically apply to the first set. Typeclass search does not know that the
+second approach implies the first, but this can be shown with:
+```lean
+example {R A : Type*} [comm_semiring R] [semiring A]
+  [module R A] [smul_comm_class R A A] [is_scalar_tower R A A] : algebra R A :=
+algebra.of_module smul_mul_assoc mul_smul_comm
+```
+
+The advantage of the first approach is that `algebra_map R A` is available, and `alg_hom R A B` and
+`subalgebra R A` can be used. For concrete `R` and `A`, `algebra_map R A` is often definitionally
+convenient.
+
+The advantage of the second approach is that `comm_semiring R`, `semiring A`, and `module R A` can
+all be relaxed independently; for instance, this allows us to:
+* Replace `semiring A` with `non_unital_non_assoc_semiring A` in order to describe non-unital and/or
+  non-associative algebras.
+* Replace `comm_semiring R` and `module R A` with `comm_group R'` and `distrib_mul_action R' A`,
+  which when `R' = units R` lets us talk about the "algebra-like" action of `units R` on an
+  `R`-algebra `A`.
+While `alg_hom R A B` cannot be used in the second approach, `non_unital_alg_hom R A B` still can.
+
+You should always use the first approach when working with associative unital algebras, and mimic
+the second approach only when you need to weaken a condition on either `R` or `A`.
+
 -/
 
 universes u v w u₁ v₁
@@ -41,14 +104,9 @@ set_option extends_priority 200 /- control priority of
 `instance [algebra R A] : has_scalar R A` -/
 
 /--
-Given a commutative (semi)ring `R`, an `R`-algebra is a (possibly noncommutative)
-(semi)ring `A` endowed with a morphism of rings `R →+* A` which lands in the
-center of `A`.
+An associative unital `R`-algebra is a semiring `A` equipped with a map into its center `R → A`.
 
-For convenience, this typeclass extends `has_scalar R A` where the scalar action must
-agree with left multiplication by the image of the structure morphism.
-
-Given an `algebra R A` instance, the structure morphism `R →+* A` is denoted `algebra_map R A`.
+See the implementation notes in this file for discussion of the details of this definition.
 -/
 @[nolint has_inhabited_instance]
 class algebra (R : Type u) (A : Type v) [comm_semiring R] [semiring A]
@@ -234,6 +292,8 @@ protected def linear_map : R →ₗ[R] A :=
 @[simp]
 lemma linear_map_apply (r : R) : algebra.linear_map R A r = algebra_map R A r := rfl
 
+lemma coe_linear_map : ⇑(algebra.linear_map R A) = algebra_map R A := rfl
+
 instance id : algebra R R := (ring_hom.id R).to_algebra
 
 variables {R A}
@@ -307,8 +367,8 @@ variables (R)
 /-- A `semiring` that is an `algebra` over a commutative ring carries a natural `ring` structure.
 See note [reducible non-instances]. -/
 @[reducible]
-def semiring_to_ring [semiring A] [algebra R A] : ring A := {
-  ..module.add_comm_monoid_to_add_comm_group R,
+def semiring_to_ring [semiring A] [algebra R A] : ring A :=
+{ ..module.add_comm_monoid_to_add_comm_group R,
   ..(infer_instance : semiring A) }
 
 variables {R}
@@ -380,20 +440,20 @@ end field
 
 end no_zero_smul_divisors
 
-namespace opposite
+namespace mul_opposite
 
 variables {R A : Type*} [comm_semiring R] [semiring A] [algebra R A]
 
-instance : algebra R Aᵒᵖ :=
+instance : algebra R Aᵐᵒᵖ :=
 { to_ring_hom := (algebra_map R A).to_opposite $ λ x y, algebra.commutes _ _,
   smul_def' := λ c x, unop_injective $
     by { dsimp, simp only [op_mul, algebra.smul_def, algebra.commutes, op_unop] },
-  commutes' := λ r, opposite.rec $ λ x, by dsimp; simp only [← op_mul, algebra.commutes],
-  ..opposite.has_scalar A R }
+  commutes' := λ r, mul_opposite.rec $ λ x, by dsimp; simp only [← op_mul, algebra.commutes],
+  .. mul_opposite.has_scalar A R }
 
-@[simp] lemma algebra_map_apply (c : R) : algebra_map R Aᵒᵖ c = op (algebra_map R A c) := rfl
+@[simp] lemma algebra_map_apply (c : R) : algebra_map R Aᵐᵒᵖ c = op (algebra_map R A c) := rfl
 
-end opposite
+end mul_opposite
 
 namespace module
 variables (R : Type u) (M : Type v) [comm_semiring R] [add_comm_monoid M] [module R M]
@@ -778,6 +838,9 @@ lemma coe_ring_equiv_injective : function.injective (coe : (A₁ ≃ₐ[R] A₂)
 @[simp] lemma commutes : ∀ (r : R), e (algebra_map R A₁ r) = algebra_map R A₂ r :=
   e.commutes'
 
+@[simp] lemma map_smul (r : R) (x : A₁) : e (r • x) = r • e x :=
+by simp only [algebra.smul_def, map_mul, commutes]
+
 lemma map_sum {ι : Type*} (f : ι → A₁) (s : finset ι) :
   e (∑ x in s, f x) = ∑ x in s, e (f x) :=
 e.to_add_equiv.map_sum f s
@@ -949,7 +1012,7 @@ noncomputable def of_bijective (f : A₁ →ₐ[R] A₂) (hf : function.bijectiv
 /-- Forgetting the multiplicative structures, an equivalence of algebras is a linear equivalence. -/
 @[simps apply] def to_linear_equiv (e : A₁ ≃ₐ[R] A₂) : A₁ ≃ₗ[R] A₂ :=
 { to_fun    := e,
-  map_smul' := λ r x, by simp [algebra.smul_def],
+  map_smul' := e.map_smul,
   inv_fun   := e.symm,
   .. e }
 
@@ -1064,10 +1127,10 @@ instance apply_has_faithful_scalar : has_faithful_scalar (A₁ ≃ₐ[R] A₁) A
 ⟨λ _ _, alg_equiv.ext⟩
 
 instance apply_smul_comm_class : smul_comm_class R (A₁ ≃ₐ[R] A₁) A₁ :=
-{ smul_comm := λ r e a, (e.to_linear_equiv.map_smul r a).symm }
+{ smul_comm := λ r e a, (e.map_smul r a).symm }
 
 instance apply_smul_comm_class' : smul_comm_class (A₁ ≃ₐ[R] A₁) R A₁ :=
-{ smul_comm := λ e r a, (e.to_linear_equiv.map_smul r a) }
+{ smul_comm := λ e r a, (e.map_smul r a) }
 
 @[simp] lemma algebra_map_eq_apply (e : A₁ ≃ₐ[R] A₂) {y : R} {x : A₁} :
   (algebra_map R A₂ y = e x) ↔ (algebra_map R A₁ y = x) :=
@@ -1219,23 +1282,6 @@ lemma algebra_rat_subsingleton {α} [semiring α] :
 
 end rat
 
-namespace char_zero
-
-variables {R : Type*} (S : Type*) [comm_semiring R] [semiring S] [algebra R S]
-
-lemma of_algebra [char_zero S] : char_zero R :=
-⟨begin
-  suffices : function.injective (algebra_map R S ∘ coe),
-  { exact this.of_comp },
-  convert char_zero.cast_injective,
-  ext n,
-  rw [function.comp_app, ← (algebra_map ℕ _).eq_nat_cast, ← ring_hom.comp_apply,
-      ring_hom.eq_nat_cast],
-  all_goals { apply_instance }
-end⟩
-
-end char_zero
-
 namespace algebra
 open module
 
@@ -1262,7 +1308,7 @@ variables (R : Type*) [ring R]
 /-- Ring ⥤ ℤ-Alg -/
 @[priority 99] instance algebra_int : algebra ℤ R :=
 { commutes' := int.cast_commute,
-  smul_def' := λ _ _, gsmul_eq_mul _ _,
+  smul_def' := λ _ _, zsmul_eq_mul _ _,
   to_ring_hom := int.cast_ring_hom R }
 
 variables {R}
@@ -1393,17 +1439,6 @@ variables [add_comm_monoid N] [module R N] [module S N] [is_scalar_tower R S N]
 
 variables {S M N}
 
-namespace submodule
-
-variables (R S M)
-
-/-- If `S` is an `R`-algebra, then the `R`-module generated by a set `X` is included in the
-`S`-module generated by `X`. -/
-lemma span_le_restrict_scalars (X : set M) : span R (X : set M) ≤ restrict_scalars R (span S X) :=
-submodule.span_le.mpr submodule.subset_span
-
-end submodule
-
 @[simp]
 lemma linear_map.ker_restrict_scalars (f : M →ₗ[S] N) :
   (f.restrict_scalars R).ker = f.ker.restrict_scalars R :=
@@ -1422,7 +1457,7 @@ variables [module R M] [module A M] [is_scalar_tower R A M]
 lemma span_eq_restrict_scalars (X : set M) (hsur : function.surjective (algebra_map R A)) :
   span R X = restrict_scalars R (span A X) :=
 begin
-  apply (span_le_restrict_scalars R A M X).antisymm (λ m hm, _),
+  apply (span_le_restrict_scalars R A X).antisymm (λ m hm, _),
   refine span_induction hm subset_span (zero_mem _) (λ _ _, add_mem _) (λ a m hm, _),
   obtain ⟨r, rfl⟩ := hsur a,
   simpa [algebra_map_smul] using smul_mem _ r hm
@@ -1445,3 +1480,7 @@ variables [algebra R A] [algebra R B]
   .. f.to_ring_hom.comp_left I }
 
 end alg_hom
+
+example {R A} [comm_semiring R] [semiring A]
+  [module R A] [smul_comm_class R A A] [is_scalar_tower R A A] : algebra R A :=
+algebra.of_module smul_mul_assoc mul_smul_comm

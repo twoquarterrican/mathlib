@@ -102,7 +102,12 @@ subtype.ext $ by simp only [exp_map_circle_apply, submonoid.coe_mul, of_real_add
 
 /-- The map `λ t, exp (t * I)` from `ℝ` to the unit circle in `ℂ`, considered as a homomorphism of
 groups. -/
+@[simps]
 def exp_map_circle_hom : ℝ →+ (additive circle) :=
 { to_fun := additive.of_mul ∘ exp_map_circle,
   map_zero' := exp_map_circle_zero,
   map_add' := exp_map_circle_add }
+
+@[simp] lemma exp_map_circle_sub (x y : ℝ) :
+  exp_map_circle (x - y) = exp_map_circle x / exp_map_circle y :=
+exp_map_circle_hom.map_sub x y

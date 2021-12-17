@@ -5,6 +5,7 @@ Authors: Kenny Lau, Yury Kudryashov
 -/
 import algebra.algebra.operations
 import data.set.Union_lift
+import ring_theory.subring.pointwise
 
 /-!
 # Subalgebras over Commutative Semiring
@@ -105,10 +106,10 @@ by simpa only [sub_eq_add_neg] using S.add_mem hx (S.neg_mem hy)
 theorem nsmul_mem {x : A} (hx : x ∈ S) (n : ℕ) : n • x ∈ S :=
 S.to_subsemiring.nsmul_mem hx n
 
-theorem gsmul_mem {R : Type u} {A : Type v} [comm_ring R] [ring A]
+theorem zsmul_mem {R : Type u} {A : Type v} [comm_ring R] [ring A]
   [algebra R A] (S : subalgebra R A) {x : A} (hx : x ∈ S) : ∀ (n : ℤ), n • x ∈ S
-| (n : ℕ) := by { rw [gsmul_coe_nat], exact S.nsmul_mem hx n }
-| -[1+ n] := by { rw [gsmul_neg_succ_of_nat], exact S.neg_mem (S.nsmul_mem hx _) }
+| (n : ℕ) := by { rw [coe_nat_zsmul], exact S.nsmul_mem hx n }
+| -[1+ n] := by { rw [zsmul_neg_succ_of_nat], exact S.neg_mem (S.nsmul_mem hx _) }
 
 theorem coe_nat_mem (n : ℕ) : (n : A) ∈ S :=
 S.to_subsemiring.coe_nat_mem n
@@ -347,6 +348,10 @@ lemma mem_map {S : subalgebra R A} {f : A →ₐ[R] B} {y : B} :
   y ∈ map S f ↔ ∃ x ∈ S, f x = y :=
 subsemiring.mem_map
 
+@[simp] lemma coe_map (S : subalgebra R A) (f : A →ₐ[R] B) :
+  (S.map f : set B) = f '' S :=
+rfl
+
 /-- Preimage of a subalgebra under an algebra homomorphism. -/
 def comap' (S : subalgebra R B) (f : A →ₐ[R] B) : subalgebra R A :=
 { algebra_map_mem' := λ r, show f (algebra_map R A r) ∈ S,
@@ -422,19 +427,12 @@ f.cod_restrict f.range f.mem_range_self
 /-- The equalizer of two R-algebra homomorphisms -/
 def equalizer (ϕ ψ : A →ₐ[R] B) : subalgebra R A :=
 { carrier := {a | ϕ a = ψ a},
-  add_mem' := λ x y hx hy, by
-  { change ϕ x = ψ x at hx,
-    change ϕ y = ψ y at hy,
-    change ϕ (x + y) = ψ (x + y),
-    rw [alg_hom.map_add, alg_hom.map_add, hx, hy] },
-  mul_mem' := λ x y hx hy, by
-  { change ϕ x = ψ x at hx,
-    change ϕ y = ψ y at hy,
-    change ϕ (x * y) = ψ (x * y),
-    rw [alg_hom.map_mul, alg_hom.map_mul, hx, hy] },
-  algebra_map_mem' := λ x, by
-  { change ϕ (algebra_map R A x) = ψ (algebra_map R A x),
-    rw [alg_hom.commutes, alg_hom.commutes] } }
+  add_mem' := λ x y (hx : ϕ x = ψ x) (hy : ϕ y = ψ y),
+    by rw [set.mem_set_of_eq, ϕ.map_add, ψ.map_add, hx, hy],
+  mul_mem' := λ x y (hx : ϕ x = ψ x) (hy : ϕ y = ψ y),
+    by rw [set.mem_set_of_eq, ϕ.map_mul, ψ.map_mul, hx, hy],
+  algebra_map_mem' := λ x,
+    by rw [set.mem_set_of_eq, alg_hom.commutes, alg_hom.commutes] }
 
 @[simp] lemma mem_equalizer (ϕ ψ : A →ₐ[R] B) (x : A) :
   x ∈ ϕ.equalizer ψ ↔ ϕ x = ψ x := iff.rfl
@@ -580,12 +578,11 @@ theorem eq_top_iff {S : subalgebra R A} :
 ⟨λ h x, by rw h; exact mem_top, λ h, by ext x; exact ⟨λ _, mem_top, λ _, h x⟩⟩
 
 @[simp] theorem map_top (f : A →ₐ[R] B) : subalgebra.map (⊤ : subalgebra R A) f = f.range :=
-subalgebra.ext $ λ x,
-  ⟨λ ⟨y, _, hy⟩, ⟨y, hy⟩, λ ⟨y, hy⟩, ⟨y, algebra.mem_top, hy⟩⟩
+set_like.coe_injective set.image_univ
 
 @[simp] theorem map_bot (f : A →ₐ[R] B) : subalgebra.map (⊥ : subalgebra R A) f = ⊥ :=
-eq_bot_iff.2 $ λ x ⟨y, hy, hfy⟩, let ⟨r, hr⟩ := mem_bot.1 hy in subalgebra.range_le _
-⟨r, by rwa [← f.commutes, hr]⟩
+set_like.coe_injective $
+  by simp only [← set.range_comp, (∘), algebra.coe_bot, subalgebra.coe_map, f.commutes]
 
 @[simp] theorem comap_top (f : A →ₐ[R] B) : subalgebra.comap' (⊤ : subalgebra R B) f = ⊤ :=
 eq_top_iff.2 $ λ x, mem_top
@@ -907,18 +904,6 @@ instance no_zero_smul_divisors_top [no_zero_divisors A] (S : subalgebra R A) :
   have (c : A) = 0 ∨ x = 0,
   from eq_zero_or_eq_zero_of_mul_eq_zero h,
   this.imp_left (@subtype.ext_iff _ _ c 0).mpr⟩
-
-/-- If `S` is an `R`-subalgebra of `A` and `T` is an `S`-subalgebra of `A`,
-then `T` is an `R`-subalgebra of `A`. -/
-def under {R : Type u} {A : Type v} [comm_semiring R] [comm_semiring A]
-  {i : algebra R A} (S : subalgebra R A)
-  (T : subalgebra S A) : subalgebra R A :=
-{ algebra_map_mem' := λ r, T.algebra_map_mem ⟨algebra_map R A r, S.algebra_map_mem r⟩,
-  .. T }
-
-@[simp] lemma mem_under {R : Type u} {A : Type v} [comm_semiring R] [comm_semiring A]
-  {i : algebra R A} {S : subalgebra R A} {T : subalgebra S A} {x : A} :
-  x ∈ S.under T ↔ x ∈ T := iff.rfl
 
 end actions
 
