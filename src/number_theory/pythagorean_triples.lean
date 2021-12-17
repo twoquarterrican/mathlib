@@ -493,7 +493,12 @@ begin
   { exact (h.is_primitive_classified_of_coprime_of_odd_of_pos hc h1.right hzpos) },
   rw int.gcd_comm at hc,
   obtain ⟨m, n, H⟩ := (h.symm.is_primitive_classified_of_coprime_of_odd_of_pos hc h2.left hzpos),
-  use [m, n], tauto
+  use [m, n],
+  clear hzpos h2 hc,
+  rcases H with ⟨⟨rfl, rfl⟩ | ⟨rfl, rfl⟩,
+ H_right_left,
+ ⟨H_right_right_left, H_right_right_right⟩ | ⟨H_right_right_left, H_right_right_right⟩⟩;
+ tauto
 end
 
 theorem is_primitive_classified_of_coprime (hc : int.gcd x y = 1) : h.is_primitive_classified :=
