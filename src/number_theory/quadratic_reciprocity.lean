@@ -325,7 +325,7 @@ begin
       (λ x : ℕ × ℕ, x.1 * q ≤ x.2 * p)),
   { apply disjoint_filter.2 (λ x hx hpq hqp, _),
     have hxp : x.1 < p, from lt_of_le_of_lt
-      (show x.1 ≤ p / 2, by simp only [*, lt_succ_iff, mem_Ico, mem_product] at *; tauto)
+      (show x.1 ≤ p / 2, by simp only [*, lt_succ_iff, mem_Ico, mem_product] at *)
       (nat.div_lt_self hp.1.pos dec_trivial),
     have : (x.1 : zmod p) = 0,
     { simpa [hq0] using congr_arg (coe : ℕ → zmod p) (le_antisymm hpq hqp) },
@@ -337,8 +337,8 @@ begin
     ((Ico 1 (p / 2).succ).product (Ico 1 (q / 2).succ)).filter
       (λ x : ℕ × ℕ, x.1 * q ≤ x.2 * p) =
     ((Ico 1 (p / 2).succ).product (Ico 1 (q / 2).succ)),
-  from finset.ext (λ x, by have := le_total (x.2 * p) (x.1 * q);
-    simp only [mem_union, mem_filter, mem_Ico, mem_product]; tauto),
+  from finset.ext (λ x, by {have := le_total (x.2 * p) (x.1 * q);
+    simp only [mem_union, mem_filter, mem_Ico, mem_product], clear_except this, itauto }),
   rw [sum_Ico_eq_card_lt, sum_Ico_eq_card_lt, hswap, ← card_disjoint_union hdisj, hunion,
     card_product],
   simp only [card_Ico, tsub_zero, succ_sub_succ_eq_sub]
