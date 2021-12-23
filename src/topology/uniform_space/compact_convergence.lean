@@ -73,7 +73,7 @@ of the uniform space structure on `C(α, β)` definitionally equal to the compac
 universes u₁ u₂ u₃
 
 open_locale filter uniformity topological_space
-open uniform_space set
+open uniform_space set filter
 
 variables {α : Type u₁} {β : Type u₂} [topological_space α] [uniform_space β]
 variables (K : set α) (V : set (β × β)) (f : C(α, β))
@@ -161,6 +161,17 @@ begin
       λ g' hg', ⟨compact_conv_nhd K V' g', ⟨⟨K, V'⟩, ⟨hK, hV'⟩, rfl⟩, h₂ g' hg'⟩⟩, },
 end
 
+lemma has_basis_nhds_compact_convergence :
+  has_basis (@nhds _ compact_convergence_topology f) (λ (p : set α × set (β × β)), is_compact p.1 ∧ p.2 ∈ 𝓤 β) (λ p, compact_conv_nhd p.1 p.2 f) :=
+begin
+  rw nhds_compact_convergence,
+  constructor,
+  intros t,
+  rw (compact_convergence_filter_basis f).has_basis.mem_iff,
+
+  sorry
+end
+
 /-- This is an auxiliary lemma and is unlikely to be of direct use outside of this file. See
 `tendsto_iff_forall_compact_tendsto_uniformly_on` below for the useful version where the topology
 is picked up via typeclass inference. -/
@@ -240,11 +251,41 @@ begin
   exact ⟨f y, (mem_ball_symmetry hW₂).mp (hfC y hy), mem_preimage.mp (hg y hy)⟩,
 end
 
+open filter
+
+lemma is_topological_basis_compact_open (α β : Type*) [topological_space α] [topological_space β] :
+topological_space.is_topological_basis
+{m | ∃ (s : set α) (hs : is_compact s) (u : set β) (hu : is_open u), m = compact_open.gen s u} :=
+{ exists_subset_inter := sorry,
+  sUnion_eq := sorry,
+  eq_generate_from := rfl }
+
+lemma has_basis_nhds_compact_open {α β : Type*} [topological_space α] [topological_space β] (f : C(α, β)) :
+has_basis (𝓝 f) (λ (p : set α × set β), is_compact p.1 ∧ is_open p.2 ∧ f '' p.1 ⊆ p.2) (λ p, {g | g '' p.1 ⊆ p.2}) :=
+⟨begin
+  intros t,
+  rw (is_topological_basis_compact_open α β).nhds_has_basis.mem_iff,
+  split,
+  { rintro ⟨_, ⟨⟨K, hK, ⟨V, hV, rfl⟩⟩, hf⟩, ht: compact_open.gen K V ⊆ t⟩,
+    use ⟨K, V⟩,
+    tauto },
+  { rintros ⟨⟨K, V⟩, ⟨⟨hK, hV, hf⟩, ht⟩⟩,
+    exact ⟨{g | g '' K ⊆ V}, ⟨⟨K, hK, V, hV, rfl⟩, hf⟩, ht⟩ }
+end⟩
+
 /-- The compact-open topology is equal to the compact-convergence topology. -/
 lemma compact_open_eq_compact_convergence :
   continuous_map.compact_open = (compact_convergence_topology : topological_space C(α, β)) :=
 begin
-  rw [compact_convergence_topology, continuous_map.compact_open],
+  apply eq_of_nhds_eq_nhds,
+  intros f,
+  apply (has_basis_nhds_compact_open f).ext (has_basis_nhds_compact_convergence f),
+  { rintros ⟨K, U⟩ ⟨hK : is_compact K, hU : is_open U, h : f '' K ⊆ U⟩,
+    sorry },
+  { rintros ⟨K, V⟩ ⟨hK : is_compact K, hV : V ∈ 𝓤 β⟩,
+    sorry },
+
+  /- rw [compact_convergence_topology, continuous_map.compact_open],
   refine le_antisymm _ _,
   { refine λ X hX, is_open_iff_forall_mem_open.mpr (λ f hf, _),
     have hXf : X ∈ (compact_convergence_filter_basis f).filter,
@@ -259,7 +300,7 @@ begin
       set_of_subset_set_of],
     rintros - K hK U hU rfl f hf,
     obtain ⟨V, hV, hV', hVf⟩ := compact_conv_nhd_subset_compact_open f hK hU hf,
-    exact filter.mem_of_superset (filter_basis.mem_filter_of_mem _ ⟨⟨K, V⟩, ⟨hK, hV⟩, rfl⟩) hVf, },
+    exact filter.mem_of_superset (filter_basis.mem_filter_of_mem _ ⟨⟨K, V⟩, ⟨hK, hV⟩, rfl⟩) hVf, }, -/
 end
 
 /-- The filter on `C(α, β) × C(α, β)` which underlies the uniform space structure on `C(α, β)`. -/
@@ -334,6 +375,11 @@ lemma mem_compact_convergence_entourage_iff (X : set (C(α, β) × C(α, β))) :
   X ∈ 𝓤 C(α, β) ↔ ∃ (K : set α) (V : set (β × β)) (hK : is_compact K) (hV : V ∈ 𝓤 β),
     { fg : C(α, β) × C(α, β) | ∀ x ∈ K, (fg.1 x, fg.2 x) ∈ V } ⊆ X :=
 mem_compact_convergence_uniformity X
+
+lemma has_basis_compact_convergence_uniformity :
+  has_basis (𝓤 $ C(α, β)) (λ p : set α × set (β × β), is_compact p.1 ∧ p.2 ∈ 𝓤 β)
+            (λ p, { fg : C(α, β) × C(α, β) | ∀ x ∈ p.1, (fg.1 x, fg.2 x) ∈ p.2 }) :=
+⟨λ t, by { simp [mem_compact_convergence_entourage_iff], tauto }⟩
 
 lemma tendsto_iff_forall_compact_tendsto_uniformly_on
   {ι : Type u₃} {p : filter ι} {F : ι → C(α, β)} :
