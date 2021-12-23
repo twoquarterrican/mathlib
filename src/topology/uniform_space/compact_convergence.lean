@@ -164,14 +164,7 @@ end
 lemma has_basis_nhds_compact_convergence :
   has_basis (@nhds _ compact_convergence_topology f)
   (λ (p : set α × set (β × β)), is_compact p.1 ∧ p.2 ∈ 𝓤 β) (λ p, compact_conv_nhd p.1 p.2 f) :=
-begin
-  rw nhds_compact_convergence,
-  constructor,
-  intros t,
-  rw (compact_convergence_filter_basis f).has_basis.mem_iff,
-
-  sorry
-end
+(nhds_compact_convergence f).symm ▸ (compact_conv_nhd_filter_is_basis f).has_basis
 
 /-- This is an auxiliary lemma and is unlikely to be of direct use outside of this file. See
 `tendsto_iff_forall_compact_tendsto_uniformly_on` below for the useful version where the topology
