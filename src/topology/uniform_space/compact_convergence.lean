@@ -162,7 +162,8 @@ begin
 end
 
 lemma has_basis_nhds_compact_convergence :
-  has_basis (@nhds _ compact_convergence_topology f) (λ (p : set α × set (β × β)), is_compact p.1 ∧ p.2 ∈ 𝓤 β) (λ p, compact_conv_nhd p.1 p.2 f) :=
+  has_basis (@nhds _ compact_convergence_topology f)
+  (λ (p : set α × set (β × β)), is_compact p.1 ∧ p.2 ∈ 𝓤 β) (λ p, compact_conv_nhd p.1 p.2 f) :=
 begin
   rw nhds_compact_convergence,
   constructor,
@@ -260,8 +261,10 @@ topological_space.is_topological_basis
   sUnion_eq := sorry,
   eq_generate_from := rfl }
 
-lemma has_basis_nhds_compact_open {α β : Type*} [topological_space α] [topological_space β] (f : C(α, β)) :
-has_basis (𝓝 f) (λ (p : set α × set β), is_compact p.1 ∧ is_open p.2 ∧ f '' p.1 ⊆ p.2) (λ p, {g | g '' p.1 ⊆ p.2}) :=
+lemma has_basis_nhds_compact_open {α β : Type*} [topological_space α] [topological_space β]
+  (f : C(α, β)) : has_basis (𝓝 f)
+  (λ (p : set α × set β), is_compact p.1 ∧ is_open p.2 ∧ f '' p.1 ⊆ p.2)
+  (λ p, {g | g '' p.1 ⊆ p.2}) :=
 ⟨begin
   intros t,
   rw (is_topological_basis_compact_open α β).nhds_has_basis.mem_iff,
@@ -300,7 +303,8 @@ begin
       set_of_subset_set_of],
     rintros - K hK U hU rfl f hf,
     obtain ⟨V, hV, hV', hVf⟩ := compact_conv_nhd_subset_compact_open f hK hU hf,
-    exact filter.mem_of_superset (filter_basis.mem_filter_of_mem _ ⟨⟨K, V⟩, ⟨hK, hV⟩, rfl⟩) hVf, }, -/
+    exact filter.mem_of_superset (filter_basis.mem_filter_of_mem _ ⟨⟨K, V⟩, ⟨hK, hV⟩, rfl⟩) hVf, },
+    -/
 end
 
 /-- The filter on `C(α, β) × C(α, β)` which underlies the uniform space structure on `C(α, β)`. -/
