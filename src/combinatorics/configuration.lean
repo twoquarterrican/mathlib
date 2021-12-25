@@ -177,7 +177,7 @@ lemma has_points.line_count_le_point_count [has_points P L] {p : P} {l : L} (h :
 
 variables (P L)
 
-/- If a nondegenerate configuration has a unique line through any two points,
+/-- If a nondegenerate configuration has a unique line through any two points,
   then there are at least as many lines as points. -/
 lemma has_lines.card_le [has_lines P L] [fintype P] [fintype L] :
   fintype.card P ≤ fintype.card L :=
@@ -201,15 +201,53 @@ begin
       exact ⟨⟨mk_line p p, (mk_line_ax p p).1⟩⟩ } },
 end
 
-/- If a nondegenerate configuration has a unique point on any two lines,
+/-- If a nondegenerate configuration has a unique point on any two lines,
   then there are at least as many points as lines. -/
 lemma has_points.card_le [has_points P L] [fintype P] [fintype L] :
   fintype.card L ≤ fintype.card P :=
 @has_lines.card_le (dual L) (dual P) _ _ _ _
 
+@[to_additive] lemma mul_eq_mul_iff_eq_and_eq {N : Type*} [ordered_cancel_comm_monoid N]
+  {a b c d : N} (hac : a ≤ c) (hbd : b ≤ d) : a * b = c * d ↔ a = c ∧ b = d :=
+begin
+  refine ⟨λ h, _, λ h, congr_arg2 (*) h.1 h.2⟩,
+  cases eq_or_lt_of_le hac with hac hac,
+  { rw hac at h,
+    exact ⟨hac, mul_left_cancel h⟩ },
+  cases eq_or_lt_of_le hbd with hbd hbd,
+  { rw hbd at h,
+    exact ⟨mul_right_cancel h, hbd⟩ },
+  exact ((mul_lt_mul''' hac hbd).ne h).elim,
+end
+
+@[to_additive] lemma prod_eq_prod_iff_of_le {ι : Type*} {N : Type*} [ordered_cancel_comm_monoid N] {f g : ι → N} {s : finset ι}
+  (h : ∀ i ∈ s, f i ≤ g i) : ∏ i in s, f i = ∏ i in s, g i ↔ ∀ i ∈ s, f i = g i :=
+begin
+  classical,
+  revert h,
+  refine finset.induction_on s (λ _, ⟨λ _ _, false.elim, λ _, rfl⟩) (λ a s ha ih H, _),
+  specialize ih (λ i, H i ∘ finset.mem_insert_of_mem),
+  rw [finset.prod_insert ha, finset.prod_insert ha, finset.forall_mem_insert, ←ih],
+  exact mul_eq_mul_iff_eq_and_eq (H a (s.mem_insert_self a)) (finset.prod_le_prod''
+    (λ i, H i ∘ finset.mem_insert_of_mem)),
+end
+
+lemma has_lines.line_count_eq_point_count [has_lines P L] [fintype P] [fintype L]
+  (hPL : fintype.card P = fintype.card L) {p : P} {l : L} (hpl : p ∉ l) :
+  line_count L p = point_count P l :=
+begin
+  classical,
+  obtain ⟨f, hf⟩ := nondegenerate.exists_injective_of_card_le P L (ge_of_eq hPL),
+  refine ((sum_eq_sum_iff_of_le (λ i hi, (has_lines.point_count_le_line_count
+    (set.mem_to_finset.mp hi)))).mp _ (p, l) (set.mem_to_finset.mpr hpl)).symm,
+  refine finset.sum_bij _ _ _ _ _,
+end
+
+/--  -/
 def has_lines.has_points [has_lines P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_points P L :=
 begin
+
   sorry
 end
 
