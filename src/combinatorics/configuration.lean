@@ -60,13 +60,13 @@ class nondegenerate : Prop :=
 
 /-- A nondegenerate configuration in which every pair of lines has an intersection point. -/
 class has_points extends nondegenerate P L : Type u :=
-(mk_point : L → L → P)
-(mk_point_ax : ∀ l₁ l₂, mk_point l₁ l₂ ∈ l₁ ∧ mk_point l₁ l₂ ∈ l₂)
+(mk_point : ∀ {l₁ l₂ : L} (h : l₁ ≠ l₂), P)
+(mk_point_ax : ∀ {l₁ l₂ : L} (h : l₁ ≠ l₂), mk_point h ∈ l₁ ∧ mk_point h ∈ l₂)
 
 /-- A nondegenerate configuration in which every pair of points has a line through them. -/
 class has_lines extends nondegenerate P L : Type u :=
-(mk_line : P → P → L)
-(mk_line_ax : ∀ p₁ p₂, p₁ ∈ mk_line p₁ p₂ ∧ p₂ ∈ mk_line p₁ p₂)
+(mk_line : ∀ {p₁ p₂ : P} (h : p₁ ≠ p₂), L)
+(mk_line_ax : ∀ {p₁ p₂ : P} (h : p₁ ≠ p₂), p₁ ∈ mk_line h ∧ p₂ ∈ mk_line h)
 
 open nondegenerate has_points has_lines
 
@@ -77,16 +77,16 @@ instance [nondegenerate P L] : nondegenerate (dual L) (dual P) :=
 
 instance [has_points P L] : has_lines (dual L) (dual P) :=
 { mk_line := @mk_point P L _ _,
-  mk_line_ax := mk_point_ax }
+  mk_line_ax := λ _ _, mk_point_ax }
 
 instance [has_lines P L] : has_points (dual L) (dual P) :=
 { mk_point := @mk_line P L _ _,
-  mk_point_ax := mk_line_ax }
+  mk_point_ax := λ _ _, mk_line_ax }
 
 lemma has_points.exists_unique_point [has_points P L] (l₁ l₂ : L) (hl : l₁ ≠ l₂) :
   ∃! p, p ∈ l₁ ∧ p ∈ l₂ :=
-⟨mk_point l₁ l₂, mk_point_ax l₁ l₂,
-  λ p hp, (eq_or_eq hp.1 (mk_point_ax l₁ l₂).1 hp.2 (mk_point_ax l₁ l₂).2).resolve_right hl⟩
+⟨mk_point hl, mk_point_ax hl,
+  λ p hp, (eq_or_eq hp.1 (mk_point_ax hl).1 hp.2 (mk_point_ax hl).2).resolve_right hl⟩
 
 lemma has_lines.exists_unique_line [has_lines P L] (p₁ p₂ : P) (hp : p₁ ≠ p₂) :
   ∃! l : L, p₁ ∈ l ∧ p₂ ∈ l :=
@@ -167,10 +167,11 @@ begin
   { exactI (le_of_eq nat.card_eq_zero_of_infinite).trans (zero_le (line_count L p)) },
   haveI := fintype_of_not_infinite hf,
   rw [line_count, point_count, nat.card_eq_fintype_card, nat.card_eq_fintype_card],
-  exact fintype.card_le_of_injective (λ p', ⟨mk_line p p', (mk_line_ax p p').1⟩)
-    (λ p₁ p₂ hp, subtype.ext ((eq_or_eq p₁.2 p₂.2 (mk_line_ax p p₁).2
-      ((congr_arg _ (subtype.ext_iff.mp hp)).mpr (mk_line_ax p p₂).2)).resolve_right
-        (λ h', (congr_arg _ h').mp h (mk_line_ax p p₁).1))),
+  have : ∀ p' : {p // p ∈ l}, p ≠ p' := λ p' hp', h ((congr_arg (∈ l) hp').mpr p'.2),
+  exact fintype.card_le_of_injective (λ p', ⟨mk_line (this p'), (mk_line_ax (this p')).1⟩)
+    (λ p₁ p₂ hp, subtype.ext ((eq_or_eq p₁.2 p₂.2 (mk_line_ax (this p₁)).2
+      ((congr_arg _ (subtype.ext_iff.mp hp)).mpr (mk_line_ax (this p₂)).2)).resolve_right
+        (λ h', (congr_arg _ h').mp h (mk_line_ax (this p₁)).1))),
 end
 
 lemma has_points.line_count_le_point_count [has_points P L] {p : P} {l : L} (h : p ∉ l)
@@ -200,7 +201,8 @@ begin
       _ _ (λ p hp₁ hp₂, zero_le (line_count L p)),
     { simpa only [finset.mem_image, exists_prop, finset.mem_univ, true_and] },
     { rw [line_count, nat.card_eq_fintype_card, fintype.card_pos_iff],
-      exact ⟨⟨mk_line p p, (mk_line_ax p p).1⟩⟩ } },
+      obtain ⟨l, hl⟩ := @exists_line P L _ _ p,
+      exact let this := not_exists.mp hp l in ⟨⟨mk_line this, (mk_line_ax this).2⟩⟩ } },
 end
 
 /-- If a nondegenerate configuration has a unique point on any two lines,
@@ -267,7 +269,8 @@ begin
   { rw [←finset.univ_product_univ, finset.sum_product_right, finset.sum_product],
     simp_rw [finset.sum_const, finset.card_univ, hPL, sum_line_count_eq_sum_point_count] },
   have step2 : ∑ i in s, line_count L i.1 = ∑ i in s, point_count P i.2,
-  { -- sum of squares equals sum of squares
+  { --have key := equiv.subtype_prod_equiv_sigma_subtype,
+    -- sum of squares equals sum of squares
     -- then use bijective + equality
     sorry },
   have step3 : ∑ i in sᶜ, line_count L i.1 = ∑ i in sᶜ, point_count P i.2,
@@ -278,13 +281,43 @@ begin
 end
 
 /--  -/
-def has_lines.has_points [has_lines P L] [fintype P] [fintype L]
+noncomputable def has_lines.has_points [has_lines P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_points P L :=
-begin
-  sorry
-end
+-- pick l₁ ≠ l₂,
+-- fintype.card L ≥ 2,
+-- fintype.card P ≥ 2,
+-- ∀ p : P, 0 < line_count L p,
+-- ∀ l : L, 0 < line_count P l,
+-- let p ∈ l₁,
+-- If p ∈ l₂, then done
+-- If p ∉ l₂, then construct bijection between lines through p and points on l₂
+-- apply bijection to l₁ (a line through p) to obtain the desired intersection point
+let step1 : ∀ p : P, 0 < line_count L p := λ p, begin
+  classical,
+  rw [line_count, nat.card_eq_fintype_card, fintype.card_pos_iff],
+  exact ⟨⟨mk_line p p, (mk_line_ax p p).1⟩⟩,
+end, step2 : ∀ l : L, 0 < point_count P l := λ l, begin
+  obtain ⟨p, hp⟩ := exists_point l,
+  exact lt_of_lt_of_le (step1 p) (le_of_eq (has_lines.line_count_eq_point_count h hp)),
+end, step3 : ∀ l : L, ∃ p : P, p ∈ l := λ l, begin
+  classical,
+  specialize step2 l,
+  rw [point_count, nat.card_eq_fintype_card, fintype.card_pos_iff] at step2,
+  obtain ⟨p, hp⟩ := exists_point l,
+  have key := has_lines.line_count_eq_point_count h hp,
+  have key' : L := mk_line p p,
+  have key'' := mk_line_ax p p,
+  have key''' : 0 < line_count L p := begin
+    have key := nat.card_eq_fintype_card,
+  end,
+end, step4 : ∀ l₁ l₂ : L, ∃ p : P, p ∈ l₁ ∧ p ∈ l₂ := λ l₁ l₂, begin
 
-def has_points.has_lines [has_points P L] [fintype P] [fintype L]
+  sorry,
+end in
+{ mk_point := λ l₁ l₂, classical.some (key l₁ l₂),
+  mk_point_ax := λ l₁ l₂, classical.some_spec (key l₁ l₂) }
+
+noncomputable def has_points.has_lines [has_points P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_lines P L :=
 let this := @has_lines.has_points (dual L) (dual P) _ _ _ _ h.symm in
 { mk_line := this.mk_point,
