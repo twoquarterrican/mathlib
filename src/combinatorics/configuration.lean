@@ -92,6 +92,8 @@ lemma has_lines.exists_unique_line [has_lines P L] (p₁ p₂ : P) (hp : p₁ �
   ∃! l : L, p₁ ∈ l ∧ p₂ ∈ l :=
 has_points.exists_unique_point (dual L) (dual P) p₁ p₂ hp
 
+variables {P L}
+
 /-- If a nondegenerate configuration has at least as many points as lines, then there exists
   an injective function `f` from lines to points, such that `f l` does not lie on `l`. -/
 lemma nondegenerate.exists_injective_of_card_le [nondegenerate P L]
@@ -184,7 +186,7 @@ lemma has_lines.card_le [has_lines P L] [fintype P] [fintype L] :
 begin
   classical,
   by_contradiction hc₂,
-  obtain ⟨f, hf₁, hf₂⟩ := nondegenerate.exists_injective_of_card_le P L (le_of_not_le hc₂),
+  obtain ⟨f, hf₁, hf₂⟩ := nondegenerate.exists_injective_of_card_le (le_of_not_le hc₂),
   have := calc ∑ p, line_count L p = ∑ l, point_count P l : sum_line_count_eq_sum_point_count P L
   ... ≤ ∑ l, line_count L (f l) :
     finset.sum_le_sum (λ l hl, has_lines.point_count_le_line_count (hf₂ l))
@@ -207,16 +209,18 @@ lemma has_points.card_le [has_points P L] [fintype P] [fintype L] :
   fintype.card L ≤ fintype.card P :=
 @has_lines.card_le (dual L) (dual P) _ _ _ _
 
-@[to_additive] lemma mul_eq_mul_iff_eq_and_eq {N : Type*} [ordered_cancel_comm_monoid N]
-  {a b c d : N} (hac : a ≤ c) (hbd : b ≤ d) : a * b = c * d ↔ a = c ∧ b = d :=
+section for_mathlib
+
+@[to_additive] lemma mul_eq_mul_iff_eq_and_eq {α : Type*} [semigroup α] [partial_order α]
+  [contravariant_class α α (*) (≤)] [covariant_class α α (function.swap (*)) (≤)]
+  [covariant_class α α (*) (<)] [contravariant_class α α (function.swap (*)) (≤)]
+  {a b c d : α} (hac : a ≤ c) (hbd : b ≤ d) : a * b = c * d ↔ a = c ∧ b = d :=
 begin
   refine ⟨λ h, _, λ h, congr_arg2 (*) h.1 h.2⟩,
-  cases eq_or_lt_of_le hac with hac hac,
-  { rw hac at h,
-    exact ⟨hac, mul_left_cancel h⟩ },
-  cases eq_or_lt_of_le hbd with hbd hbd,
-  { rw hbd at h,
-    exact ⟨mul_right_cancel h, hbd⟩ },
+  rcases hac.eq_or_lt with rfl | hac,
+  { exact ⟨rfl, mul_left_cancel'' h⟩ },
+  rcases eq_or_lt_of_le hbd with rfl | hbd,
+  { exact ⟨mul_right_cancel'' h, rfl⟩ },
   exact ((mul_lt_mul''' hac hbd).ne h).elim,
 end
 
@@ -232,22 +236,51 @@ begin
     (λ i, H i ∘ finset.mem_insert_of_mem)),
 end
 
+end for_mathlib
+
+variables {P L}
+
+lemma has_lines.exists_bijective_of_card_eq [has_lines P L]
+  [fintype P] [fintype L] (h : fintype.card P = fintype.card L) :
+  ∃ f : L → P, function.bijective f ∧ ∀ l, point_count P l = line_count L (f l) :=
+begin
+  classical,
+  obtain ⟨f, hf1, hf2⟩ := nondegenerate.exists_injective_of_card_le (ge_of_eq h),
+  have hf3 := (fintype.bijective_iff_injective_and_card f).mpr ⟨hf1, h.symm⟩,
+  refine ⟨f, hf3,
+    λ l, (sum_eq_sum_iff_of_le (by exact λ l hl, has_lines.point_count_le_line_count (hf2 l))).mp
+      ((sum_line_count_eq_sum_point_count P L).symm.trans ((finset.sum_bij (λ l hl, f l)
+        (λ l hl, finset.mem_univ (f l)) (λ l hl, refl (line_count L (f l)))
+          (λ l₁ l₂ hl₁ hl₂ hl, hf1 hl) (λ p hp, _)).symm)) l (finset.mem_univ l)⟩,
+  obtain ⟨l, rfl⟩ := hf3.2 p,
+  exact ⟨l, finset.mem_univ l, rfl⟩,
+end
+
 lemma has_lines.line_count_eq_point_count [has_lines P L] [fintype P] [fintype L]
   (hPL : fintype.card P = fintype.card L) {p : P} {l : L} (hpl : p ∉ l) :
   line_count L p = point_count P l :=
 begin
   classical,
-  obtain ⟨f, hf⟩ := nondegenerate.exists_injective_of_card_le P L (ge_of_eq hPL),
-  refine ((sum_eq_sum_iff_of_le (λ i hi, (has_lines.point_count_le_line_count
-    (set.mem_to_finset.mp hi)))).mp _ (p, l) (set.mem_to_finset.mpr hpl)).symm,
-  refine finset.sum_bij _ _ _ _ _,
+  obtain ⟨f, hf1, hf2⟩ := has_lines.exists_bijective_of_card_eq hPL,
+  let s : finset (P × L) := set.to_finset {i | i.1 ∈ i.2},
+  have step1 : ∑ i : P × L, line_count L i.1 = ∑ i : P × L, point_count P i.2,
+  { rw [←finset.univ_product_univ, finset.sum_product_right, finset.sum_product],
+    simp_rw [finset.sum_const, finset.card_univ, hPL, sum_line_count_eq_sum_point_count] },
+  have step2 : ∑ i in s, line_count L i.1 = ∑ i in s, point_count P i.2,
+  { -- sum of squares equals sum of squares
+    -- then use bijective + equality
+    sorry },
+  have step3 : ∑ i in sᶜ, line_count L i.1 = ∑ i in sᶜ, point_count P i.2,
+  { rwa [←s.sum_add_sum_compl, ←s.sum_add_sum_compl, step2, add_left_cancel_iff] at step1 },
+  rw ← set.to_finset_compl at step3,
+  refine ((sum_eq_sum_iff_of_le (by exact λ i hi, has_lines.point_count_le_line_count
+    (set.mem_to_finset.mp hi))).mp step3.symm (p, l) (set.mem_to_finset.mpr hpl)).symm,
 end
 
 /--  -/
 def has_lines.has_points [has_lines P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_points P L :=
 begin
-
   sorry
 end
 
@@ -263,6 +296,9 @@ set_option old_structure_cmd true
 
 structure projective_plane extends has_points P L, has_lines P L :=
 (nondegenerate : false)
+
+-- define order
+-- prove line_count = order and point_count = order
 
 end projective_planes
 
