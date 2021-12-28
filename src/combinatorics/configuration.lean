@@ -211,35 +211,6 @@ lemma has_points.card_le [has_points P L] [fintype P] [fintype L] :
   fintype.card L ≤ fintype.card P :=
 @has_lines.card_le (dual L) (dual P) _ _ _ _
 
-section for_mathlib
-
-@[to_additive] lemma mul_eq_mul_iff_eq_and_eq {α : Type*} [semigroup α] [partial_order α]
-  [contravariant_class α α (*) (≤)] [covariant_class α α (function.swap (*)) (≤)]
-  [covariant_class α α (*) (<)] [contravariant_class α α (function.swap (*)) (≤)]
-  {a b c d : α} (hac : a ≤ c) (hbd : b ≤ d) : a * b = c * d ↔ a = c ∧ b = d :=
-begin
-  refine ⟨λ h, _, λ h, congr_arg2 (*) h.1 h.2⟩,
-  rcases hac.eq_or_lt with rfl | hac,
-  { exact ⟨rfl, mul_left_cancel'' h⟩ },
-  rcases eq_or_lt_of_le hbd with rfl | hbd,
-  { exact ⟨mul_right_cancel'' h, rfl⟩ },
-  exact ((mul_lt_mul''' hac hbd).ne h).elim,
-end
-
-@[to_additive] lemma prod_eq_prod_iff_of_le {ι : Type*} {N : Type*} [ordered_cancel_comm_monoid N] {f g : ι → N} {s : finset ι}
-  (h : ∀ i ∈ s, f i ≤ g i) : ∏ i in s, f i = ∏ i in s, g i ↔ ∀ i ∈ s, f i = g i :=
-begin
-  classical,
-  revert h,
-  refine finset.induction_on s (λ _, ⟨λ _ _, false.elim, λ _, rfl⟩) (λ a s ha ih H, _),
-  specialize ih (λ i, H i ∘ finset.mem_insert_of_mem),
-  rw [finset.prod_insert ha, finset.prod_insert ha, finset.forall_mem_insert, ←ih],
-  exact mul_eq_mul_iff_eq_and_eq (H a (s.mem_insert_self a)) (finset.prod_le_prod''
-    (λ i, H i ∘ finset.mem_insert_of_mem)),
-end
-
-end for_mathlib
-
 variables {P L}
 
 lemma has_lines.exists_bijective_of_card_eq [has_lines P L]
@@ -249,14 +220,48 @@ begin
   classical,
   obtain ⟨f, hf1, hf2⟩ := nondegenerate.exists_injective_of_card_le (ge_of_eq h),
   have hf3 := (fintype.bijective_iff_injective_and_card f).mpr ⟨hf1, h.symm⟩,
-  refine ⟨f, hf3,
-    λ l, (sum_eq_sum_iff_of_le (by exact λ l hl, has_lines.point_count_le_line_count (hf2 l))).mp
+  refine ⟨f, hf3, λ l, (finset.sum_eq_sum_iff_of_le
+    (by exact λ l hl, has_lines.point_count_le_line_count (hf2 l))).mp
       ((sum_line_count_eq_sum_point_count P L).symm.trans ((finset.sum_bij (λ l hl, f l)
         (λ l hl, finset.mem_univ (f l)) (λ l hl, refl (line_count L (f l)))
           (λ l₁ l₂ hl₁ hl₂ hl, hf1 hl) (λ p hp, _)).symm)) l (finset.mem_univ l)⟩,
   obtain ⟨l, rfl⟩ := hf3.2 p,
   exact ⟨l, finset.mem_univ l, rfl⟩,
 end
+
+section prod
+
+@[to_additive] lemma finset.prod_subset_product {β α γ : Type*} [comm_monoid β]
+  (r : finset (γ × α)) (s : finset γ) (t : γ → finset α)
+  (h : ∀ p : γ × α, p ∈ r ↔ p.1 ∈ s ∧ p.2 ∈ t p.1) {f : γ × α → β} :
+  ∏ p in r, f p = ∏ c in s, ∏ a in t c, f (c, a) :=
+begin
+  classical,
+  have : r = s.bUnion (λ c, (t c).image (prod.mk c)),
+  { refine finset.ext (λ p, (h p).trans ⟨λ hp, finset.mem_bUnion.mpr
+      ⟨p.1, hp.1, finset.mem_image.mpr ⟨p.2, hp.2, prod.ext rfl rfl⟩⟩, λ hp, _⟩),
+    obtain ⟨c, hc, hp⟩ := finset.mem_bUnion.mp hp,
+    obtain ⟨a, ha, rfl⟩ := finset.mem_image.mp hp,
+    exact ⟨hc, ha⟩ },
+  rw [this, finset.prod_bUnion],
+  { exact finset.prod_congr rfl (λ _ _, finset.prod_image (λ _ _ _ _ h, (prod.ext_iff.mp h).2)) },
+  { intros _ _ _ _ h_ne _ h_mem,
+    rw [finset.inf_eq_inter, finset.mem_inter] at h_mem,
+    obtain ⟨_, _, h1⟩ := finset.mem_image.mp h_mem.1,
+    obtain ⟨_, _, h2⟩ := finset.mem_image.mp h_mem.2,
+    exact h_ne (prod.ext_iff.mp (h1.trans h2.symm)).1 },
+end
+
+@[to_additive] lemma finset.prod_subset_product_right {β α γ : Type*} [comm_monoid β]
+  (r : finset (α × γ)) (s : finset γ) (t : γ → finset α)
+  (h : ∀ p : α × γ, p ∈ r ↔ p.2 ∈ s ∧ p.1 ∈ t p.2) {f : α × γ → β} :
+  ∏ p in r, f p = ∏ c in s, ∏ a in t c, f (a, c) :=
+begin
+  -- have key := r.preimage prod.swap,
+  sorry,
+end
+
+end prod
 
 lemma has_lines.line_count_eq_point_count [has_lines P L] [fintype P] [fintype L]
   (hPL : fintype.card P = fintype.card L) {p : P} {l : L} (hpl : p ∉ l) :
@@ -269,14 +274,21 @@ begin
   { rw [←finset.univ_product_univ, finset.sum_product_right, finset.sum_product],
     simp_rw [finset.sum_const, finset.card_univ, hPL, sum_line_count_eq_sum_point_count] },
   have step2 : ∑ i in s, line_count L i.1 = ∑ i in s, point_count P i.2,
-  { --have key := equiv.subtype_prod_equiv_sigma_subtype,
-    -- sum of squares equals sum of squares
-    -- then use bijective + equality
-    sorry },
+  { rw [finset.sum_subset_product s finset.univ (λ p, set.to_finset {l | p ∈ l})],
+    rw [finset.sum_subset_product_right s finset.univ (λ l, set.to_finset {p | p ∈ l})],
+    refine (finset.sum_bij (λ l hl, f l) (λ l hl, finset.mem_univ (f l)) (λ l hl, _)
+      (λ _ _ _ _ h, hf1.1 h) (λ p hp, _)).symm,
+    { simp_rw [finset.sum_const, set.to_finset_card, ←nat.card_eq_fintype_card],
+      change (point_count P l) • (point_count P l) = (line_count L (f l)) • (line_count L (f l)),
+      rw hf2 },
+    { obtain ⟨l, hl⟩ := hf1.2 p,
+      exact ⟨l, finset.mem_univ l, hl.symm⟩ },
+    { simp },
+    { simp } },
   have step3 : ∑ i in sᶜ, line_count L i.1 = ∑ i in sᶜ, point_count P i.2,
   { rwa [←s.sum_add_sum_compl, ←s.sum_add_sum_compl, step2, add_left_cancel_iff] at step1 },
   rw ← set.to_finset_compl at step3,
-  refine ((sum_eq_sum_iff_of_le (by exact λ i hi, has_lines.point_count_le_line_count
+  refine ((finset.sum_eq_sum_iff_of_le (by exact λ i hi, has_lines.point_count_le_line_count
     (set.mem_to_finset.mp hi))).mp step3.symm (p, l) (set.mem_to_finset.mpr hpl)).symm,
 end
 
