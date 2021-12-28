@@ -243,12 +243,10 @@ begin
     obtain ⟨c, hc, hp⟩ := finset.mem_bUnion.mp hp,
     obtain ⟨a, ha, rfl⟩ := finset.mem_image.mp hp,
     exact ⟨hc, ha⟩ },
-  rw [this, finset.prod_bUnion],
+  rw [this, finset.prod_bUnion (λ _ _ _ _ h_ne _ h_mem, _)],
   { exact finset.prod_congr rfl (λ _ _, finset.prod_image (λ _ _ _ _ h, (prod.ext_iff.mp h).2)) },
-  { intros _ _ _ _ h_ne _ h_mem,
-    rw [finset.inf_eq_inter, finset.mem_inter] at h_mem,
-    obtain ⟨_, _, h1⟩ := finset.mem_image.mp h_mem.1,
-    obtain ⟨_, _, h2⟩ := finset.mem_image.mp h_mem.2,
+  { obtain ⟨_, _, h1⟩ := finset.mem_image.mp (finset.mem_inter.mp h_mem).1,
+    obtain ⟨_, _, h2⟩ := finset.mem_image.mp (finset.mem_inter.mp h_mem).2,
     exact h_ne (prod.ext_iff.mp (h1.trans h2.symm)).1 },
 end
 
