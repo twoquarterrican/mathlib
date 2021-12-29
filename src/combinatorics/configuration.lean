@@ -293,39 +293,30 @@ end
 /--  -/
 noncomputable def has_lines.has_points [has_lines P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_points P L :=
--- pick l₁ ≠ l₂,
--- fintype.card L ≥ 2,
--- fintype.card P ≥ 2,
--- ∀ p : P, 0 < line_count L p,
--- ∀ l : L, 0 < line_count P l,
--- let p ∈ l₁,
--- If p ∈ l₂, then done
--- If p ∉ l₂, then construct bijection between lines through p and points on l₂
--- apply bijection to l₁ (a line through p) to obtain the desired intersection point
-let step1 : ∀ p : P, 0 < line_count L p := λ p, begin
+let this : ∀ l₁ l₂ : L, l₁ ≠ l₂ → ∃ p : P, p ∈ l₁ ∧ p ∈ l₂ := λ l₁ l₂ hl, begin
   classical,
-  rw [line_count, nat.card_eq_fintype_card, fintype.card_pos_iff],
-  exact ⟨⟨mk_line p p, (mk_line_ax p p).1⟩⟩,
-end, step2 : ∀ l : L, 0 < point_count P l := λ l, begin
-  obtain ⟨p, hp⟩ := exists_point l,
-  exact lt_of_lt_of_le (step1 p) (le_of_eq (has_lines.line_count_eq_point_count h hp)),
-end, step3 : ∀ l : L, ∃ p : P, p ∈ l := λ l, begin
-  classical,
-  specialize step2 l,
-  rw [point_count, nat.card_eq_fintype_card, fintype.card_pos_iff] at step2,
-  obtain ⟨p, hp⟩ := exists_point l,
-  have key := has_lines.line_count_eq_point_count h hp,
-  have key' : L := mk_line p p,
-  have key'' := mk_line_ax p p,
-  have key''' : 0 < line_count L p := begin
-    have key := nat.card_eq_fintype_card,
-  end,
-end, step4 : ∀ l₁ l₂ : L, ∃ p : P, p ∈ l₁ ∧ p ∈ l₂ := λ l₁ l₂, begin
-
-  sorry,
+  obtain ⟨f, hf1, hf2⟩ := has_lines.exists_bijective_of_card_eq h,
+  haveI : nontrivial L := ⟨⟨l₁, l₂, hl⟩⟩,
+  haveI := fintype.one_lt_card_iff_nontrivial.mp ((congr_arg _ h).mpr fintype.one_lt_card),
+  have h₁ : ∀ p : P, 0 < line_count L p := λ p, exists.elim (exists_ne p) (λ q hq, (congr_arg _
+    nat.card_eq_fintype_card).mpr (fintype.card_pos_iff.mpr ⟨⟨mk_line hq, (mk_line_ax hq).2⟩⟩)),
+  have h₂ : ∀ l : L, 0 < point_count P l := λ l, (congr_arg _ (hf2 l)).mpr (h₁ (f l)),
+  obtain ⟨p, hl₁⟩ := fintype.card_pos_iff.mp ((congr_arg _ nat.card_eq_fintype_card).mp (h₂ l₁)),
+  by_cases hl₂ : p ∈ l₂, exact ⟨p, hl₁, hl₂⟩,
+  have key' : fintype.card {q : P // q ∈ l₂} = fintype.card {l : L // p ∈ l},
+  { exact ((has_lines.line_count_eq_point_count h hl₂).trans nat.card_eq_fintype_card).symm.trans
+    nat.card_eq_fintype_card, },
+  have : ∀ q : {q // q ∈ l₂}, p ≠ q := λ q hq, hl₂ ((congr_arg (∈ l₂) hq).mpr q.2),
+  let f : {q : P // q ∈ l₂} → {l : L // p ∈ l} := λ q, ⟨mk_line (this q), (mk_line_ax (this q)).1⟩,
+  have hf : function.injective f := λ q₁ q₂ hq, subtype.ext ((eq_or_eq q₁.2 q₂.2
+    (mk_line_ax (this q₁)).2 ((congr_arg _ (subtype.ext_iff.mp hq)).mpr (mk_line_ax
+      (this q₂)).2)).resolve_right (λ h, (congr_arg _ h).mp hl₂ (mk_line_ax (this q₁)).1)),
+  have key' := ((fintype.bijective_iff_injective_and_card f).mpr ⟨hf, key'⟩).2,
+  obtain ⟨q, hq⟩ := key' ⟨l₁, hl₁⟩,
+  exact ⟨q, (congr_arg _ (subtype.ext_iff.mp hq)).mp (mk_line_ax (this q)).2, q.2⟩,
 end in
-{ mk_point := λ l₁ l₂, classical.some (key l₁ l₂),
-  mk_point_ax := λ l₁ l₂, classical.some_spec (key l₁ l₂) }
+{ mk_point := λ l₁ l₂ hl, classical.some (this l₁ l₂ hl),
+  mk_point_ax := λ l₁ l₂ hl, classical.some_spec (this l₁ l₂ hl) }
 
 noncomputable def has_points.has_lines [has_points P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_lines P L :=
