@@ -13,9 +13,12 @@ import algebra.invertible
 
 variables {α : Type*} {β : Type*} {γ : Type*} {δ : Type*}
 
+lemma is_unit_of_dvd_one [comm_monoid α] : ∀a ∣ 1, is_unit (a:α)
+| a ⟨b, eq⟩ := ⟨units.mk_of_mul_eq_one a b eq.symm, rfl⟩
+
 theorem is_unit_iff_dvd_one [comm_monoid α] {x : α} : is_unit x ↔ x ∣ 1 :=
 ⟨by rintro ⟨u, rfl⟩; exact ⟨_, u.mul_inv.symm⟩,
- λ ⟨y, h⟩, ⟨⟨x, y, h.symm, by rw [h, mul_comm]⟩, rfl⟩⟩
+ is_unit_of_dvd_one x⟩
 
 theorem is_unit_iff_forall_dvd [comm_monoid α] {x : α} :
   is_unit x ↔ ∀ y, x ∣ y :=
@@ -24,9 +27,6 @@ is_unit_iff_dvd_one.trans ⟨λ h y, h.trans (one_dvd _), λ h, h _⟩
 theorem is_unit_of_dvd_unit {α} [comm_monoid α] {x y : α}
   (xy : x ∣ y) (hu : is_unit y) : is_unit x :=
 is_unit_iff_dvd_one.2 $ xy.trans $ is_unit_iff_dvd_one.1 hu
-
-lemma is_unit_of_dvd_one [comm_monoid α] : ∀a ∣ 1, is_unit (a:α)
-| a ⟨b, eq⟩ := ⟨units.mk_of_mul_eq_one a b eq.symm, rfl⟩
 
 lemma not_is_unit_of_not_is_unit_dvd [comm_monoid α] {a b : α} (ha : ¬is_unit a) (hb : a ∣ b) :
   ¬ is_unit b :=
@@ -396,10 +396,24 @@ lemma associated.of_mul_right [cancel_comm_monoid_with_zero α] {a b c d : α} :
   a * b ~ᵤ c * d → b ~ᵤ d → b ≠ 0 → a ~ᵤ c :=
 by rw [mul_comm a, mul_comm c]; exact associated.of_mul_left
 
+-- TODO move
+lemma irreducible.associated_one_or_self_of_dvd
+  [monoid α]
+  {i : α} (hi : irreducible i) {m : α} (hm : m ∣ i) :
+  m ~ᵤ 1 ∨ m ~ᵤ i :=
+begin
+  obtain ⟨n, hn⟩ := hm,
+  rw [associated_one_iff_is_unit, hn],
+  exact or.imp_right (associated_mul_unit_right m n) (hi.is_unit_or_is_unit hn),
+end
+
 section unique_units
 variables [monoid α] [unique αˣ]
 
 lemma units_eq_one (u : αˣ) : u = 1 := subsingleton.elim u 1
+
+lemma is_unit_iff (a : α) : is_unit a ↔ a = 1 :=
+by simp only [is_unit, unique.exists_iff, units_eq_one (default), units.coe_one,eq_comm]
 
 theorem associated_iff_eq {x y : α} : x ~ᵤ y ↔ x = y :=
 begin
@@ -410,6 +424,25 @@ end
 
 theorem associated_eq_eq : (associated : α → α → Prop) = eq :=
 by { ext, rw associated_iff_eq }
+
+lemma irreducible.eq_one_or_self_of_dvd {i : α} (hi : irreducible i) (m : α) (hm : m ∣ i) :
+  m = 1 ∨ m = i :=
+by { convert hi.associated_one_or_self_of_dvd hm; rw associated_iff_eq }
+
+theorem irreducible_def_lt''
+ {α : Type*} [cancel_monoid_with_zero α] [unique (units α)]
+ {p : α} : irreducible p ↔ p ≠ 0 ∧ ¬is_unit p ∧ ∀ m ∣ p, m = 1 ∨ m = p :=
+begin
+  refine ⟨λ h, ⟨h.ne_zero, h.not_unit, h.eq_one_or_self_of_dvd⟩, λ h, _⟩ ,
+  rw irreducible_iff,
+  refine ⟨h.2.1, λ a b hab, _⟩,
+  rw [is_unit_iff, is_unit_iff],
+  apply or.imp_right _ (h.2.2 a _),
+  { rintro rfl,
+    rw [←mul_right_inj' h.1, ←hab, mul_one] },
+  { rw hab,
+    exact dvd_mul_right _ _ }
+end
 
 end unique_units
 

@@ -69,27 +69,10 @@ begin
 end
 
 lemma prime.eq_one_or_self_of_dvd {p : ℕ} (pp : p.prime) (m : ℕ) (hm : m ∣ p) : m = 1 ∨ m = p :=
-begin
-  obtain ⟨n, hn⟩ := hm,
-  have := pp.is_unit_or_is_unit hn,
-  rw [nat.is_unit_iff, nat.is_unit_iff] at this,
-  apply or.imp_right _ this,
-  rintro rfl,
-  rw [hn, mul_one]
-end
+irreducible.eq_one_or_self_of_dvd pp m hm
 
 theorem prime_def_lt'' {p : ℕ} : prime p ↔ 2 ≤ p ∧ ∀ m ∣ p, m = 1 ∨ m = p :=
-begin
-  refine ⟨λ h, ⟨h.two_le, h.eq_one_or_self_of_dvd⟩, λ h, _⟩,
-  have h1 := one_lt_two.trans_le h.1,
-  refine ⟨mt nat.is_unit_iff.mp h1.ne', λ a b hab, _⟩,
-  simp only [nat.is_unit_iff],
-  apply or.imp_right _ (h.2 a _),
-  { rintro rfl,
-    rw [←nat.mul_right_inj (pos_of_gt h1), ←hab, mul_one] },
-  { rw hab,
-    exact dvd_mul_right _ _ }
-end
+by rw [nat.prime, two_le_iff, irreducible_def_lt'', and_assoc]
 
 theorem prime_def_lt {p : ℕ} : prime p ↔ 2 ≤ p ∧ ∀ m < p, m ∣ p → m = 1 :=
 prime_def_lt''.trans $
