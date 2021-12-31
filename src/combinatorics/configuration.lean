@@ -229,38 +229,6 @@ begin
   exact ⟨l, finset.mem_univ l, rfl⟩,
 end
 
-section prod
-
-@[to_additive] lemma finset.prod_subset_product {β α γ : Type*} [comm_monoid β]
-  (r : finset (γ × α)) (s : finset γ) (t : γ → finset α)
-  (h : ∀ p : γ × α, p ∈ r ↔ p.1 ∈ s ∧ p.2 ∈ t p.1) {f : γ × α → β} :
-  ∏ p in r, f p = ∏ c in s, ∏ a in t c, f (c, a) :=
-begin
-  classical,
-  have : r = s.bUnion (λ c, (t c).image (prod.mk c)),
-  { refine finset.ext (λ p, (h p).trans ⟨λ hp, finset.mem_bUnion.mpr
-      ⟨p.1, hp.1, finset.mem_image.mpr ⟨p.2, hp.2, prod.ext rfl rfl⟩⟩, λ hp, _⟩),
-    obtain ⟨c, hc, hp⟩ := finset.mem_bUnion.mp hp,
-    obtain ⟨a, ha, rfl⟩ := finset.mem_image.mp hp,
-    exact ⟨hc, ha⟩ },
-  rw [this, finset.prod_bUnion (λ _ _ _ _ h_ne _ h_mem, _)],
-  { exact finset.prod_congr rfl (λ _ _, finset.prod_image (λ _ _ _ _ h, (prod.ext_iff.mp h).2)) },
-  { obtain ⟨_, _, h1⟩ := finset.mem_image.mp (finset.mem_inter.mp h_mem).1,
-    obtain ⟨_, _, h2⟩ := finset.mem_image.mp (finset.mem_inter.mp h_mem).2,
-    exact h_ne (prod.ext_iff.mp (h1.trans h2.symm)).1 },
-end
-
-@[to_additive] lemma finset.prod_subset_product_right {β α γ : Type*} [comm_monoid β]
-  (r : finset (α × γ)) (s : finset γ) (t : γ → finset α)
-  (h : ∀ p : α × γ, p ∈ r ↔ p.2 ∈ s ∧ p.1 ∈ t p.2) {f : α × γ → β} :
-  ∏ p in r, f p = ∏ c in s, ∏ a in t c, f (a, c) :=
-begin
-  -- have key := r.preimage prod.swap,
-  sorry,
-end
-
-end prod
-
 lemma has_lines.line_count_eq_point_count [has_lines P L] [fintype P] [fintype L]
   (hPL : fintype.card P = fintype.card L) {p : P} {l : L} (hpl : p ∉ l) :
   line_count L p = point_count P l :=
