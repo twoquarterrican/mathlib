@@ -249,12 +249,11 @@ begin
       rw hf2 },
     { obtain ⟨l, hl⟩ := hf1.2 p,
       exact ⟨l, finset.mem_univ l, hl.symm⟩ },
-    { simp },
-    { simp } },
+    all_goals { simp_rw [finset.mem_univ, true_and, set.mem_to_finset], exact λ p, iff.rfl } },
   have step3 : ∑ i in sᶜ, line_count L i.1 = ∑ i in sᶜ, point_count P i.2,
   { rwa [←s.sum_add_sum_compl, ←s.sum_add_sum_compl, step2, add_left_cancel_iff] at step1 },
   rw ← set.to_finset_compl at step3,
-  refine ((finset.sum_eq_sum_iff_of_le (by exact λ i hi, has_lines.point_count_le_line_count
+  exact ((finset.sum_eq_sum_iff_of_le (by exact λ i hi, has_lines.point_count_le_line_count
     (set.mem_to_finset.mp hi))).mp step3.symm (p, l) (set.mem_to_finset.mpr hpl)).symm,
 end
 
