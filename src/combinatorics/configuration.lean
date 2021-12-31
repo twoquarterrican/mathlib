@@ -240,8 +240,8 @@ begin
   { rw [←finset.univ_product_univ, finset.sum_product_right, finset.sum_product],
     simp_rw [finset.sum_const, finset.card_univ, hPL, sum_line_count_eq_sum_point_count] },
   have step2 : ∑ i in s, line_count L i.1 = ∑ i in s, point_count P i.2,
-  { rw [finset.sum_subset_product s finset.univ (λ p, set.to_finset {l | p ∈ l})],
-    rw [finset.sum_subset_product_right s finset.univ (λ l, set.to_finset {p | p ∈ l})],
+  { rw [finset.sum_finset_product s finset.univ (λ p, set.to_finset {l | p ∈ l})],
+    rw [finset.sum_finset_product_right s finset.univ (λ l, set.to_finset {p | p ∈ l})],
     refine (finset.sum_bij (λ l hl, f l) (λ l hl, finset.mem_univ (f l)) (λ l hl, _)
       (λ _ _ _ _ h, hf1.1 h) (λ p hp, _)).symm,
     { simp_rw [finset.sum_const, set.to_finset_card, ←nat.card_eq_fintype_card],
