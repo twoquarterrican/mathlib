@@ -101,9 +101,9 @@ See also `linear_map_class F R M M₂` for the case where `σ` is the identity m
 A map `f` between an `R`-module and an `S`-module over a ring homomorphism `σ : R →+* S`
 is semilinear if it satisfies the two properties `f (x + y) = f x + f y` and
 `f (c • x) = (σ c) • f x`. -/
-class semilinear_map_class (F : Type*) {R S : out_param Type*} {hR : out_param $ semiring R} {hS : out_param $ semiring S}
+class semilinear_map_class (F : Type*) {R S : out_param Type*} {hR : semiring R} {hS : semiring S}
   (σ : out_param $ R →+* S) (M M₂ : out_param Type*)
-  [out_param $ add_comm_monoid M] [out_param $ add_comm_monoid M₂] [out_param $ module R M] [out_param $ module S M₂]
+  [add_comm_monoid M] [add_comm_monoid M₂] [module R M] [module S M₂]
   extends add_hom_class F M M₂ :=
 (map_smulₛₗ : ∀ (f : F) (r : R) (x : M), f (r • x) = (σ r) • f x)
 
@@ -415,7 +415,7 @@ def inverse [module R M] [module S M₂] {σ : R →+* S} {σ' : S →+* R} [rin
 by dsimp [left_inverse, function.right_inverse] at h₁ h₂; exact
   { to_fun := g,
     map_add' := λ x y, by { rw [← h₁ (g (x + y)), ← h₁ (g x + g y)]; simp [h₂] },
-    map_smul' := λ a b, by { rw [← h₁ (g (a • b)), ← h₁ ((σ' a) • g b)], simp [h₂] } }
+    map_smul' := λ a b, by { rw [← h₁ (g (a • b)), ← h₁ ((σ' a) • g b)], simp [h₂, map_smulₛₗ f] } }
 
 end add_comm_monoid
 
@@ -612,7 +612,8 @@ instance : inhabited (M →ₛₗ[σ₁₂] M₂) := ⟨0⟩
 /-- The sum of two linear maps is linear. -/
 instance : has_add (M →ₛₗ[σ₁₂] M₂) :=
 ⟨λ f g, { to_fun := f + g,
-          map_add' := by simp [add_comm, add_left_comm], map_smul' := by simp [smul_add] }⟩
+          map_add' := by simp [add_comm, add_left_comm], map_smul' :=
+            by simp [smul_add, map_smulₛₗ f, map_smulₛₗ g] }⟩
 
 @[simp] lemma add_apply (f g : M →ₛₗ[σ₁₂] M₂) (x : M) : (f + g) x = f x + g x := rfl
 
@@ -644,7 +645,7 @@ instance : add_comm_monoid (M →ₛₗ[σ₁₂] M₂) :=
 
 /-- The negation of a linear map is linear. -/
 instance : has_neg (M →ₛₗ[σ₁₂] N₂) :=
-⟨λ f, { to_fun := -f, map_add' := by simp [add_comm], map_smul' := by simp }⟩
+⟨λ f, { to_fun := -f, map_add' := by simp [add_comm], map_smul' := by simp [map_smulₛₗ f] }⟩
 
 @[simp] lemma neg_apply (f : M →ₛₗ[σ₁₂] N₂) (x : M) : (- f) x = - f x := rfl
 
@@ -659,7 +660,7 @@ omit σ₁₃
 instance : has_sub (M →ₛₗ[σ₁₂] N₂) :=
 ⟨λ f g, { to_fun := f - g,
           map_add' := λ x y, by simp only [pi.sub_apply, map_add, add_sub_comm],
-          map_smul' := λ r x, by simp [pi.sub_apply, map_smul, smul_sub] }⟩
+          map_smul' := λ r x, by simp [pi.sub_apply, map_smulₛₗ f, map_smulₛₗ g, smul_sub] }⟩
 
 @[simp] lemma sub_apply (f g : M →ₛₗ[σ₁₂] N₂) (x : M) : (f - g) x = f x - g x := rfl
 
@@ -710,7 +711,7 @@ variables [monoid T] [distrib_mul_action T M₂] [smul_comm_class R₂ T M₂]
 instance : has_scalar S (M →ₛₗ[σ₁₂] M₂) :=
 ⟨λ a f, { to_fun := a • f,
           map_add' := λ x y, by simp only [pi.smul_apply, f.map_add, smul_add],
-          map_smul' := λ c x, by simp [pi.smul_apply, smul_comm (σ₁₂ c)] }⟩
+          map_smul' := λ c x, by simp [pi.smul_apply, smul_comm (σ₁₂ c), map_smulₛₗ f] }⟩
 
 @[simp] lemma smul_apply (a : S) (f : M →ₛₗ[σ₁₂] M₂) (x : M) : (a • f) x = a • f x := rfl
 
