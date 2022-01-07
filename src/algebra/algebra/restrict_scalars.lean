@@ -79,10 +79,23 @@ instance [I : add_comm_group M] : add_comm_group (restrict_scalars R S M) := I
 instance restrict_scalars.module_orig [semiring S] [add_comm_monoid M] [I : module S M] :
   module S (restrict_scalars R S M) := I
 
+instance restrict_scalars.op_module_orig [semiring S] [add_comm_monoid M] [I : module Sᵐᵒᵖ M] :
+  module Sᵐᵒᵖ (restrict_scalars R S M) := I
+
 /-- `restrict_scalars.linear_equiv` is an equivalence of modules over the semiring `S`. -/
 def restrict_scalars.linear_equiv [semiring S] [add_comm_monoid M] [module S M] :
   restrict_scalars R S M ≃ₗ[S] M :=
 linear_equiv.refl S M
+
+#check @restrict_scalars.op_module_orig
+
+set_option trace.class_instances true
+
+-- WTF?
+example (R : Type*) (S : Type*) (M : Type*) [_inst_1 : semiring S] [_inst_2 : add_comm_monoid M]
+  : module Sᵐᵒᵖ (restrict_scalars R S M) := by apply_instance
+
+#exit
 
 section module
 variables [semiring S] [add_comm_monoid M] [comm_semiring R] [algebra R S] [module S M]
@@ -97,7 +110,7 @@ instance : module R (restrict_scalars R S M) :=
 module.comp_hom M (algebra_map R S)
 
 lemma restrict_scalars_smul_def (c : R) (x : restrict_scalars R S M) :
-  c • x = ((algebra_map R S c) • x : M) := rfl
+  c • x = (algebra_map R S c • x : M) := rfl
 
 @[simp] lemma restrict_scalars.linear_equiv_map_smul (t : R) (x : restrict_scalars R S M) :
   restrict_scalars.linear_equiv R S M (t • x)
@@ -108,6 +121,27 @@ instance : is_scalar_tower R S (restrict_scalars R S M) :=
 ⟨λ r S M, by { rw [algebra.smul_def, mul_smul], refl }⟩
 
 end module
+
+section op_module
+variables [semiring S] [add_comm_monoid M] [comm_semiring R] [algebra R S] [module Sᵐᵒᵖ M]
+
+instance restrict_scalars.op_module : module Rᵐᵒᵖ (restrict_scalars R S M) :=
+module.comp_hom M (algebra_map R S).op
+
+lemma restrict_scalars_op_smul_def (c : R) (x : restrict_scalars R S M) :
+  mul_opposite.op c • x = (mul_opposite.op (algebra_map R S c) • x : M) := rfl
+
+#lint
+
+-- instance restrict_scalars.is_central_scalar [module Sᵐᵒᵖ M] [is_central_scalar S M] :
+--   is_central_scalar R (restrict_scalars R S M) :=
+-- { op_smul_eq_smul := λ r m, begin
+--     dsimp only [restrict_scalars_smul_def],
+--   -- refine (op_smul_eq_smul (algebra_map R S r) m : _)
+-- end }
+
+
+end op_module
 
 section algebra
 
@@ -126,9 +160,6 @@ variables [algebra S A]
 def restrict_scalars.alg_equiv : restrict_scalars R S A ≃ₐ[S] A := alg_equiv.refl
 
 variables [comm_semiring R] [algebra R S]
-
-instance restrict_scalars.op_module : module Rᵐᵒᵖ (restrict_scalars R S A) :=
-module.comp_hom A (algebra_map R S).op
 
 /-- `R ⟶ S` induces `S-Alg ⥤ R-Alg` -/
 instance : algebra R (restrict_scalars R S A) :=
