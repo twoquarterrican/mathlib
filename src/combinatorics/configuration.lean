@@ -22,8 +22,12 @@ This file introduces abstract configurations of points and lines, and proves som
 * `configuration.point_count`: The number of lines through a given line.
 
 ## Main statements
-* `configuration.has_lines.card_le`: `has_lines` implies `card points ≤ card lines`.
-* `configuration.has_points.card_le`: `has_points` implies `card lines ≤ card points`.
+* `configuration.has_lines.card_le`: `has_lines` implies `|P| ≤ |L|`.
+* `configuration.has_points.card_le`: `has_points` implies `|L| ≤ |P|`.
+* `configuration.has_lines.has_points`: `has_lines` and `|P| = |L|` implies `has_points`.
+* `configuration.has_points.has_lines`: `has_points` and `|P| = |L|` implies `has_lines`.
+Together, these four statements say that any two of the following properties imply the third:
+(a) `has_lines`, (b) `has_points`, (c) `|P| = |L|`.
 
 ## Todo
 * Abstract projective planes.
@@ -180,8 +184,7 @@ lemma has_points.line_count_le_point_count [has_points P L] {p : P} {l : L} (h :
 
 variables (P L)
 
-/-- If a nondegenerate configuration has a unique line through any two points,
-  then there are at least as many lines as points. -/
+/-- If a nondegenerate configuration has a unique line through any two points, then `|P| ≤ |L|`. -/
 lemma has_lines.card_le [has_lines P L] [fintype P] [fintype L] :
   fintype.card P ≤ fintype.card L :=
 begin
@@ -205,8 +208,7 @@ begin
       exact let this := not_exists.mp hp l in ⟨⟨mk_line this, (mk_line_ax this).2⟩⟩ } },
 end
 
-/-- If a nondegenerate configuration has a unique point on any two lines,
-  then there are at least as many points as lines. -/
+/-- If a nondegenerate configuration has a unique point on any two lines, then `|L| ≤ |P|`. -/
 lemma has_points.card_le [has_points P L] [fintype P] [fintype L] :
   fintype.card L ≤ fintype.card P :=
 @has_lines.card_le (dual L) (dual P) _ _ _ _
@@ -257,7 +259,13 @@ begin
     (set.mem_to_finset.mp hi))).mp step3.symm (p, l) (set.mem_to_finset.mpr hpl)).symm,
 end
 
-/--  -/
+lemma has_points.line_count_eq_point_count [has_points P L] [fintype P] [fintype L]
+  (hPL : fintype.card P = fintype.card L) {p : P} {l : L} (hpl : p ∉ l) :
+  line_count L p = point_count P l :=
+(@has_lines.line_count_eq_point_count (dual L) (dual P) _ _  _ _ hPL.symm l p hpl).symm
+
+/-- If a nondegenerate configuration has a unique line through any two points, and if `|P| = |L|`,
+  then there is a unique point on any two lines. -/
 noncomputable def has_lines.has_points [has_lines P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_points P L :=
 let this : ∀ l₁ l₂ : L, l₁ ≠ l₂ → ∃ p : P, p ∈ l₁ ∧ p ∈ l₂ := λ l₁ l₂ hl, begin
@@ -285,6 +293,8 @@ end in
 { mk_point := λ l₁ l₂ hl, classical.some (this l₁ l₂ hl),
   mk_point_ax := λ l₁ l₂ hl, classical.some_spec (this l₁ l₂ hl) }
 
+/-- If a nondegenerate configuration has a unique point on any two lines, and if `|P| = |L|`,
+  then there is a unique line through any two points. -/
 noncomputable def has_points.has_lines [has_points P L] [fintype P] [fintype L]
   (h : fintype.card P = fintype.card L) : has_lines P L :=
 let this := @has_lines.has_points (dual L) (dual P) _ _ _ _ h.symm in
@@ -293,13 +303,42 @@ let this := @has_lines.has_points (dual L) (dual P) _ _ _ _ h.symm in
 
 section projective_planes
 
-set_option old_structure_cmd true
+variables (P L)
 
-structure projective_plane extends has_points P L, has_lines P L :=
+class projective_plane extends nondegenerate P L : Type u :=
+(mk_point : ∀ {l₁ l₂ : L} (h : l₁ ≠ l₂), P)
+(mk_point_ax : ∀ {l₁ l₂ : L} (h : l₁ ≠ l₂), mk_point h ∈ l₁ ∧ mk_point h ∈ l₂)
+(mk_line : ∀ {p₁ p₂ : P} (h : p₁ ≠ p₂), L)
+(mk_line_ax : ∀ {p₁ p₂ : P} (h : p₁ ≠ p₂), p₁ ∈ mk_line h ∧ p₂ ∈ mk_line h)
 (nondegenerate : false)
 
--- define order
--- prove line_count = order and point_count = order
+namespace projective_plane
+
+instance has_points [h : projective_plane P L] : has_points P L := { .. h }
+
+instance has_lines [h : projective_plane P L] : has_lines P L := { .. h }
+
+instance [projective_plane P L] : projective_plane (dual L) (dual P) :=
+{ mk_line := @mk_point P L _ _,
+  mk_line_ax := λ _ _, mk_point_ax,
+  mk_point := @mk_line P L _ _,
+  mk_point_ax := λ _ _, mk_line_ax,
+  nondegenerate := sorry, -- must start with exists, to rule out empty configuration!
+  .. dual.nondegenerate P L }
+
+variables [fintype P] [fintype L]
+
+def order : ℕ := sorry
+
+lemma card_points : fintype.card P = order ^ 2 + order + 1 := sorry
+
+lemma card_lines : fintype.card L = order ^ 2 + order + 1 := sorry
+
+lemma line_count (p : P) : line_count L p = order + 1 := sorry
+
+lemma point_count (l : L) : point_count P l = order + 1 := sorry
+
+end projective_plane
 
 end projective_planes
 
