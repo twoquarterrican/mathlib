@@ -12,54 +12,6 @@ open filter set
 
 variables {G : Type*} [comm_group G] [topological_space G] [topological_group G]
 
-variable (G)
-/-- The right uniformity on a topological group. -/
-def topological_group.to_uniform_space : uniform_space G :=
-{ uniformity          := comap (λp:G×G, p.2 / p.1) (𝓝 1),
-  refl                :=
-    by refine map_le_iff_le_comap.1 (le_trans _ (pure_le_nhds 1));
-      simp [set.subset_def] {contextual := tt},
-  symm                :=
-  begin
-    suffices : tendsto ((λp, p⁻¹) ∘ (λp:G×G, p.2 / p.1)) (comap (λp:G×G, p.2 / p.1) (𝓝 1)) (𝓝 (1⁻¹)),
-    { simpa [(∘), tendsto_comap_iff] },
-    exact tendsto.comp (tendsto.inv tendsto_id) tendsto_comap
-  end,
-  comp                :=
-  begin
-    intros D H,
-    rw mem_lift'_sets,
-    { rcases H with ⟨U, U_nhds, U_sub⟩,
-      rcases exists_nhds_one_split U_nhds with ⟨V, ⟨V_nhds, V_sum⟩⟩,
-      existsi ((λp:G×G, p.2 / p.1) ⁻¹' V),
-      have H : (λp:G×G, p.2 / p.1) ⁻¹' V ∈ comap (λp:G×G, p.2 / p.1) (𝓝 (1 : G)),
-        by existsi [V, V_nhds] ; refl,
-      existsi H,
-      have comp_rel_sub :
-        comp_rel ((λp:G×G, p.2 / p.1) ⁻¹' V) ((λp, p.2 / p.1) ⁻¹' V) ⊆ (λp:G×G, p.2 / p.1) ⁻¹' U,
-      begin
-        intros p p_comp_rel,
-        rcases p_comp_rel with ⟨z, ⟨Hz1, Hz2⟩⟩,
-        simpa [sub_eq_add_neg, add_comm, add_left_comm] using V_sum _ Hz1 _ Hz2
-      end,
-      exact set.subset.trans comp_rel_sub U_sub },
-    { exact monotone_comp_rel monotone_id monotone_id }
-  end,
-  is_open_uniformity  :=
-  begin
-    intro S,
-    let S' := λ x, {p : G × G | p.1 = x → p.2 ∈ S},
-    show is_open S ↔ ∀ (x : G), x ∈ S → S' x ∈ comap (λp:G×G, p.2 / p.1) (𝓝 (1 : G)),
-    rw [is_open_iff_mem_nhds],
-    refine forall_congr (assume a, forall_congr (assume ha, _)),
-    rw [← nhds_translation_div, mem_comap, mem_comap],
-    refine exists_congr (assume t, exists_congr (assume ht, _)),
-    show (λ (y : G), y / a) ⁻¹' t ⊆ S ↔ (λ (p : G × G), p.snd / p.fst) ⁻¹' t ⊆ S' a,
-    split,
-    { rintros h ⟨x, y⟩ hx rfl, exact h hx },
-    { rintros h x hx, exact @h (a, x) hx rfl }
-  end }
-
 lemma topological_group.tends_uniformly_to
   {ι α : Type*} (F : ι → α → G) (f : α → G) (p : filter ι) (s : set α) :
   @tendsto_uniformly_on α G ι (topological_group.to_uniform_space G) F f p s
@@ -77,14 +29,10 @@ lemma topological_group.tends_uniformly_to_mul
 begin
   rw topological_group.tends_uniformly_to at *,
   intros u hu,
-  have := continuous_mul.tendsto' ((1 : G), (1 : G)) (1 : G) (one_mul (1 : G)) hu,
-  obtain ⟨v, hv, w, hw, h⟩ := mem_nhds_prod_iff.mp this,
-  refine filter.mem_prod_iff.mpr ⟨_, h₁ v hv, _, h₂ w hw, _⟩,
-  intros x hx a ha,
-  suffices : (F₁ x.1 a / f₁ a) * (F₂ x.2 a / f₂ a) ∈ u,
-  { -- todo: clean this up?
-    rwa [div_mul_eq_mul_div', mul_div, div_div, mul_comm (f₂ a) (f₁ a)] at this },
-  exact h (show (F₁ x.1 a / f₁ a, F₂ x.2 a / f₂ a) ∈ v.prod w, from ⟨hx.1 a ha, hx.2 a ha⟩),
+  obtain ⟨v, hv, w, hw, h⟩ := mem_nhds_prod_iff.mp (mem_map.mp
+    (continuous_mul.tendsto' ((1 : G), (1 : G)) (1 : G) (one_mul (1 : G)) hu)),
+  exact filter.mem_prod_iff.mpr ⟨_, h₁ v hv, _, h₂ w hw, λ x hx a ha, (congr_arg (∈ u)
+    (div_mul_comm _ _ _ _)).mp (prod_subset_iff.mp h _ (hx.1 a ha) _ (hx.2 a ha))⟩,
 end
 
 lemma topological_group.tends_uniformly_to_inv {ι α : Type*} (F : ι → α → G)
@@ -95,10 +43,8 @@ lemma topological_group.tends_uniformly_to_inv {ι α : Type*} (F : ι → α �
 begin
   rw topological_group.tends_uniformly_to at *,
   intros u hu,
-  specialize h (has_inv.inv ⁻¹' u) (continuous_inv.tendsto' (1 : G) (1 : G) one_inv hu),
-  simp_rw [pi.inv_apply, inv_div_inv],
-  simp_rw [set.mem_preimage, inv_div'] at h,
-  exact h,
+  convert h (has_inv.inv ⁻¹' u) (continuous_inv.tendsto' (1 : G) (1 : G) one_inv hu),
+  simp only [pi.inv_apply, inv_div_inv, set.mem_preimage, inv_div'],
 end
 
 instance {X : Type*} [topological_space X] : topological_group (continuous_map X G) :=
