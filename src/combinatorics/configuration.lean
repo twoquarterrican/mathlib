@@ -305,17 +305,22 @@ section projective_planes
 
 variables (P L)
 
+/-- A nondegenerate configuration satisfying `has_points`, `has_lines`, and an additional
+  nondegeneracy condition. -/
 class projective_plane extends nondegenerate P L : Type u :=
 (mk_point : ∀ {l₁ l₂ : L} (h : l₁ ≠ l₂), P)
 (mk_point_ax : ∀ {l₁ l₂ : L} (h : l₁ ≠ l₂), mk_point h ∈ l₁ ∧ mk_point h ∈ l₂)
 (mk_line : ∀ {p₁ p₂ : P} (h : p₁ ≠ p₂), L)
 (mk_line_ax : ∀ {p₁ p₂ : P} (h : p₁ ≠ p₂), p₁ ∈ mk_line h ∧ p₂ ∈ mk_line h)
-(nondegenerate : false)
+(exists_config : ∃ (p₁ p₂ p₃ : P) (l₁ l₂ l₃ : L), p₁ ∈ l₁ ∧ p₁ ∉ l₂ ∧ p₁ ∉ l₃ ∧
+  p₂ ∉ l₁ ∧ p₂ ∈ l₂ ∧ p₂ ∈ l₃ ∧ p₃ ∉ l₁ ∧ p₃ ∈ l₂ ∧ p₃ ∉ l₃)
 
 namespace projective_plane
 
+@[priority 100] -- see Note [lower instance priority]
 instance has_points [h : projective_plane P L] : has_points P L := { .. h }
 
+@[priority 100] -- see Note [lower instance priority]
 instance has_lines [h : projective_plane P L] : has_lines P L := { .. h }
 
 instance [projective_plane P L] : projective_plane (dual L) (dual P) :=
@@ -323,20 +328,129 @@ instance [projective_plane P L] : projective_plane (dual L) (dual P) :=
   mk_line_ax := λ _ _, mk_point_ax,
   mk_point := @mk_line P L _ _,
   mk_point_ax := λ _ _, mk_line_ax,
-  nondegenerate := sorry, -- must start with exists, to rule out empty configuration!
+  exists_config := by
+  { obtain ⟨p₁, p₂, p₃, l₁, l₂, l₃, h₁₁, h₁₂, h₁₃, h₂₁, h₂₂, h₂₃, h₃₁, h₃₂, h₃₃⟩ :=
+    @exists_config P L _ _,
+    exact ⟨l₁, l₂, l₃, p₁, p₂, p₃, h₁₁, h₂₁, h₃₁, h₁₂, h₂₂, h₃₂, h₁₃, h₂₃, h₃₃⟩ },
   .. dual.nondegenerate P L }
+
+/-- Order of a projective plane. -/
+noncomputable def order [projective_plane P L] : ℕ :=
+line_count L (classical.some (@exists_config P L _ _)) - 1
 
 variables [fintype P] [fintype L]
 
-def order : ℕ := sorry
+lemma card_points_eq_card_lines [projective_plane P L] : fintype.card P = fintype.card L :=
+le_antisymm (has_lines.card_le P L) (has_points.card_le P L)
 
-lemma card_points : fintype.card P = order ^ 2 + order + 1 := sorry
+variables {P} (L)
 
-lemma card_lines : fintype.card L = order ^ 2 + order + 1 := sorry
+lemma line_count_eq_line_count [projective_plane P L] (p q : P) :
+  line_count L p = line_count L q :=
+begin
+  obtain ⟨p₁, p₂, p₃, l₁, l₂, l₃, h₁₁, h₁₂, h₁₃, h₂₁, h₂₂, h₂₃, h₃₁, h₃₂, h₃₃⟩ :=
+  @exists_config P L _ _,
+  have h := card_points_eq_card_lines P L,
+  let n := line_count L p₂,
+  have hp₂ : line_count L p₂ = n := rfl,
+  have hl₁ : point_count P l₁ = n := (has_lines.line_count_eq_point_count h h₂₁).symm.trans hp₂,
+  have hp₃ : line_count L p₃ = n := (has_lines.line_count_eq_point_count h h₃₁).trans hl₁,
+  have hl₃ : point_count P l₃ = n := (has_lines.line_count_eq_point_count h h₃₃).symm.trans hp₃,
+  have hp₁ : line_count L p₁ = n := (has_lines.line_count_eq_point_count h h₁₃).trans hl₃,
+  have hl₂ : point_count P l₂ = n := (has_lines.line_count_eq_point_count h h₁₂).symm.trans hp₁,
+  suffices : ∀ p : P, line_count L p = n, { exact (this p).trans (this q).symm },
+  refine λ p, or_not.elim (λ h₂, _) (λ h₂, (has_lines.line_count_eq_point_count h h₂).trans hl₂),
+  refine or_not.elim (λ h₃, _) (λ h₃, (has_lines.line_count_eq_point_count h h₃).trans hl₃),
+  rwa (eq_or_eq h₂ h₂₂ h₃ h₂₃).resolve_right (λ h, h₃₃ ((congr_arg (has_mem.mem p₃) h).mp h₃₂)),
+end
 
-lemma line_count (p : P) : line_count L p = order + 1 := sorry
+variables (P) {L}
 
-lemma point_count (l : L) : point_count P l = order + 1 := sorry
+lemma point_count_eq_point_count [projective_plane P L] (l m : L) :
+  point_count P l = point_count P m :=
+line_count_eq_line_count (dual P) l m
+
+variables {P L}
+
+lemma line_count_eq_point_count [projective_plane P L] (p : P) (l : L) :
+  line_count L p = point_count P l :=
+exists.elim (exists_point l) (λ q hq, (line_count_eq_line_count L p q).trans
+  (has_lines.line_count_eq_point_count (card_points_eq_card_lines P L) hq))
+
+variables (P L)
+
+lemma dual.order [projective_plane P L] : order (dual L) (dual P) = order P L :=
+congr_arg (λ n, n - 1) (line_count_eq_point_count _ _)
+
+variables {P} (L)
+
+lemma line_count_eq [projective_plane P L] (p : P) : line_count L p = order P L + 1 :=
+begin
+  classical,
+  refine (line_count_eq_line_count L p _).trans (nat.sub_add_cancel
+    (le_trans (fintype.card_pos_iff.mpr _) (ge_of_eq nat.card_eq_fintype_card))).symm,
+  obtain ⟨-, -, l, -, -, hl, -⟩ := classical.some_spec (@exists_config P L _ _),
+  exact ⟨⟨l, hl⟩⟩,
+end
+
+variables (P) {L}
+
+lemma point_count_eq [projective_plane P L] (l : L) : point_count P l = order P L + 1 :=
+(line_count_eq (dual P) l).trans (congr_arg (λ n, n + 1) (dual.order P L))
+
+variables (P L)
+
+/-- An auxillary bijection for `card_points`. -/
+def card_points_aux (α β : Type u) [decidable_eq α] (γ : β → Type u) [Π b : β, decidable_eq (γ b)]
+  (f : ∀ {a₁ a₂ : α} (h : a₁ ≠ a₂), Σ b : β, γ b × γ b) (g : ∀ b : β, γ b → α)
+  (h1 : ∀ {a₁ a₂ : α} (h : a₁ ≠ a₂), g (f h).1 (f h).2.1 = a₁)
+  (h2 : ∀ {a₁ a₂ : α} (h : a₁ ≠ a₂), g (f h).1 (f h).2.2 = a₂)
+  (h3 : ∀ b : β, function.injective (g b))
+  (h4 : ∀ {b : Σ b : β, γ b × γ b} (h : b.2.1 ≠ b.2.2), f ((h3 b.1).ne h) = b) :
+  (α × α ⊕ Σ b : β, γ b) ≃ α ⊕ Σ b : β, γ b × γ b :=
+{ to_fun := sum.elim (λ a, if h : a.1 = a.2 then sum.inl a.1 else sum.inr (f h))
+    (λ b, sum.inr ⟨b.1, (b.2, b.2)⟩),
+  inv_fun := sum.elim (λ a, sum.inl (a, a))
+    (λ b, if h : b.2.1 = b.2.2 then sum.inr ⟨b.1, b.2.1⟩ else sum.inl (g b.1 b.2.1, g b.1 b.2.2)),
+  left_inv := by
+  { rintros (a | b),
+    { by_cases h : a.1 = a.2,
+      { rw [sum.elim_inl, dif_pos h, sum.elim_inl, sum.inl.inj_iff],
+        exact prod.ext rfl h },
+      { rw [sum.elim_inl, dif_neg h, sum.elim_inr, h1, h2, prod.mk.eta, dif_neg],
+        refine λ h', h _,
+        rw [←h1 h, h', h2] } },
+    { rw [sum.elim_inr, sum.elim_inr, dif_pos rfl, sigma.eta] }, },
+  right_inv := by
+  { rintros (a | b),
+    { rw [sum.elim_inl, sum.elim_inl, dif_pos rfl] },
+    { by_cases h : b.2.1 = b.2.2,
+      { rw [sum.elim_inr, dif_pos h, sum.elim_inr, sum.inr.inj_iff],
+        exact sigma.ext rfl (heq_of_eq (prod.ext rfl h)) },
+      { rw [sum.elim_inr, dif_neg h, sum.elim_inl, dif_neg ((h3 b.1).ne h), h4] } } } }
+
+lemma card_points [projective_plane P L] : fintype.card P = order P L ^ 2 + order P L + 1 :=
+begin
+  classical,
+  have h1 : ∀ l : L, fintype.card {p : P // p ∈ l} = order P L + 1 :=
+  λ l, nat.card_eq_fintype_card.symm.trans (point_count_eq P l),
+  let h := fintype.card_congr (card_points_aux P L (λ l, {p : P // p ∈ l})
+    (λ p₁ p₂ h, ⟨mk_line h, ⟨p₁, (mk_line_ax h).1⟩, ⟨p₂, (mk_line_ax h).2⟩⟩)
+    (λ l p, p) (λ p₁ p₂ h, rfl) (λ p₁ p₂ h, rfl) (λ l, subtype.coe_injective) _),
+  { simp_rw [fintype.card_sum, fintype.card_sigma, fintype.card_prod, h1,
+      finset.sum_const, smul_eq_mul, finset.card_univ, ←card_points_eq_card_lines] at h,
+    rwa [nat.mul_succ, ←add_assoc, add_comm, add_right_inj, ←mul_add, mul_right_inj',
+      nat.succ_mul_succ_eq, add_assoc, add_comm (order P L), ←add_assoc, add_left_inj, ←sq] at h,
+    exact (fintype.card_pos_iff.mpr (nonempty_of_exists (@exists_config P L _ _))).ne' },
+  { rintros ⟨l, ⟨p₁, hp₁⟩, ⟨p₂, hp₂⟩⟩ h,
+    rw [ne, subtype.ext_iff, subtype.coe_mk, subtype.coe_mk] at h,
+    have key := (eq_or_eq (mk_line_ax h).1 (mk_line_ax h).2 hp₁ hp₂).resolve_left h,
+    subst key,
+    refl },
+end
+
+lemma card_lines [projective_plane P L] : fintype.card L = order P L ^ 2 + order P L + 1 :=
+(card_points (dual L) (dual P)).trans (congr_arg (λ n, n ^ 2 + n + 1) (dual.order P L))
 
 end projective_plane
 
