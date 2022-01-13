@@ -72,7 +72,7 @@ lemma prime.eq_one_or_self_of_dvd {p : ℕ} (pp : p.prime) (m : ℕ) (hm : m ∣
 irreducible.eq_one_or_self_of_dvd pp m hm
 
 theorem prime_def_lt'' {p : ℕ} : prime p ↔ 2 ≤ p ∧ ∀ m ∣ p, m = 1 ∨ m = p :=
-by rw [nat.prime, two_le_iff, irreducible_def_lt'', and_assoc]
+by rw [nat.prime, two_le_iff, irreducible_def_dvd', and_assoc]
 
 theorem prime_def_lt {p : ℕ} : prime p ↔ 2 ≤ p ∧ ∀ m < p, m ∣ p → m = 1 :=
 prime_def_lt''.trans $
