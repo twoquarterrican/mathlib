@@ -95,7 +95,7 @@ linear_isometry_equiv.of_surjective
   ..adjoint_aux }
 (λ A, ⟨adjoint_aux A, adjoint_aux_adjoint_aux A⟩)
 
-localized "postfix `†`:1000 := adjoint" in inner_product
+localized "postfix `†`:1000 := continuous_linear_map.adjoint" in inner_product
 
 /-- The fundamental property of the adjoint. -/
 lemma adjoint_inner_left (A : E →L[𝕜] F) (x : E) (y : F) : ⟪A† y, x⟫ = ⟪y, A x⟫ :=
@@ -152,6 +152,9 @@ instance : star_ring (E →L[𝕜] E) := ⟨linear_isometry_equiv.map_add adjoin
 instance : star_module 𝕜 (E →L[𝕜] E) := ⟨linear_isometry_equiv.map_smulₛₗ adjoint⟩
 
 lemma star_eq_adjoint (A : E →L[𝕜] E) : star A = A† := rfl
+
+@[simp] lemma adjoint_id : (continuous_linear_map.id 𝕜 E)† = continuous_linear_map.id 𝕜 E :=
+star_one (E →L[𝕜] E)
 
 instance : cstar_ring (E →L[𝕜] E) :=
 ⟨begin

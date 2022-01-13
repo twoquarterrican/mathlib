@@ -3,6 +3,7 @@ Copyright (c) 2021 Heather Macbeth. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Heather Macbeth
 -/
+import analysis.inner_product_space.adjoint
 import analysis.inner_product_space.rayleigh
 import analysis.inner_product_space.pi_L2
 
@@ -49,8 +50,54 @@ local notation `⟪`x`, `y`⟫` := @inner 𝕜 E _ x y
 
 local attribute [instance] fact_one_le_two_real
 
-open_locale big_operators complex_conjugate
-open module.End
+open_locale big_operators complex_conjugate inner_product
+open module.End continuous_linear_map
+
+-- move this
+def normal {A : Type*} [semiring A] [star_ring A] (a : A) : Prop := commute (star a) a
+
+section normal
+
+variables [complete_space E] (T : E →L[𝕜] E)
+
+lemma continuous_linear_map.normal_iff : normal T ↔ (T†).comp T = T.comp (T†) := iff.rfl
+
+variables {T} (hT : normal T)
+include hT
+
+lemma normal_apply (v : E) : T† (T v) = T (T† v) :=
+congr_arg (λ f : E →L[𝕜] E, f v) (T.normal_iff.mp hT)
+
+lemma foo (v : E) (μ : 𝕜) :
+  ⟪((T† - conj μ • id 𝕜 E)† * (T† - conj μ • id 𝕜 E)) v, v⟫
+  = ⟪((T - μ • id 𝕜 E)† * (T - μ • id 𝕜 E)) v, v⟫ :=
+begin
+  simp [inner_sub_left, inner_smul_left, inner_add_left, normal_apply hT v],
+  ring1,
+end
+
+lemma norm_adjoint_apply' (v : E) (μ : 𝕜) : ∥(T† - conj μ • id 𝕜 E) v∥ = ∥(T - μ • id 𝕜 E) v∥ :=
+by simpa only [apply_norm_eq_sqrt_inner_adjoint_left]
+  using congr_arg (λ x, real.sqrt (is_R_or_C.re x)) (foo hT v μ)
+
+lemma norm_adjoint_apply (v : E) : ∥T† v∥ = ∥T v∥ :=
+by simpa using norm_adjoint_apply' hT v 0
+
+lemma mem_eigenspace_adjoint_iff (μ : 𝕜) (v : E) :
+  v ∈ eigenspace (T.adjoint : E →ₗ[𝕜] E) (conj μ) ↔ v ∈ eigenspace (T : E →ₗ[𝕜] E) μ :=
+show (T† - conj μ • id 𝕜 E) v = 0 ↔ (T - μ • id 𝕜 E) v = 0,
+begin
+  suffices : ∥(T† - conj μ • id 𝕜 E) v∥ = 0 ↔ ∥(T - μ • id 𝕜 E) v∥ = 0,
+    by simpa only [norm_eq_zero] using this,
+  simp only [norm_adjoint_apply' hT],
+end
+
+lemma eigenspace_adjoint (μ : 𝕜) :
+  eigenspace (T.adjoint : E →ₗ[𝕜] E) (conj μ) = eigenspace (T : E →ₗ[𝕜] E) μ :=
+submodule.ext $ mem_eigenspace_adjoint_iff hT μ
+
+
+end normal
 
 namespace inner_product_space
 namespace is_self_adjoint
