@@ -1,4 +1,6 @@
 import analysis.fourier
+import topology.algebra.continuous_monoid_hom
+import topology.algebra.uniform_group
 import topology.compact_open
 import topology.uniform_space.compact_convergence
 
@@ -12,7 +14,7 @@ open filter set
 
 variables {G : Type*} [comm_group G] [topological_space G] [topological_group G]
 
-lemma topological_group.tends_uniformly_to
+/-lemma topological_group.tends_uniformly_to
   {ι α : Type*} (F : ι → α → G) (f : α → G) (p : filter ι) (s : set α) :
   @tendsto_uniformly_on α G ι (topological_group.to_uniform_space G) F f p s
     ↔ ∀ u ∈ nhds (1 : G), {i : ι | ∀ a ∈ s, F i a / f a ∈ u} ∈ p :=
@@ -45,7 +47,7 @@ begin
   intros u hu,
   convert h (has_inv.inv ⁻¹' u) (continuous_inv.tendsto' (1 : G) (1 : G) one_inv hu),
   simp only [pi.inv_apply, inv_div_inv, set.mem_preimage, inv_div'],
-end
+end-/
 
 instance {X : Type*} [topological_space X] : topological_group (continuous_map X G) :=
 { continuous_mul :=
@@ -54,6 +56,7 @@ instance {X : Type*} [topological_space X] : topological_group (continuous_map X
     rw continuous_iff_continuous_at,
     rintros ⟨f, g⟩,
     rw [continuous_at, continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on],
+    -- `tendsto_iff_forall_compact_tendsto_uniformly_on` or `tendsto_of_tendsto_locally_uniformly`
     intros K hK,
     rw [nhds_prod_eq],
     apply topological_group.tends_uniformly_to_mul,
@@ -86,75 +89,7 @@ variables (A B C D E F : Type*)
   [topological_space A] [topological_space B] [topological_space C] [topological_space D]
   [topological_space E] [topological_group E] [topological_space F] [topological_group F]
 
-set_option old_structure_cmd true
-
-structure continuous_monoid_hom extends A →* B, continuous_map A B
-
 namespace continuous_monoid_hom
-
-variables {A B C D E F}
-
-instance : has_coe_to_fun (continuous_monoid_hom A B) (λ _, A → B) :=
-⟨to_fun⟩
-
-@[ext] lemma ext {f g : continuous_monoid_hom A B} (h : ∀ x, f x = g x) : f = g :=
-by cases f; cases g; congr; exact funext h
-
-def mk' (f : A →* B) (hf : continuous f) : continuous_monoid_hom A B := { .. f }
-
-def comp (g : continuous_monoid_hom B C) (f : continuous_monoid_hom A B) :
-  continuous_monoid_hom A C :=
-mk' (g.to_monoid_hom.comp f.to_monoid_hom) (g.continuous_to_fun.comp f.continuous_to_fun)
-
-def prod (f : continuous_monoid_hom A B) (g : continuous_monoid_hom A C) :
-  continuous_monoid_hom A (B × C) :=
-mk' (f.to_monoid_hom.prod g.to_monoid_hom) (f.continuous_to_fun.prod_mk g.continuous_to_fun)
-
-def prod_map (f : continuous_monoid_hom A C) (g : continuous_monoid_hom B D) :
-  continuous_monoid_hom (A × B) (C × D) :=
-mk' (f.to_monoid_hom.prod_map g.to_monoid_hom) (f.continuous_to_fun.prod_map g.continuous_to_fun)
-
-variables (A B C D E F)
-
-def one : continuous_monoid_hom A B := mk' 1 continuous_const
-
-def id : continuous_monoid_hom A A := mk' (monoid_hom.id A) continuous_id
-
-def fst : continuous_monoid_hom (A × B) A := mk' (monoid_hom.fst A B) continuous_fst
-
-def snd : continuous_monoid_hom (A × B) B := mk' (monoid_hom.snd A B) continuous_snd
-
-def inl : continuous_monoid_hom A (A × B) := prod (id A) (one A B)
-
-def inr : continuous_monoid_hom B (A × B) := prod (one B A) (id B)
-
-def diag : continuous_monoid_hom A (A × A) := prod (id A) (id A)
-
-def swap : continuous_monoid_hom (A × B) (B × A) := prod (snd A B) (fst A B)
-
-def prod_mul : continuous_monoid_hom (E × E) E :=
-mk' mul_monoid_hom continuous_mul
-
-def inv : continuous_monoid_hom E E :=
-mk' comm_group.inv_monoid_hom continuous_inv
-
-variables {A B C D E F}
-
-def coprod (f : continuous_monoid_hom A E) (g : continuous_monoid_hom B E) :
-  continuous_monoid_hom (A × B) E :=
-(prod_mul E).comp (f.prod_map g)
-
-variables (A B C D E F)
-
-instance : comm_group (continuous_monoid_hom A E) :=
-{ mul := λ f g, (prod_mul E).comp (f.prod g),
-  mul_comm := λ f g, ext (λ x, mul_comm (f x) (g x)),
-  mul_assoc := λ f g h, ext (λ x, mul_assoc (f x) (g x) (h x)),
-  one := one A E,
-  one_mul := λ f, ext (λ x, one_mul (f x)),
-  mul_one := λ f, ext (λ x, mul_one (f x)),
-  inv := λ f, (inv E).comp f,
-  mul_left_inv := λ f, ext (λ x, mul_left_inv (f x)) }
 
 instance : topological_space (continuous_monoid_hom A B) :=
 topological_space.induced to_continuous_map continuous_map.compact_open
@@ -164,8 +99,21 @@ lemma is_inducing : inducing (to_continuous_map : continuous_monoid_hom A B → 
 lemma is_embedding : embedding (to_continuous_map : continuous_monoid_hom A B → C(A, B)) :=
 ⟨is_inducing A B, λ _ _, ext ∘ continuous_map.ext_iff.mp⟩
 
+lemma is_closed_embedding :
+  closed_embedding (to_continuous_map : continuous_monoid_hom A B → C(A, B)) :=
+⟨is_embedding A B, begin
+  -- complement is covered by `{f(x)=a,f(y)=b,f(z)=c}` for fixed `x * y = z` and `a * b ≠ c`.
+  -- Now find open neighborhoods `U,V,W` of `a,b,c` with `U * V ∩ W = ∅`.
+  -- Then use compact open topology to finish.
+  sorry
+end⟩
+
 instance [locally_compact_space A] [t2_space B] : t2_space (continuous_monoid_hom A B) :=
 (is_embedding A B).t2_space
+
+-- https://math.stackexchange.com/questions/1502405/why-is-the-pontraygin-dual-a-locally-compact-group
+-- https://math.stackexchange.com/questions/2622521/pontryagin-dual-group-inherits-local-compactness
+
 
 instance : topological_group (continuous_monoid_hom A E) :=
 let hi := is_inducing A E, hc := hi.continuous in
@@ -228,14 +176,9 @@ continuous_monoid_hom.topological_space G circle
 instance [locally_compact_space G] : t2_space (pontryagin_dual G) :=
 continuous_monoid_hom.t2_space G circle
 
--- Temporary comm_group instance
-instance : comm_group circle :=
-{ mul_comm := λ a b, subtype.ext (mul_comm a b),
-  .. circle.group }
-
 -- Needs `comm_group circle` instance
 noncomputable instance : comm_group (pontryagin_dual G) :=
-continuous_monoid_hom.comm_group G circle
+continuous_monoid_hom.comm_group
 
 instance : topological_group (pontryagin_dual G) :=
 continuous_monoid_hom.topological_group G circle
