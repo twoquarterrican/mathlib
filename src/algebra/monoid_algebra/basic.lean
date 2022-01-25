@@ -415,7 +415,7 @@ lemma lift_nc_smul [mul_one_class G] {R : Type*} [semiring R] (f : k →+* R) (g
 begin
   suffices : (lift_nc ↑f g).comp (smul_add_hom k (monoid_algebra k G) c) =
     (add_monoid_hom.mul_left (f c)).comp (lift_nc ↑f g),
-    from add_monoid_hom.congr_fun this φ,
+    from fun_like.congr_fun this φ,
   ext a b, simp [mul_assoc]
 end
 
@@ -468,7 +468,7 @@ non_unital_alg_hom.to_distrib_mul_action_hom_injective $
 @[ext] lemma non_unital_alg_hom_ext' [distrib_mul_action k A]
   {φ₁ φ₂ : non_unital_alg_hom k (monoid_algebra k G) A}
   (h : φ₁.to_mul_hom.comp (of_magma k G) = φ₂.to_mul_hom.comp (of_magma k G)) : φ₁ = φ₂ :=
-non_unital_alg_hom_ext k $ mul_hom.congr_fun h
+non_unital_alg_hom_ext k $ fun_like.congr_fun h
 
 /-- The functor `G ↦ monoid_algebra k G`, from the category of magmas to the category of non-unital,
 non-associative algebras over `k` is adjoint to the forgetful functor in the other direction. -/
@@ -534,7 +534,7 @@ See note [partially-applied ext lemmas]. -/
   (h_of : (f : monoid_algebra k G →* R).comp (of k G) =
     (g : monoid_algebra k G →* R).comp (of k G)) :
   f = g :=
-ring_hom_ext (ring_hom.congr_fun h₁) (monoid_hom.congr_fun h_of)
+ring_hom_ext (fun_like.congr_fun h₁) (fun_like.congr_fun h_of)
 
 /--
 The instance `algebra k (monoid_algebra A G)` whenever we have `algebra k A`.
@@ -601,7 +601,7 @@ alg_hom.to_linear_map_injective $ finsupp.lhom_ext' $ λ a, linear_map.ext_ring 
 @[ext] lemma alg_hom_ext' ⦃φ₁ φ₂ : monoid_algebra k G →ₐ[k] A⦄
   (h : (φ₁ : monoid_algebra k G →* A).comp (of k G) =
     (φ₂ : monoid_algebra k G →* A).comp (of k G)) : φ₁ = φ₂ :=
-alg_hom_ext $ monoid_hom.congr_fun h
+alg_hom_ext $ fun_like.congr_fun h
 
 variables (k G A)
 
@@ -1268,7 +1268,7 @@ See note [partially-applied ext lemmas]. -/
   (h_of : (f : add_monoid_algebra k G →* R).comp (of k G) =
     (g : add_monoid_algebra k G →* R).comp (of k G)) :
   f = g :=
-ring_hom_ext (ring_hom.congr_fun h₁) (monoid_hom.congr_fun h_of)
+ring_hom_ext (fun_like.congr_fun h₁) (fun_like.congr_fun h_of)
 
 section opposite
 
@@ -1347,7 +1347,7 @@ lemma alg_hom_ext ⦃φ₁ φ₂ : add_monoid_algebra k G →ₐ[k] A⦄
 @[ext] lemma alg_hom_ext' ⦃φ₁ φ₂ : add_monoid_algebra k G →ₐ[k] A⦄
   (h : (φ₁ : add_monoid_algebra k G →* A).comp (of k G) =
     (φ₂ : add_monoid_algebra k G →* A).comp (of k G)) : φ₁ = φ₂ :=
-alg_hom_ext $ monoid_hom.congr_fun h
+alg_hom_ext $ fun_like.congr_fun h
 
 variables (k G A)
 

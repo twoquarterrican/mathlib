@@ -815,7 +815,7 @@ See note [partially-applied ext lemmas]. -/
 @[ext] lemma add_hom_ext' {γ : Type w} [add_zero_class γ] ⦃f g : (Π₀ i, β i) →+ γ⦄
   (H : ∀ x, f.comp (single_add_hom β x) = g.comp (single_add_hom β x)) :
   f = g :=
-add_hom_ext $ λ x, add_monoid_hom.congr_fun (H x)
+add_hom_ext $ λ x, fun_like.congr_fun (H x)
 
 end add_monoid
 
@@ -1413,7 +1413,7 @@ lemma prod_sum_index {ι₁ : Type u₁} [decidable_eq ι₁] {β₁ : ι₁ →
   [Π i (x : β i), decidable (x ≠ 0)] {f : Π₀ i, β i} :
   f.sum single = f :=
 begin
-  have := add_monoid_hom.congr_fun lift_add_hom_single_add_hom f,
+  have := fun_like.congr_fun lift_add_hom_single_add_hom f,
   rw [lift_add_hom_apply, sum_add_hom_apply] at this,
   exact this,
 end
@@ -1602,7 +1602,7 @@ open dfinsupp
 lemma map_dfinsupp_sum_add_hom [non_assoc_semiring R] [non_assoc_semiring S]
   [Π i, add_zero_class (β i)] (h : R →+* S) (f : Π₀ i, β i) (g : Π i, β i →+ R) :
   h (sum_add_hom g f) = sum_add_hom (λ i, h.to_add_monoid_hom.comp (g i)) f :=
-add_monoid_hom.congr_fun (comp_lift_add_hom h.to_add_monoid_hom g) f
+fun_like.congr_fun (comp_lift_add_hom h.to_add_monoid_hom g) f
 
 end ring_hom
 
@@ -1615,7 +1615,7 @@ open dfinsupp
 lemma map_dfinsupp_sum_add_hom [add_comm_monoid R] [add_comm_monoid S] [Π i, add_zero_class (β i)]
   (h : R ≃+ S) (f : Π₀ i, β i) (g : Π i, β i →+ R) :
   h (sum_add_hom g f) = sum_add_hom (λ i, h.to_add_monoid_hom.comp (g i)) f :=
-add_monoid_hom.congr_fun (comp_lift_add_hom h.to_add_monoid_hom g) f
+fun_like.congr_fun (comp_lift_add_hom h.to_add_monoid_hom g) f
 
 end add_equiv
 

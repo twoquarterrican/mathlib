@@ -248,7 +248,7 @@ instance {R S : Type*} [comm_semiring R] [comm_semiring S]
   [algebra R S] [algebra S k] [algebra R k] [is_scalar_tower R S k] :
   is_scalar_tower R S (algebraic_closure k) :=
 is_scalar_tower.of_algebra_map_eq (λ x,
-  ring_hom.congr_arg _ (is_scalar_tower.algebra_map_apply R S k x : _))
+  fun_like.congr_arg _ (is_scalar_tower.algebra_map_apply R S k x : _))
 
 /-- Canonical algebra embedding from the `n`th step to the algebraic closure. -/
 def of_step_hom (n) : step k n →ₐ[k] algebraic_closure k :=

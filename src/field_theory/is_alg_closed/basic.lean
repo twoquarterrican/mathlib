@@ -387,7 +387,7 @@ equiv_of_equiv_aux L M hJK
 @[simp] lemma equiv_of_equiv_algebra_map (hJK : J ≃+* K) (j : J):
   equiv_of_equiv L M hJK (algebra_map J L j) =
   algebra_map K M (hJK j) :=
-ring_hom.ext_iff.1 (equiv_of_equiv_comp_algebra_map L M hJK) j
+fun_like.ext_iff.1 (equiv_of_equiv_comp_algebra_map L M hJK) j
 
 @[simp] lemma equiv_of_equiv_symm_algebra_map (hJK : J ≃+* K) (k : K):
   (equiv_of_equiv L M hJK).symm (algebra_map K M k) =
@@ -397,7 +397,7 @@ ring_hom.ext_iff.1 (equiv_of_equiv_comp_algebra_map L M hJK) j
 @[simp] lemma equiv_of_equiv_symm_comp_algebra_map (hJK : J ≃+* K) :
   ((equiv_of_equiv L M hJK).symm : M →+* L).comp (algebra_map K M) =
   (algebra_map J L).comp hJK.symm :=
-ring_hom.ext_iff.2 (equiv_of_equiv_symm_algebra_map L M hJK)
+fun_like.ext_iff.2 (equiv_of_equiv_symm_algebra_map L M hJK)
 
 end equiv_of_equiv
 

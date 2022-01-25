@@ -347,7 +347,7 @@ variables (R)
 lemma zsmul_eq_smul_cast (n : ℤ) (b : M) : n • b = (n : R) • b :=
 have (smul_add_hom ℤ M).flip b = ((smul_add_hom R M).flip b).comp (int.cast_add_hom R),
   by { ext, simp },
-add_monoid_hom.congr_fun this n
+fun_like.congr_fun this n
 end
 
 /-- Convert back any exotic `ℤ`-smul to the canonical instance. This should not be needed since in

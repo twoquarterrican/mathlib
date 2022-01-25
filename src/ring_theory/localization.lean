@@ -526,23 +526,23 @@ lemma lift_eq_iff {x y : R × M} :
 (to_localization_map M S).lift_eq_iff _
 
 @[simp] lemma lift_comp : (lift hg).comp (algebra_map R S) = g :=
-ring_hom.ext $ monoid_hom.ext_iff.1 $ (to_localization_map M S).lift_comp _
+ring_hom.ext $ fun_like.ext_iff.1 $ (to_localization_map M S).lift_comp _
 
 @[simp] lemma lift_of_comp (j : S →+* P) :
   lift (is_unit_comp M j) = j :=
-ring_hom.ext $ monoid_hom.ext_iff.1 $ (to_localization_map M S).lift_of_comp j.to_monoid_hom
+ring_hom.ext $ fun_like.ext_iff.1 $ (to_localization_map M S).lift_of_comp j.to_monoid_hom
 
 variables (M)
 /-- See note [partially-applied ext lemmas] -/
 lemma monoid_hom_ext ⦃j k : S →* P⦄
   (h : j.comp (algebra_map R S : R →* S) = k.comp (algebra_map R S)) : j = k :=
 submonoid.localization_map.epic_of_localization_map (to_localization_map M S) $
-  monoid_hom.congr_fun h
+  fun_like.congr_fun h
 
 /-- See note [partially-applied ext lemmas] -/
 lemma ring_hom_ext ⦃j k : S →+* P⦄
   (h : j.comp (algebra_map R S) = k.comp (algebra_map R S)) : j = k :=
-ring_hom.coe_monoid_hom_injective $ monoid_hom_ext M $ monoid_hom.ext $ ring_hom.congr_fun h
+ring_hom.coe_monoid_hom_injective $ monoid_hom_ext M $ monoid_hom.ext $ fun_like.congr_fun h
 
 /-- To show `j` and `k` agree on the whole localization, it suffices to show they agree
 on the image of the base ring, if they preserve `1` and `*`. -/
@@ -555,7 +555,7 @@ variables {M}
 
 lemma lift_unique {j : S →+* P}
   (hj : ∀ x, j ((algebra_map R S) x) = g x) : lift hg = j :=
-ring_hom.ext $ monoid_hom.ext_iff.1 $ @submonoid.localization_map.lift_unique
+ring_hom.ext $ fun_like.ext_iff.1 $ @submonoid.localization_map.lift_unique
   _ _ _ _ _ _ _ (to_localization_map M S) g.to_monoid_hom hg j.to_monoid_hom hj
 
 @[simp] lemma lift_id (x) : lift (map_units S : ∀ y : M, is_unit _) x = x :=

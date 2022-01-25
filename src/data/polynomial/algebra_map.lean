@@ -215,7 +215,7 @@ by rw [← aeval_def, aeval_alg_hom, aeval_X_left, alg_hom.comp_id]
 
 theorem aeval_alg_hom_apply (f : A →ₐ[R] B) (x : A) (p : polynomial R) :
   aeval (f x) p = f (aeval x p) :=
-alg_hom.ext_iff.1 (aeval_alg_hom f x) p
+fun_like.ext_iff.1 (aeval_alg_hom f x) p
 
 theorem aeval_alg_equiv (f : A ≃ₐ[R] B) (x : A) : aeval (f x) = (f : A →ₐ[R] B).comp (aeval x) :=
 aeval_alg_hom (f : A →ₐ[R] B) x

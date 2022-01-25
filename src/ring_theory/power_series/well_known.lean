@@ -105,7 +105,7 @@ begin
   { convert this using 1; ring },
   congr' 1,
   rw [←map_nat_cast (algebra_map ℚ A) (n.choose x), ←map_mul, ←map_mul],
-  refine ring_hom.congr_arg _ _,
+  refine fun_like.congr_arg _ _,
   rw [mul_one_div ↑(n.choose x) _, one_div_mul_one_div],
   symmetry,
   rw [div_eq_iff, div_mul_eq_mul_div, one_mul, choose_eq_factorial_div_factorial],

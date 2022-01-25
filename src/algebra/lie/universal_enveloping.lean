@@ -93,7 +93,7 @@ def lift : (L →ₗ⁅R⁆ A) ≃ (universal_enveloping_algebra R L →ₐ[R] A
 rfl
 
 @[simp] lemma ι_comp_lift : (lift R f) ∘ (ι R) = f :=
-funext $ lie_hom.ext_iff.mp $ (lift R).symm_apply_apply f
+funext $ fun_like.ext_iff.mp $ (lift R).symm_apply_apply f
 
 @[simp] lemma lift_ι_apply (x : L) : lift R f (ι R x) = f x :=
 by rw [←function.comp_apply (lift R f) (ι R) x, ι_comp_lift]

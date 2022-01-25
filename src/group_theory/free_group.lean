@@ -443,7 +443,7 @@ one_mul _
 
 theorem lift.unique (g : free_group α →* β)
   (hg : ∀ x, g (of x) = f x) : ∀{x}, g x = lift f x :=
-monoid_hom.congr_fun $ (lift.symm_apply_eq).mp (funext hg : g ∘ of = f)
+fun_like.congr_fun $ (lift.symm_apply_eq).mp (funext hg : g ∘ of = f)
 
 /-- Two homomorphisms out of a free group are equal if they are equal on generators.
 
@@ -454,7 +454,7 @@ lemma ext_hom {G : Type*} [group G] (f g : free_group α →* G) (h : ∀ a, f (
 lift.symm.injective $ funext h
 
 theorem lift.of_eq (x : free_group α) : lift of x = x :=
-monoid_hom.congr_fun (lift.apply_symm_apply (monoid_hom.id _)) x
+fun_like.congr_fun (lift.apply_symm_apply (monoid_hom.id _)) x
 
 theorem lift.range_subset {s : subgroup β} (H : set.range f ⊆ s) :
   set.range (lift f) ⊆ s :=

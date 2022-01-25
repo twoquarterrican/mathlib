@@ -199,7 +199,7 @@ by { ext : 2; simp }
 lemma bind₂_bind₂ (f : R →+* mv_polynomial σ S) (g : S →+* mv_polynomial σ T)
   (φ : mv_polynomial σ R) :
   (bind₂ g) (bind₂ f φ) = bind₂ ((bind₂ g).comp f) φ :=
-ring_hom.congr_fun (bind₂_comp_bind₂ f g) φ
+fun_like.congr_fun (bind₂_comp_bind₂ f g) φ
 
 lemma rename_comp_bind₁ {υ : Type*} (f : σ → mv_polynomial τ R) (g : τ → υ) :
   (rename g).comp (bind₁ f) = bind₁ (λ i, rename g $ f i) :=
@@ -207,7 +207,7 @@ by { ext1 i, simp }
 
 lemma rename_bind₁ {υ : Type*} (f : σ → mv_polynomial τ R) (g : τ → υ) (φ : mv_polynomial σ R) :
   rename g (bind₁ f φ) = bind₁ (λ i, rename g $ f i) φ :=
-alg_hom.congr_fun (rename_comp_bind₁ f g) φ
+fun_like.congr_fun (rename_comp_bind₁ f g) φ
 
 lemma map_bind₂ (f : R →+* mv_polynomial σ S) (g : S →+* T) (φ : mv_polynomial σ R) :
   map g (bind₂ f φ) = bind₂ ((map g).comp f) φ :=
@@ -223,7 +223,7 @@ by { ext1 i, simp }
 
 lemma bind₁_rename {υ : Type*} (f : τ → mv_polynomial υ R) (g : σ → τ) (φ : mv_polynomial σ R) :
   bind₁ f (rename g φ) = bind₁ (f ∘ g) φ :=
-alg_hom.congr_fun (bind₁_comp_rename f g) φ
+fun_like.congr_fun (bind₁_comp_rename f g) φ
 
 lemma bind₂_map (f : S →+* mv_polynomial σ T) (g : R →+* S) (φ : mv_polynomial σ R) :
   bind₂ f (map g φ) = bind₂ (f.comp g) φ :=
@@ -267,7 +267,7 @@ by { ext : 2; simp }
 lemma eval₂_hom_bind₂ (f : S →+* T) (g : σ → T) (h : R →+* mv_polynomial σ S)
   (φ : mv_polynomial σ R) :
   eval₂_hom f g (bind₂ h φ) = eval₂_hom ((eval₂_hom f g).comp h) g φ :=
-ring_hom.congr_fun (eval₂_hom_comp_bind₂ f g h) φ
+fun_like.congr_fun (eval₂_hom_comp_bind₂ f g h) φ
 
 lemma aeval_bind₂ [algebra S T] (f : σ → T) (g : R →+* mv_polynomial σ S) (φ : mv_polynomial σ R) :
   aeval f (bind₂ g φ) = eval₂_hom ((↑(aeval f : _ →ₐ[S] _) : _ →+* _).comp g) f φ :=

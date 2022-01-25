@@ -79,7 +79,7 @@ theorem of_algebra_map_eq [algebra R A]
 theorem of_algebra_map_eq' [algebra R A]
   (h : algebra_map R A = (algebra_map S A).comp (algebra_map R S)) :
   is_scalar_tower R S A :=
-of_algebra_map_eq $ ring_hom.ext_iff.1 h
+of_algebra_map_eq $ fun_like.ext_iff.1 h
 
 variables (R S A)
 
@@ -175,7 +175,7 @@ lemma restrict_scalars_apply (f : A →ₐ[S] B) (x : A) : f.restrict_scalars R 
 
 lemma restrict_scalars_injective :
   function.injective (restrict_scalars R : (A →ₐ[S] B) → (A →ₐ[R] B)) :=
-λ f g h, alg_hom.ext (alg_hom.congr_fun h : _)
+λ f g h, alg_hom.ext (fun_like.congr_fun h : _)
 
 end alg_hom
 

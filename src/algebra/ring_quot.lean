@@ -176,7 +176,7 @@ lemma ring_quot_ext {T : Type u₄} [semiring T] {r : R → R → Prop} (f g : r
 begin
   ext,
   rcases mk_ring_hom_surjective r x with ⟨x, rfl⟩,
-  exact (ring_hom.congr_fun w x : _),
+  exact (fun_like.congr_fun w x : _),
 end
 
 variables  {T : Type u₄} [semiring T]
@@ -328,7 +328,7 @@ lemma ring_quot_ext' {s : A → A → Prop}
 begin
   ext,
   rcases mk_alg_hom_surjective S s x with ⟨x, rfl⟩,
-  exact (alg_hom.congr_fun w x : _),
+  exact (fun_like.congr_fun w x : _),
 end
 
 /--

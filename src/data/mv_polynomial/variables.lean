@@ -760,10 +760,10 @@ end
 lemma hom_congr_vars {f₁ f₂ : mv_polynomial σ R →+* S} {p₁ p₂ : mv_polynomial σ R}
   (hC : f₁.comp C = f₂.comp C) (hv : ∀ i, i ∈ p₁.vars → i ∈ p₂.vars → f₁ (X i) = f₂ (X i))
   (hp : p₁ = p₂) : f₁ p₁ = f₂ p₂ :=
-calc f₁ p₁ = eval₂_hom (f₁.comp C) (f₁ ∘ X) p₁ : ring_hom.congr_fun (by ext; simp) _
+calc f₁ p₁ = eval₂_hom (f₁.comp C) (f₁ ∘ X) p₁ : fun_like.congr_fun (by ext; simp) _
 ... = eval₂_hom (f₂.comp C) (f₂ ∘ X) p₂ :
   eval₂_hom_congr' hC hv hp
-... = f₂ p₂ : ring_hom.congr_fun (by ext; simp) _
+... = f₂ p₂ : fun_like.congr_fun (by ext; simp) _
 
 lemma exists_rename_eq_of_vars_subset_range
   (p : mv_polynomial σ R) (f : τ → σ)

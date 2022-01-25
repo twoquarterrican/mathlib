@@ -491,7 +491,7 @@ limits.colimit.ι_desc _ _
 @[simp] lemma stalk_to_fiber_ring_hom_germ' (U : opens (prime_spectrum.Top R))
   (x : prime_spectrum.Top R) (hx : x ∈ U) (s : (structure_sheaf R).1.obj (op U)) :
   stalk_to_fiber_ring_hom R x ((structure_sheaf R).1.germ ⟨x, hx⟩ s) = (s.1 ⟨x, hx⟩ : _) :=
-ring_hom.ext_iff.1 (germ_comp_stalk_to_fiber_ring_hom R U ⟨x, hx⟩ : _) s
+fun_like.ext_iff.1 (germ_comp_stalk_to_fiber_ring_hom R U ⟨x, hx⟩ : _) s
 
 @[simp] lemma stalk_to_fiber_ring_hom_germ (U : opens (prime_spectrum.Top R)) (x : U)
   (s : (structure_sheaf R).1.obj (op U)) :
@@ -504,7 +504,7 @@ by { erw [to_stalk, category.assoc, germ_comp_stalk_to_fiber_ring_hom], refl }
 
 @[simp] lemma stalk_to_fiber_ring_hom_to_stalk (x : prime_spectrum.Top R) (f : R) :
   stalk_to_fiber_ring_hom R x (to_stalk R x f) = algebra_map _ (localization _) f :=
-ring_hom.ext_iff.1 (to_stalk_comp_stalk_to_fiber_ring_hom R x) _
+fun_like.ext_iff.1 (to_stalk_comp_stalk_to_fiber_ring_hom R x) _
 
 /-- The ring isomorphism between the stalk of the structure sheaf of `R` at a point `p`
 corresponding to a prime ideal in `R` and the localization of `R` at `p`. -/

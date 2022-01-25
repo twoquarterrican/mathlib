@@ -87,7 +87,7 @@ See note [partially-applied ext lemmas]. -/
 @[ext]
 lemma ring_hom_ext [non_assoc_semiring S] ⦃f g : R ⧸ I →+* S⦄
   (h : f.comp (mk I) = g.comp (mk I)) : f = g :=
-ring_hom.ext $ λ x, quotient.induction_on' x $ (ring_hom.congr_fun h : _)
+ring_hom.ext $ λ x, quotient.induction_on' x $ (fun_like.congr_fun h : _)
 
 instance inhabited : inhabited (R ⧸ I) := ⟨mk I 37⟩
 

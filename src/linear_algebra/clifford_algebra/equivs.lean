@@ -137,7 +137,7 @@ begin
   have : to_complex (involute (ι Q 1)) = conj (to_complex (ι Q 1)),
   { simp only [involute_ι, to_complex_ι, alg_hom.map_neg, one_smul, complex.conj_I] },
   suffices : to_complex.comp involute = complex.conj_ae.to_alg_hom.comp to_complex,
-  { exact alg_hom.congr_fun this c },
+  { exact fun_like.congr_fun this c },
   ext : 2,
   exact this
 end
@@ -161,7 +161,7 @@ begin
 end
 
 @[simp] lemma to_complex_of_complex (c : ℂ) : to_complex (of_complex c) = c :=
-alg_hom.congr_fun to_complex_comp_of_complex c
+fun_like.congr_fun to_complex_comp_of_complex c
 
 @[simp] lemma of_complex_comp_to_complex :
   of_complex.comp to_complex = alg_hom.id ℝ (clifford_algebra Q) :=
@@ -173,7 +173,7 @@ begin
 end
 
 @[simp] lemma of_complex_to_complex (c : clifford_algebra Q) : of_complex (to_complex c) = c :=
-alg_hom.congr_fun of_complex_comp_to_complex c
+fun_like.congr_fun of_complex_comp_to_complex c
 
 /-- The clifford algebras over `clifford_algebra_complex.Q` is isomorphic as an `ℝ`-algebra to
 `ℂ`. -/
@@ -315,7 +315,7 @@ end
 
 @[simp] lemma of_quaternion_to_quaternion (c : clifford_algebra (Q c₁ c₂)) :
   of_quaternion (to_quaternion c) = c :=
-alg_hom.congr_fun
+fun_like.congr_fun
   (of_quaternion_comp_to_quaternion : _ = alg_hom.id R (clifford_algebra (Q c₁ c₂))) c
 
 @[simp]
@@ -327,7 +327,7 @@ begin
 end
 
 @[simp] lemma to_quaternion_of_quaternion (q : ℍ[R,c₁,c₂]) : to_quaternion (of_quaternion q) = q :=
-alg_hom.congr_fun (to_quaternion_comp_of_quaternion : _ = alg_hom.id R ℍ[R,c₁,c₂]) q
+fun_like.congr_fun (to_quaternion_comp_of_quaternion : _ = alg_hom.id R ℍ[R,c₁,c₂]) q
 
 /-- The clifford algebra over `clifford_algebra_quaternion.Q c₁ c₂` is isomorphic as an `R`-algebra
 to `ℍ[R,c₁,c₂]`. -/

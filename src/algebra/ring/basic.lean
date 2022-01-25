@@ -429,29 +429,17 @@ include rα rβ
 
 variables (f : α →+* β) {x y : α} {rα rβ}
 
-theorem congr_fun {f g : α →+* β} (h : f = g) (x : α) : f x = g x :=
-fun_like.congr_fun h x
-
-theorem congr_arg (f : α →+* β) {x y : α} (h : x = y) : f x = f y :=
-fun_like.congr_arg f h
-
-theorem coe_inj ⦃f g : α →+* β⦄ (h : (f : α → β) = g) : f = g :=
-fun_like.coe_injective h
-
 @[ext] theorem ext ⦃f g : α →+* β⦄ (h : ∀ x, f x = g x) : f = g :=
 fun_like.ext _ _ h
-
-theorem ext_iff {f g : α →+* β} : f = g ↔ ∀ x, f x = g x :=
-fun_like.ext_iff
 
 @[simp] lemma mk_coe (f : α →+* β) (h₁ h₂ h₃ h₄) : ring_hom.mk f h₁ h₂ h₃ h₄ = f :=
 ext $ λ _, rfl
 
 theorem coe_add_monoid_hom_injective : function.injective (coe : (α →+* β) → (α →+ β)) :=
-λ f g h, ext (λ x, add_monoid_hom.congr_fun h x)
+λ f g h, ext (λ x, fun_like.congr_fun h x)
 
 theorem coe_monoid_hom_injective : function.injective (coe : (α →+* β) → (α →* β)) :=
-λ f g h, ext (λ x, monoid_hom.congr_fun h x)
+λ f g h, ext (λ x, fun_like.congr_fun h x)
 
 /-- Ring homomorphisms map zero to zero. -/
 protected lemma map_zero (f : α →+* β) : f 0 = 0 := map_zero f
@@ -560,7 +548,7 @@ include rβ rγ
 
 lemma cancel_right {g₁ g₂ : β →+* γ} {f : α →+* β} (hf : surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
-⟨λ h, ring_hom.ext $ hf.forall.2 (ext_iff.1 h), λ h, h ▸ rfl⟩
+⟨λ h, ring_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
 
 lemma cancel_left {g : β →+* γ} {f₁ f₂ : α →+* β} (hg : injective g) :
   g.comp f₁ = g.comp f₂ ↔ f₁ = f₂ :=

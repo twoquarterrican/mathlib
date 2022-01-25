@@ -229,7 +229,7 @@ by apply of_grades_by_comp_to_grades_by
 @[simp]
 lemma of_grades_by_to_grades_by (x : add_monoid_algebra R M) :
   of_grades_by f (to_grades_by f x) = x :=
-alg_hom.congr_fun (of_grades_by_comp_to_grades_by f) x
+fun_like.congr_fun (of_grades_by_comp_to_grades_by f) x
 
 @[simp]
 lemma of_grades_to_grades (x : add_monoid_algebra R ι) : of_grades x.to_grades = x :=
@@ -252,7 +252,7 @@ by apply to_grades_by_comp_of_grades_by
 @[simp]
 lemma to_grades_by_of_grades_by (g : ⨁ i : ι, grade_by R f i) :
   to_grades_by f (of_grades_by f g) = g :=
-alg_hom.congr_fun (to_grades_by_comp_of_grades_by f) g
+fun_like.congr_fun (to_grades_by_comp_of_grades_by f) g
 
 @[simp]
 lemma to_grades_of_grades (g : ⨁ i : ι, grade R i) : (of_grades g).to_grades = g :=

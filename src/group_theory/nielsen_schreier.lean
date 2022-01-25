@@ -105,7 +105,7 @@ instance action_groupoid_is_free {G A : Type u} [group G] [is_free_group G] [mul
     rcases fgp.unique_lift f' with ⟨F', hF', uF'⟩,
     refine ⟨uncurry F' _, _, _⟩,
     { suffices : semidirect_product.right_hom.comp F' = monoid_hom.id _,
-      { exact monoid_hom.ext_iff.mp this },
+      { exact fun_like.ext_iff.mp this },
       ext,
       rw [monoid_hom.comp_apply, hF'],
       refl },

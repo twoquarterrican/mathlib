@@ -428,7 +428,7 @@ by { rcases f with ⟨⟨⟩⟩, rcases g with ⟨⟨⟩⟩, simp only, exact fu
 
 @[to_additive] lemma to_map_injective :
   function.injective (@localization_map.to_map _ _ S N _) :=
-λ _ _ h, ext $ monoid_hom.ext_iff.1 h
+λ _ _ h, ext $ fun_like.ext_iff.1 h
 
 @[to_additive] lemma map_units (f : localization_map S N) (y : S) :
   is_unit (f.to_map y) := f.2 y
@@ -782,7 +782,7 @@ begin
 end
 
 @[simp, to_additive] lemma lift_id (x) : f.lift f.map_units x = x :=
-monoid_hom.ext_iff.1 (f.lift_of_comp $ monoid_hom.id N) x
+fun_like.ext_iff.1 (f.lift_of_comp $ monoid_hom.id N) x
 
 /-- Given two localization maps `f : M →* N, k : M →* P` for a submonoid `S ⊆ M`,
 the hom from `P` to `N` induced by `f` is left inverse to the hom from `N` to `P`
@@ -1086,7 +1086,7 @@ ext_iff.1 (f.mul_equiv_of_localizations_right_inv k) x
 
 @[to_additive] lemma mul_equiv_of_localizations_left_inv (k : N ≃* P) :
   f.mul_equiv_of_localizations (f.of_mul_equiv_of_localizations k) = k :=
-mul_equiv.ext $ monoid_hom.ext_iff.1 $ f.lift_of_comp k.to_monoid_hom
+mul_equiv.ext $ fun_like.ext_iff.1 $ f.lift_of_comp k.to_monoid_hom
 
 @[simp, to_additive] lemma mul_equiv_of_localizations_left_inv_apply {k : N ≃* P} (x) :
   f.mul_equiv_of_localizations (f.of_mul_equiv_of_localizations k) x = k x :=

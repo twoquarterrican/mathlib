@@ -190,7 +190,7 @@ begin
     simp [of], },
   -- finding a proof is finding an element of the subalgebra
   convert subtype.prop (lift R of a),
-  exact alg_hom.congr_fun of_id a,
+  exact fun_like.congr_fun of_id a,
 end
 
 /-- The left-inverse of `algebra_map`. -/

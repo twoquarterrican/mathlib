@@ -57,7 +57,7 @@ def mul_semiring_action.to_ring_hom [mul_semiring_action M R] (x : M) : R →+* 
 
 theorem to_ring_hom_injective [mul_semiring_action M R] [has_faithful_scalar M R] :
   function.injective (mul_semiring_action.to_ring_hom M R) :=
-λ m₁ m₂ h, eq_of_smul_eq_smul $ λ r, ring_hom.ext_iff.1 h r
+λ m₁ m₂ h, eq_of_smul_eq_smul $ λ r, fun_like.ext_iff.1 h r
 
 /-- Each element of the group defines a semiring isomorphism. -/
 @[simps]

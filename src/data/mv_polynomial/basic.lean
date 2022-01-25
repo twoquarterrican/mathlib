@@ -327,13 +327,13 @@ by { ext, exacts [hC _, hX _] }
 @[ext] lemma ring_hom_ext' {A : Type*} [semiring A] {f g : mv_polynomial σ R →+* A}
   (hC : f.comp C = g.comp C) (hX : ∀ i, f (X i) = g (X i)) :
   f = g :=
-ring_hom_ext (ring_hom.ext_iff.1 hC) hX
+ring_hom_ext (fun_like.ext_iff.1 hC) hX
 
 lemma hom_eq_hom [semiring S₂]
   (f g : mv_polynomial σ R →+* S₂)
   (hC : f.comp C = g.comp C) (hX : ∀n:σ, f (X n) = g (X n)) (p : mv_polynomial σ R) :
   f p = g p :=
-ring_hom.congr_fun (ring_hom_ext' hC hX) p
+fun_like.congr_fun (ring_hom_ext' hC hX) p
 
 lemma is_id (f : mv_polynomial σ R →+* mv_polynomial σ R)
   (hC : f.comp C = C) (hX : ∀n:σ, f (X n) = (X n)) (p : mv_polynomial σ R) :
@@ -1101,7 +1101,7 @@ by { rw ← comp_eval₂_hom, refl }
   eval₂_hom f (0 : σ → S₂) p = f (constant_coeff p) :=
 begin
   suffices : eval₂_hom f (0 : σ → S₂) = f.comp constant_coeff,
-    from ring_hom.congr_fun this p,
+    from fun_like.congr_fun this p,
   ext; simp
 end
 

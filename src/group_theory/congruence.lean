@@ -729,7 +729,7 @@ lemma lift_funext (f g : c.quotient →* P) (h : ∀ a : M, f a = g a) : f = g :
 begin
   rw [←lift_apply_mk' f, ←lift_apply_mk' g],
   congr' 1,
-  exact monoid_hom.ext_iff.2 h,
+  exact fun_like.ext_iff.2 h,
 end
 
 /-- The uniqueness part of the universal property for quotients of monoids. -/

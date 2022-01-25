@@ -67,7 +67,7 @@ instance : algebra R (⨁ i, A i) :=
   commutes' := λ r x, begin
     change add_monoid_hom.mul (direct_sum.of _ _ _) x =
       add_monoid_hom.mul.flip (direct_sum.of _ _ _) x,
-    apply add_monoid_hom.congr_fun _ x,
+    apply fun_like.congr_fun _ x,
     ext i xi : 2,
     dsimp only [add_monoid_hom.comp_apply, add_monoid_hom.mul_apply, add_monoid_hom.flip_apply],
     rw [of_mul_of, of_mul_of],
@@ -75,7 +75,7 @@ instance : algebra R (⨁ i, A i) :=
   end,
   smul_def' := λ r x, begin
     change distrib_mul_action.to_add_monoid_hom _ r x = add_monoid_hom.mul (direct_sum.of _ _ _) x,
-    apply add_monoid_hom.congr_fun _ x,
+    apply fun_like.congr_fun _ x,
     ext i xi : 2,
     dsimp only [add_monoid_hom.comp_apply, distrib_mul_action.to_add_monoid_hom_apply,
       add_monoid_hom.mul_apply],

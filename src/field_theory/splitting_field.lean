@@ -834,7 +834,7 @@ variables [algebra K L] (hb : splits (algebra_map K L) f)
 /-- Embeds the splitting field into any other field that splits the polynomial. -/
 def lift : splitting_field f →ₐ[K] L :=
 { commutes' := λ r, by { have := classical.some_spec (splitting_field_aux.exists_lift _ _ _ _ hb),
-    exact ring_hom.ext_iff.1 this r },
+    exact fun_like.ext_iff.1 this r },
   .. classical.some (splitting_field_aux.exists_lift _ _ _ _ hb) }
 
 theorem adjoin_roots : algebra.adjoin K

@@ -117,7 +117,7 @@ by { ext a, exact distrib_mul_action_hom.congr_fun h a, }
 
 lemma to_mul_hom_injective {f g : non_unital_alg_hom R A B}
   (h : (f : mul_hom A B) = (g : mul_hom A B)) : f = g :=
-by { ext a, exact mul_hom.congr_fun h a, }
+by { ext a, exact fun_like.congr_fun h a, }
 
 @[norm_cast] lemma coe_distrib_mul_action_hom_mk (f : non_unital_alg_hom R A B) (h₁ h₂ h₃ h₄) :
   ((⟨f, h₁, h₂, h₃, h₄⟩ : non_unital_alg_hom R A B) : A →+[R] B) =

@@ -190,7 +190,7 @@ begin
     simp [of], },
   -- finding a proof is finding an element of the subalgebra
   convert subtype.prop (lift Q of a),
-  exact alg_hom.congr_fun of_id a,
+  exact fun_like.congr_fun of_id a,
 end
 
 /-- A Clifford algebra with a zero quadratic form is isomorphic to an `exterior_algebra` -/
@@ -238,7 +238,7 @@ See `clifford_algebra.equiv_of_isometry` for the case when `f` is a `quadratic_f
 def map (f : M₁ →ₗ[R] M₂) (hf : ∀ m, Q₂ (f m) = Q₁ m) :
   clifford_algebra Q₁ →ₐ[R] clifford_algebra Q₂ :=
 clifford_algebra.lift Q₁ ⟨(clifford_algebra.ι Q₂).comp f,
-  λ m, (ι_sq_scalar _ _).trans $ ring_hom.congr_arg _ $ hf m⟩
+  λ m, (ι_sq_scalar _ _).trans $ fun_like.congr_arg _ $ hf m⟩
 
 @[simp]
 lemma map_comp_ι (f : M₁ →ₗ[R] M₂) (hf) :
@@ -293,12 +293,12 @@ lemma equiv_of_isometry_symm (e : Q₁.isometry Q₂) :
 @[simp]
 lemma equiv_of_isometry_trans (e₁₂ : Q₁.isometry Q₂) (e₂₃ : Q₂.isometry Q₃) :
   (equiv_of_isometry e₁₂).trans (equiv_of_isometry e₂₃) = equiv_of_isometry (e₁₂.trans e₂₃) :=
-by { ext x, exact alg_hom.congr_fun (map_comp_map Q₁ Q₂ Q₃ _ _ _ _) x }
+by { ext x, exact fun_like.congr_fun (map_comp_map Q₁ Q₂ Q₃ _ _ _ _) x }
 
 @[simp]
 lemma equiv_of_isometry_refl :
   (equiv_of_isometry $ quadratic_form.isometry.refl Q₁) = alg_equiv.refl :=
-by { ext x, exact alg_hom.congr_fun (map_id Q₁) x }
+by { ext x, exact fun_like.congr_fun (map_id Q₁) x }
 
 end map
 

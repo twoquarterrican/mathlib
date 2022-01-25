@@ -267,7 +267,7 @@ lemma linear_independent_to_linear_map (R : Type u) (A : Type v) (B : Type w)
 have linear_independent B (linear_map.lto_fun R A B ∘ alg_hom.to_linear_map),
 from ((linear_independent_monoid_hom A B).comp
   (coe : (A →ₐ[R] B) → (A →* B))
-  (λ f g hfg, alg_hom.ext $ monoid_hom.ext_iff.1 hfg) : _),
+  (λ f g hfg, alg_hom.ext $ fun_like.ext_iff.1 hfg) : _),
 this.of_comp _
 
 lemma cardinal_mk_alg_hom (K : Type u) (V : Type v) (W : Type w)

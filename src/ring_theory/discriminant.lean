@@ -248,7 +248,7 @@ begin
     { rw [aeval_def, eval₂_eq_eval_map, ← is_root.def, ← mem_roots],
       { exact multiset.erase_subset _ _ hσ },
       { simp [minpoly.ne_zero (is_separable.is_integral K pb.gen)] } },
-    { replace h := alg_hom.congr_fun (equiv.injective _ h) pb.gen,
+    { replace h := fun_like.congr_fun (equiv.injective _ h) pb.gen,
       rw [power_basis.lift_gen] at h,
       rw [← h] at hσ,
       refine multiset.mem_erase_of_nodup hnodup hσ, },

@@ -297,7 +297,7 @@ rfl
 
 @[to_additive] lemma to_monoid_hom_injective {M N} [mul_one_class M] [mul_one_class N] :
   function.injective (to_monoid_hom : (M ≃* N) → M →* N) :=
-λ f g h, mul_equiv.ext (monoid_hom.ext_iff.1 h)
+λ f g h, mul_equiv.ext (fun_like.ext_iff.1 h)
 
 
 /--
@@ -388,8 +388,8 @@ def monoid_hom.to_mul_equiv [mul_one_class M] [mul_one_class N] (f : M →* N) (
   M ≃* N :=
 { to_fun := f,
   inv_fun := g,
-  left_inv := monoid_hom.congr_fun h₁,
-  right_inv := monoid_hom.congr_fun h₂,
+  left_inv := fun_like.congr_fun h₁,
+  right_inv := fun_like.congr_fun h₂,
   map_mul' := f.map_mul }
 
 /-- An additive equivalence of additive groups preserves subtraction. -/

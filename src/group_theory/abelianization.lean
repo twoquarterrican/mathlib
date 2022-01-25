@@ -112,7 +112,7 @@ variables {A : Type v} [monoid A]
 @[ext]
 theorem hom_ext (φ ψ : abelianization G →* A)
   (h : φ.comp of = ψ.comp of) : φ = ψ :=
-monoid_hom.ext $ λ x, quotient_group.induction_on x $ monoid_hom.congr_fun h
+monoid_hom.ext $ λ x, quotient_group.induction_on x $ fun_like.congr_fun h
 
 section map
 
@@ -133,7 +133,7 @@ lemma map_comp {I : Type w} [group I] (g : H →* I) :
 
 @[simp]
 lemma map_map_apply {I : Type w} [group I] {g : H →* I} {x : abelianization G}:
-  map g (map f x) = map (g.comp f) x := monoid_hom.congr_fun (map_comp _ _) x
+  map g (map f x) = map (g.comp f) x := fun_like.congr_fun (map_comp _ _) x
 
 end map
 

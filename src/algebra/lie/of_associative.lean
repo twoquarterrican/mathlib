@@ -104,7 +104,7 @@ lemma to_lie_hom_apply (x : A) : f.to_lie_hom x = f x := rfl
 
 lemma to_lie_hom_injective {f g : A →ₐ[R] B}
   (h : (f : A →ₗ⁅R⁆ B) = (g : A →ₗ⁅R⁆ B)) : f = g :=
-by { ext a, exact lie_hom.congr_fun h a, }
+by { ext a, exact fun_like.congr_fun h a, }
 
 end alg_hom
 

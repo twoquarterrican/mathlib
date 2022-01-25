@@ -158,7 +158,7 @@ by { ext a, exact mul_action_hom.congr_fun h a, }
 
 lemma to_add_monoid_hom_injective {f g : A →+[M] B}
   (h : (f : A →+ B) = (g : A →+ B)) : f = g :=
-by { ext a, exact add_monoid_hom.congr_fun h a, }
+by { ext a, exact fun_like.congr_fun h a, }
 
 @[simp] lemma map_zero (f : A →+[M] B) : f 0 = 0 :=
 f.map_zero'

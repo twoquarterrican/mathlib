@@ -79,8 +79,8 @@ namespace monoid_hom
 @[to_additive]
 lemma ext_iff₂ {mM : mul_one_class M} {mN : mul_one_class N} {mP : comm_monoid P}
   {f g : M →* N →* P} :
-  f = g ↔ (∀ x y, f x y = g x y) :=
-monoid_hom.ext_iff.trans $ forall_congr $ λ _, monoid_hom.ext_iff
+  f = g ↔ ∀ x y, f x y = g x y :=
+fun_like.ext_iff.trans $ forall_congr $ λ _, fun_like.ext_iff
 
 /-- `flip` arguments of `f : M →* N →* P` -/
 @[to_additive "`flip` arguments of `f : M →+ N →+ P`"]

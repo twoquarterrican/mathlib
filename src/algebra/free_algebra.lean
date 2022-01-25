@@ -407,7 +407,7 @@ begin
     simp [of, subtype.coind], },
   -- finding a proof is finding an element of the subalgebra
   convert subtype.prop (lift R of a),
-  simp [alg_hom.ext_iff] at of_id,
+  simp [fun_like.ext_iff] at of_id,
   exact of_id a,
 end
 

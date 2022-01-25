@@ -354,6 +354,6 @@ lemma add_monoid_hom.mul_op_ext {α β} [add_zero_class α] [add_zero_class β]
   (f g : αᵐᵒᵖ →+ β)
   (h : f.comp (op_add_equiv : α ≃+ αᵐᵒᵖ).to_add_monoid_hom =
        g.comp (op_add_equiv : α ≃+ αᵐᵒᵖ).to_add_monoid_hom) : f = g :=
-add_monoid_hom.ext $ mul_opposite.rec $ λ x, (add_monoid_hom.congr_fun h : _) x
+add_monoid_hom.ext $ mul_opposite.rec $ λ x, (fun_like.congr_fun h : _) x
 
 end ext

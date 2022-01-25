@@ -29,7 +29,7 @@ begin
   suffices :
     distrib_mul_action.to_add_monoid_hom (polynomial R) m =
       (map_ring_hom (mul_semiring_action.to_ring_hom M R m)).to_add_monoid_hom,
-  { ext1 r, exact add_monoid_hom.congr_fun this r, },
+  { ext1 r, exact fun_like.congr_fun this r, },
   ext n r : 2,
   change m • monomial n r = map (mul_semiring_action.to_ring_hom M R m) (monomial n r),
   simpa only [polynomial.map_monomial, polynomial.smul_monomial],

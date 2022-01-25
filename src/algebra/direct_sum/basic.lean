@@ -127,7 +127,7 @@ then they are equal.
 See note [partially-applied ext lemmas]. -/
 @[ext] lemma add_hom_ext' {γ : Type*} [add_monoid γ] ⦃f g : (⨁ i, β i) →+ γ⦄
   (H : ∀ (i : ι), f.comp (of _ i) = g.comp (of _ i)) : f = g :=
-add_hom_ext $ λ i, add_monoid_hom.congr_fun $ H i
+add_hom_ext $ λ i, fun_like.congr_fun $ H i
 
 variables {γ : Type u₁} [add_comm_monoid γ]
 

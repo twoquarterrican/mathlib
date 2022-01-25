@@ -195,7 +195,7 @@ begin
     split_ifs with h h, swap, refl,
     rw [fintype.card_units, nat.cast_sub, cast_card_eq_zero, nat.cast_one, zero_sub],
     show 1 ≤ q, from fintype.card_pos_iff.mpr ⟨0⟩ },
-  rw [← forall_pow_eq_one_iff, monoid_hom.ext_iff],
+  rw [← forall_pow_eq_one_iff, fun_like.ext_iff],
   apply forall_congr, intro x,
   rw [units.ext_iff, units.coe_pow, units.coe_one, monoid_hom.one_apply],
   refl,

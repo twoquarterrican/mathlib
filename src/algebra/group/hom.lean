@@ -459,84 +459,6 @@ lemma monoid_with_zero_hom.ext [mul_zero_one_class M] [mul_zero_one_class N]
   ⦃f g : monoid_with_zero_hom M N⦄ (h : ∀ x, f x = g x) : f = g :=
 fun_like.ext _ _ h
 
-section deprecated
-/-- Deprecated: use `fun_like.congr_fun` instead. -/
-@[to_additive]
-theorem one_hom.congr_fun [has_one M] [has_one N]
-  {f g : one_hom M N} (h : f = g) (x : M) : f x = g x :=
-fun_like.congr_fun h x
-/-- Deprecated: use `fun_like.congr_fun` instead. -/
-@[to_additive]
-theorem mul_hom.congr_fun [has_mul M] [has_mul N]
-  {f g : mul_hom M N} (h : f = g) (x : M) : f x = g x :=
-fun_like.congr_fun h x
-/-- Deprecated: use `fun_like.congr_fun` instead. -/
-@[to_additive]
-theorem monoid_hom.congr_fun [mul_one_class M] [mul_one_class N]
-  {f g : M →* N} (h : f = g) (x : M) : f x = g x :=
-fun_like.congr_fun h x
-/-- Deprecated: use `fun_like.congr_fun` instead. -/
-theorem monoid_with_zero_hom.congr_fun [mul_zero_one_class M] [mul_zero_one_class N]
-  {f g : monoid_with_zero_hom M N} (h : f = g) (x : M) : f x = g x :=
-fun_like.congr_fun h x
-
-/-- Deprecated: use `fun_like.congr_arg` instead. -/
-@[to_additive]
-theorem one_hom.congr_arg [has_one M] [has_one N]
-  (f : one_hom M N) {x y : M} (h : x = y) : f x = f y :=
-fun_like.congr_arg f h
-/-- Deprecated: use `fun_like.congr_arg` instead. -/
-@[to_additive]
-theorem mul_hom.congr_arg [has_mul M] [has_mul N]
-  (f : mul_hom M N) {x y : M} (h : x = y) : f x = f y :=
-fun_like.congr_arg f h
-/-- Deprecated: use `fun_like.congr_arg` instead. -/
-@[to_additive]
-theorem monoid_hom.congr_arg [mul_one_class M] [mul_one_class N]
-  (f : M →* N) {x y : M} (h : x = y) : f x = f y :=
-fun_like.congr_arg f h
-/-- Deprecated: use `fun_like.congr_arg` instead. -/
-theorem monoid_with_zero_hom.congr_arg [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) {x y : M} (h : x = y) : f x = f y :=
-fun_like.congr_arg f h
-
-/-- Deprecated: use `fun_like.coe_injective` instead. -/
-@[to_additive]
-lemma one_hom.coe_inj [has_one M] [has_one N] ⦃f g : one_hom M N⦄ (h : (f : M → N) = g) : f = g :=
-fun_like.coe_injective h
-/-- Deprecated: use `fun_like.coe_injective` instead. -/
-@[to_additive]
-lemma mul_hom.coe_inj [has_mul M] [has_mul N] ⦃f g : mul_hom M N⦄ (h : (f : M → N) = g) : f = g :=
-fun_like.coe_injective h
-/-- Deprecated: use `fun_like.coe_injective` instead. -/
-@[to_additive]
-lemma monoid_hom.coe_inj [mul_one_class M] [mul_one_class N]
-  ⦃f g : M →* N⦄ (h : (f : M → N) = g) : f = g :=
-fun_like.coe_injective h
-/-- Deprecated: use `fun_like.coe_injective` instead. -/
-lemma monoid_with_zero_hom.coe_inj [mul_zero_one_class M] [mul_zero_one_class N]
-  ⦃f g : monoid_with_zero_hom M N⦄ (h : (f : M → N) = g) : f = g :=
-fun_like.coe_injective h
-
-/-- Deprecated: use `fun_like.ext_iff` instead. -/
-@[to_additive]
-lemma one_hom.ext_iff [has_one M] [has_one N] {f g : one_hom M N} : f = g ↔ ∀ x, f x = g x :=
-fun_like.ext_iff
-/-- Deprecated: use `fun_like.ext_iff` instead. -/
-@[to_additive]
-lemma mul_hom.ext_iff [has_mul M] [has_mul N] {f g : mul_hom M N} : f = g ↔ ∀ x, f x = g x :=
-fun_like.ext_iff
-/-- Deprecated: use `fun_like.ext_iff` instead. -/
-@[to_additive]
-lemma monoid_hom.ext_iff [mul_one_class M] [mul_one_class N]
-  {f g : M →* N} : f = g ↔ ∀ x, f x = g x :=
-fun_like.ext_iff
-/-- Deprecated: use `fun_like.ext_iff` instead. -/
-lemma monoid_with_zero_hom.ext_iff [mul_zero_one_class M] [mul_zero_one_class N]
-  {f g : monoid_with_zero_hom M N} : f = g ↔ ∀ x, f x = g x :=
-fun_like.ext_iff
-end deprecated
-
 @[simp, to_additive]
 lemma one_hom.mk_coe [has_one M] [has_one N]
   (f : one_hom M N) (h1) : one_hom.mk f h1 = f :=
@@ -721,24 +643,23 @@ lemma monoid_with_zero_hom.comp_assoc {Q : Type*}
 lemma one_hom.cancel_right [has_one M] [has_one N] [has_one P]
   {g₁ g₂ : one_hom N P} {f : one_hom M N} (hf : function.surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
-⟨λ h, one_hom.ext $ hf.forall.2 (one_hom.ext_iff.1 h), λ h, h ▸ rfl⟩
+⟨λ h, one_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
 @[to_additive]
 lemma mul_hom.cancel_right [has_mul M] [has_mul N] [has_mul P]
   {g₁ g₂ : mul_hom N P} {f : mul_hom M N} (hf : function.surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
-⟨λ h, mul_hom.ext $ hf.forall.2 (mul_hom.ext_iff.1 h), λ h, h ▸ rfl⟩
+⟨λ h, mul_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
 @[to_additive]
 lemma monoid_hom.cancel_right
   [mul_one_class M] [mul_one_class N] [mul_one_class P]
   {g₁ g₂ : N →* P} {f : M →* N} (hf : function.surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
-⟨λ h, monoid_hom.ext $ hf.forall.2 (monoid_hom.ext_iff.1 h), λ h, h ▸ rfl⟩
+⟨λ h, monoid_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
 lemma monoid_with_zero_hom.cancel_right
   [mul_zero_one_class M] [mul_zero_one_class N] [mul_zero_one_class P]
   {g₁ g₂ : monoid_with_zero_hom N P} {f : monoid_with_zero_hom M N} (hf : function.surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
-⟨λ h, monoid_with_zero_hom.ext $ hf.forall.2 (monoid_with_zero_hom.ext_iff.1 h),
- λ h, h ▸ rfl⟩
+⟨λ h, monoid_with_zero_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
 
 @[to_additive]
 lemma one_hom.cancel_left [has_one M] [has_one N] [has_one P]
@@ -769,17 +690,17 @@ lemma monoid_with_zero_hom.cancel_left
 @[to_additive]
 lemma monoid_hom.to_one_hom_injective [mul_one_class M] [mul_one_class N] :
   function.injective (monoid_hom.to_one_hom : (M →* N) → one_hom M N) :=
-λ f g h, monoid_hom.ext $ one_hom.ext_iff.mp h
+λ f g h, monoid_hom.ext $ by convert fun_like.ext_iff.mp h
 @[to_additive]
 lemma monoid_hom.to_mul_hom_injective [mul_one_class M] [mul_one_class N] :
   function.injective (monoid_hom.to_mul_hom : (M →* N) → mul_hom M N) :=
-λ f g h, monoid_hom.ext $ mul_hom.ext_iff.mp h
+λ f g h, monoid_hom.ext $ by convert fun_like.ext_iff.mp h
 lemma monoid_with_zero_hom.to_monoid_hom_injective [monoid_with_zero M] [monoid_with_zero N] :
   function.injective (monoid_with_zero_hom.to_monoid_hom : monoid_with_zero_hom M N → M →* N) :=
-λ f g h, monoid_with_zero_hom.ext $ monoid_hom.ext_iff.mp h
+λ f g h, monoid_with_zero_hom.ext $ by convert fun_like.ext_iff.mp h
 lemma monoid_with_zero_hom.to_zero_hom_injective [monoid_with_zero M] [monoid_with_zero N] :
   function.injective (monoid_with_zero_hom.to_zero_hom : monoid_with_zero_hom M N → zero_hom M N) :=
-λ f g h, monoid_with_zero_hom.ext $ zero_hom.ext_iff.mp h
+λ f g h, monoid_with_zero_hom.ext $ by convert fun_like.ext_iff.mp h
 
 @[simp, to_additive] lemma one_hom.comp_id [has_one M] [has_one N]
   (f : one_hom M N) : f.comp (one_hom.id M) = f := one_hom.ext $ λ x, rfl

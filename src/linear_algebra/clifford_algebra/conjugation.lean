@@ -46,7 +46,7 @@ lift_ι_apply _ _ m
 by { ext, simp }
 
 lemma involute_involutive : function.involutive (involute : _ → clifford_algebra Q) :=
-alg_hom.congr_fun involute_comp_involute
+fun_like.congr_fun involute_comp_involute
 
 @[simp] lemma involute_involute : ∀ a : clifford_algebra Q, involute (involute a) = a :=
 involute_involutive

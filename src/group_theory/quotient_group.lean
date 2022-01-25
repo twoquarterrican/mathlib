@@ -76,7 +76,7 @@ compositions with `add_quotient_group.mk'` are equal.
 
 See note [partially-applied ext lemmas]. "-/]
 lemma monoid_hom_ext ⦃f g : G ⧸ N →* H⦄ (h : f.comp (mk' N) = g.comp (mk' N)) : f = g :=
-monoid_hom.ext $ λ x, quotient_group.induction_on x $ (monoid_hom.congr_fun h : _)
+monoid_hom.ext $ λ x, quotient_group.induction_on x $ (fun_like.congr_fun h : _)
 
 @[simp, to_additive quotient_add_group.eq_zero_iff]
 lemma eq_one_iff {N : subgroup G} [nN : N.normal] (x : G) : (x : G ⧸ N) = 1 ↔ x ∈ N :=

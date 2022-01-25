@@ -218,8 +218,8 @@ variables {P : Type u₃} [comm_semiring P] [char_p P p] [perfect_ring P p]
 @[simps] lemma mk' {f : P →+* R} (g : P ≃+* ring.perfection R p)
   (hfg : perfection.lift p P R f = g) :
   perfection_map p f :=
-{ injective := λ x y hxy, g.injective $ (ring_hom.ext_iff.1 hfg x).symm.trans $
-    eq.symm $ (ring_hom.ext_iff.1 hfg y).symm.trans $ perfection.ext $ λ n, (hxy n).symm,
+{ injective := λ x y hxy, g.injective $ (fun_like.ext_iff.1 hfg x).symm.trans $
+    eq.symm $ (fun_like.ext_iff.1 hfg y).symm.trans $ perfection.ext $ λ n, (hxy n).symm,
   surjective := λ y hy, let ⟨x, hx⟩ := g.surjective ⟨y, hy⟩ in
     ⟨x, λ n, show perfection.coeff R p n (perfection.lift p P R f x) =
         perfection.coeff R p n ⟨y, hy⟩,
@@ -279,7 +279,7 @@ where `P` is any perfection of `S`. -/
     exact (perfection.lift p R S).symm_apply_apply f },
   right_inv := λ f, ring_hom.ext $ λ x, m.equiv.injective $ (m.equiv.apply_symm_apply _).trans $
     show perfection.lift p R S (π.comp f) x = ring_hom.comp ↑m.equiv f x,
-    from ring_hom.ext_iff.1 ((perfection.lift p R S).apply_eq_iff_eq_symm_apply.2 rfl) _ }
+    from fun_like.ext_iff.1 ((perfection.lift p R S).apply_eq_iff_eq_symm_apply.2 rfl) _ }
 
 variables {R p}
 
@@ -304,7 +304,7 @@ lemma comp_map {π : P →+* R} (m : perfection_map p π) {σ : Q →+* S} (n : 
 
 lemma map_map {π : P →+* R} (m : perfection_map p π) {σ : Q →+* S} (n : perfection_map p σ)
   (φ : R →+* S) (x : P) : σ (map p m n φ x) = φ (π x) :=
-ring_hom.ext_iff.1 (comp_map p m n φ) x
+fun_like.ext_iff.1 (comp_map p m n φ) x
 
 -- Why is this slow?
 lemma map_eq_map (φ : R →+* S) :

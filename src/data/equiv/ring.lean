@@ -276,7 +276,7 @@ def to_ring_hom (e : R ≃+* S) : R →+* S :=
 { .. e.to_mul_equiv.to_monoid_hom, .. e.to_add_equiv.to_add_monoid_hom }
 
 lemma to_ring_hom_injective : function.injective (to_ring_hom : (R ≃+* S) → R →+* S) :=
-λ f g h, ring_equiv.ext (ring_hom.ext_iff.1 h)
+λ f g h, ring_equiv.ext (fun_like.ext_iff.1 h)
 
 instance has_coe_to_ring_hom : has_coe (R ≃+* S) (R →+* S) := ⟨ring_equiv.to_ring_hom⟩
 
@@ -287,7 +287,7 @@ lemma to_ring_hom_eq_coe (f : R ≃+* S) : f.to_ring_hom = ↑f := rfl
 lemma coe_ring_hom_inj_iff {R S : Type*} [non_assoc_semiring R] [non_assoc_semiring S]
   (f g : R ≃+* S) :
   f = g ↔ (f : R →+* S) = g :=
-⟨congr_arg _, λ h, ext $ ring_hom.ext_iff.mp h⟩
+⟨congr_arg _, λ h, ext $ fun_like.ext_iff.mp h⟩
 
 /-- Reinterpret a ring equivalence as a monoid homomorphism. -/
 abbreviation to_monoid_hom (e : R ≃+* S) : R →* S := e.to_ring_hom.to_monoid_hom
@@ -350,8 +350,8 @@ def of_hom_inv (hom : R →+* S) (inv : S →+* R)
   (hom_inv_id : inv.comp hom = ring_hom.id R) (inv_hom_id : hom.comp inv = ring_hom.id S) :
   R ≃+* S :=
 { inv_fun := inv,
-  left_inv := λ x, ring_hom.congr_fun hom_inv_id x,
-  right_inv := λ x, ring_hom.congr_fun inv_hom_id x,
+  left_inv := λ x, fun_like.congr_fun hom_inv_id x,
+  right_inv := λ x, fun_like.congr_fun inv_hom_id x,
   ..hom }
 
 @[simp]

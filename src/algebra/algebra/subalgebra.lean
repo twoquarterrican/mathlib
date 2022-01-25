@@ -711,7 +711,7 @@ lemma _root_.alg_equiv.subsingleton_left [subsingleton (subalgebra R A)] :
 begin
   haveI : subsingleton (A →ₐ[R] B) := alg_hom.subsingleton,
   exact ⟨λ f g, alg_equiv.ext
-    (λ x, alg_hom.ext_iff.mp (subsingleton.elim f.to_alg_hom g.to_alg_hom) x)⟩,
+    (λ x, fun_like.ext_iff.mp (subsingleton.elim f.to_alg_hom g.to_alg_hom) x)⟩,
 end
 
 -- TODO[gh-6025]: make this an instance once safe to do so

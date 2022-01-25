@@ -112,12 +112,12 @@ variable (G)
   inv_fun := free_group.lift of,
   left_inv :=
     suffices (free_group.lift of).comp (lift' free_group.of) = monoid_hom.id G,
-    from monoid_hom.congr_fun this,
+    from fun_like.congr_fun this,
     by { ext, simp },
   right_inv :=
     suffices
       (lift' free_group.of).comp (free_group.lift of) = monoid_hom.id (free_group (generators G)),
-    from monoid_hom.congr_fun this,
+    from fun_like.congr_fun this,
     by { ext, simp },
   map_mul' := (lift' free_group.of).map_mul }
 

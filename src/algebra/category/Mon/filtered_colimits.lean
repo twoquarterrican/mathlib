@@ -202,7 +202,7 @@ def cocone_morphism (j : J) : F.obj j ⟶ colimit :=
 @[simp, to_additive]
 lemma cocone_naturality {j j' : J} (f : j ⟶ j') :
   F.map f ≫ (cocone_morphism j') = cocone_morphism j :=
-monoid_hom.coe_inj ((types.colimit_cocone (F ⋙ forget Mon)).ι.naturality f)
+fun_like.coe_inj ((types.colimit_cocone (F ⋙ forget Mon)).ι.naturality f)
 
 /-- The cocone over the proposed colimit monoid. -/
 @[to_additive "The cocone over the proposed colimit additive monoid."]
@@ -229,18 +229,18 @@ def colimit_desc (t : cocone F) : colimit ⟶ t.X :=
     cases x with i x, cases y with j y,
     rw colimit_mul_mk_eq F ⟨i, x⟩ ⟨j, y⟩ (max' i j) (left_to_max i j) (right_to_max i j),
     dsimp [types.colimit_cocone_is_colimit],
-    rw [monoid_hom.map_mul, t.w_apply, t.w_apply],
+    rw [map_mul, t.w_apply, t.w_apply],
   end }
 
 /-- The proposed colimit cocone is a colimit in `Mon`. -/
 @[to_additive "The proposed colimit cocone is a colimit in `AddMon`."]
 def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := colimit_desc,
-  fac' := λ t j, monoid_hom.coe_inj
+  fac' := λ t j, fun_like.coe_inj
     ((types.colimit_cocone_is_colimit (F ⋙ forget Mon)).fac ((forget Mon).map_cocone t) j),
-  uniq' := λ t m h, monoid_hom.coe_inj $
+  uniq' := λ t m h, fun_like.coe_inj $
     (types.colimit_cocone_is_colimit (F ⋙ forget Mon)).uniq ((forget Mon).map_cocone t) m
-      (λ j, funext $ λ x, monoid_hom.congr_fun (h j) x) }
+      (λ j, funext $ λ x, fun_like.congr_fun (h j) x) }
 
 @[to_additive]
 instance forget_preserves_filtered_colimits : preserves_filtered_colimits (forget Mon) :=
@@ -299,11 +299,11 @@ def colimit_cocone : cocone F :=
 def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t, Mon.filtered_colimits.colimit_desc (F ⋙ forget₂ CommMon Mon.{v})
     ((forget₂ CommMon Mon.{v}).map_cocone t),
-  fac' := λ t j, monoid_hom.coe_inj $
+  fac' := λ t j, fun_like.coe_inj $
     (types.colimit_cocone_is_colimit (F ⋙ forget CommMon)).fac ((forget CommMon).map_cocone t) j,
-  uniq' := λ t m h, monoid_hom.coe_inj $
+  uniq' := λ t m h, fun_like.coe_inj $
     (types.colimit_cocone_is_colimit (F ⋙ forget CommMon)).uniq ((forget CommMon).map_cocone t) m
-    ((λ j, funext $ λ x, monoid_hom.congr_fun (h j) x)) }
+    ((λ j, funext $ λ x, fun_like.congr_fun (h j) x)) }
 
 @[to_additive forget₂_AddMon_preserves_filtered_colimits]
 instance forget₂_Mon_preserves_filtered_colimits :

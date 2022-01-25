@@ -225,7 +225,7 @@ variables {A : Type*}
 if `f 1 = g 1`. -/
 @[ext] theorem ext_int [add_monoid A] {f g : ℤ →+ A} (h1 : f 1 = g 1) : f = g :=
 have f.comp (int.of_nat_hom : ℕ →+ ℤ) = g.comp (int.of_nat_hom : ℕ →+ ℤ) := ext_nat' _ _ h1,
-have ∀ n : ℕ, f n = g n := ext_iff.1 this,
+have ∀ n : ℕ, f n = g n := fun_like.ext_iff.1 this,
 ext $ λ n, int.cases_on n this $ λ n, eq_on_neg (this $ n + 1)
 
 variables [add_group A] [has_one A]
@@ -234,7 +234,7 @@ theorem eq_int_cast_hom (f : ℤ →+ A) (h1 : f 1 = 1) : f = int.cast_add_hom A
 ext_int $ by simp [h1]
 
 theorem eq_int_cast (f : ℤ →+ A) (h1 : f 1 = 1) : ∀ n : ℤ, f n = n :=
-ext_iff.1 (f.eq_int_cast_hom h1)
+fun_like.ext_iff.1 (f.eq_int_cast_hom h1)
 
 end add_monoid_hom
 
@@ -243,7 +243,7 @@ variables {M : Type*} [monoid M]
 open multiplicative
 
 @[ext] theorem ext_mint {f g : multiplicative ℤ →* M} (h1 : f (of_add 1) = g (of_add 1)) : f = g :=
-monoid_hom.ext $ add_monoid_hom.ext_iff.mp $
+monoid_hom.ext $ fun_like.ext_iff.mp $ to_additive.injective $
   @add_monoid_hom.ext_int _ _ f.to_additive g.to_additive h1
 
 /-- If two `monoid_hom`s agree on `-1` and the naturals then they are equal. -/
@@ -253,10 +253,10 @@ monoid_hom.ext $ add_monoid_hom.ext_iff.mp $
   f = g :=
 begin
   ext (x | x),
-  { exact (monoid_hom.congr_fun h_nat x : _), },
+  { convert fun_like.congr_fun h_nat x },
   { rw [int.neg_succ_of_nat_eq, ← neg_one_mul, f.map_mul, g.map_mul],
     congr' 1,
-    exact_mod_cast (monoid_hom.congr_fun h_nat (x + 1) : _), }
+    exact_mod_cast (fun_like.congr_fun h_nat (x + 1) : _), }
 end
 
 end monoid_hom
@@ -271,7 +271,8 @@ variables {M : Type*} [monoid_with_zero M]
   (h_nat : f.comp int.of_nat_hom.to_monoid_with_zero_hom =
            g.comp int.of_nat_hom.to_monoid_with_zero_hom) :
   f = g :=
-to_monoid_hom_injective $ monoid_hom.ext_int h_neg_one $ monoid_hom.ext (congr_fun h_nat : _)
+to_monoid_hom_injective $ monoid_hom.ext_int h_neg_one $ monoid_hom.ext $
+  by convert fun_like.congr_fun h_nat
 
 /-- If two `monoid_with_zero_hom`s agree on `-1` and the _positive_ naturals then they are equal. -/
 theorem ext_int' {φ₁ φ₂ : monoid_with_zero_hom ℤ M}

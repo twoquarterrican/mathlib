@@ -75,10 +75,10 @@ def graded_algebra.of_alg_hom [set_like.graded_monoid 𝒜] (decompose : A →�
   (left_inv : ∀ i (x : 𝒜 i), decompose (x : A) = direct_sum.of (λ i, ↥(𝒜 i)) i x) :
   graded_algebra 𝒜 :=
 { decompose' := decompose,
-  right_inv := alg_hom.congr_fun right_inv,
+  right_inv := fun_like.congr_fun right_inv,
   left_inv := begin
     suffices : decompose.comp (direct_sum.submodule_coe_alg_hom 𝒜) = alg_hom.id _ _,
-    from alg_hom.congr_fun this,
+    from fun_like.congr_fun this,
     ext i x : 2,
     exact (decompose.congr_arg $ direct_sum.submodule_coe_alg_hom_of _ _ _).trans (left_inv i x),
   end}

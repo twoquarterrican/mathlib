@@ -74,7 +74,7 @@ lemma map_zero {f : arithmetic_function R} : f 0 = 0 :=
 zero_hom.map_zero' f
 
 theorem coe_inj {f g : arithmetic_function R} : (f : ℕ → R) = g ↔ f = g :=
-⟨λ h, zero_hom.coe_inj h, λ h, h ▸ rfl⟩
+⟨λ h, fun_like.coe_inj h, λ h, h ▸ rfl⟩
 
 @[simp]
 lemma zero_apply {x : ℕ} : (0 : arithmetic_function R) x = 0 :=
@@ -84,7 +84,7 @@ zero_hom.zero_apply x
 zero_hom.ext h
 
 theorem ext_iff {f g : arithmetic_function R} : f = g ↔ ∀ x, f x = g x :=
-zero_hom.ext_iff
+fun_like.ext_iff
 
 section has_one
 variable [has_one R]

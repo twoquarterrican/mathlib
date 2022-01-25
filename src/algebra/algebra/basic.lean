@@ -855,7 +855,7 @@ instance has_coe_to_alg_hom : has_coe (A₁ ≃ₐ[R] A₂) (A₁ →ₐ[R] A₂
 rfl
 
 lemma coe_alg_hom_injective : function.injective (coe : (A₁ ≃ₐ[R] A₂) → (A₁ →ₐ[R] A₂)) :=
-λ e₁ e₂ h, ext $ alg_hom.congr_fun h
+λ e₁ e₂ h, ext $ fun_like.congr_fun h
 
 /-- The two paths coercion can take to a `ring_hom` are equivalent -/
 lemma coe_ring_hom_commutes : ((e : A₁ →ₐ[R] A₂) : A₁ →+* A₂) = ((e : A₁ ≃+* A₂) : A₁ →+* A₂) :=
@@ -981,8 +981,8 @@ def of_alg_hom (f : A₁ →ₐ[R] A₂) (g : A₂ →ₐ[R] A₁) (h₁ : f.com
   (h₂ : g.comp f = alg_hom.id R A₁) : A₁ ≃ₐ[R] A₂ :=
 { to_fun    := f,
   inv_fun   := g,
-  left_inv  := alg_hom.ext_iff.1 h₂,
-  right_inv := alg_hom.ext_iff.1 h₁,
+  left_inv  := fun_like.ext_iff.1 h₂,
+  right_inv := fun_like.ext_iff.1 h₁,
   ..f }
 
 lemma coe_alg_hom_of_alg_hom (f : A₁ →ₐ[R] A₂) (g : A₂ →ₐ[R] A₁) (h₁ h₂) :
@@ -1195,7 +1195,7 @@ alg_hom.mk' (mul_semiring_action.to_ring_hom _ _ m) (smul_comm _)
 
 theorem to_alg_hom_injective [has_faithful_scalar M A] :
   function.injective (mul_semiring_action.to_alg_hom R A : M → A →ₐ[R] A) :=
-λ m₁ m₂ h, eq_of_smul_eq_smul $ λ r, alg_hom.ext_iff.1 h r
+λ m₁ m₂ h, eq_of_smul_eq_smul $ λ r, fun_like.ext_iff.1 h r
 
 end
 
@@ -1254,7 +1254,7 @@ def to_int_alg_hom [ring R] [ring S] [algebra ℤ R] [algebra ℤ S] (f : R →+
 @[simp] lemma map_rat_algebra_map [ring R] [ring S] [algebra ℚ R] [algebra ℚ S] (f : R →+* S)
   (r : ℚ) :
   f (algebra_map ℚ R r) = algebra_map ℚ S r :=
-ring_hom.ext_iff.1 (subsingleton.elim (f.comp (algebra_map ℚ R)) (algebra_map ℚ S)) r
+fun_like.ext_iff.1 (subsingleton.elim (f.comp (algebra_map ℚ R)) (algebra_map ℚ S)) r
 
 /-- Reinterpret a `ring_hom` as a `ℚ`-algebra homomorphism. -/
 def to_rat_alg_hom [ring R] [ring S] [algebra ℚ R] [algebra ℚ S] (f : R →+* S) :
@@ -1274,7 +1274,7 @@ subsingleton.elim _ _
 -- TODO[gh-6025]: make this an instance once safe to do so
 lemma algebra_rat_subsingleton {α} [semiring α] :
   subsingleton (algebra ℚ α) :=
-⟨λ x y, algebra.algebra_ext x y $ ring_hom.congr_fun $ subsingleton.elim _ _⟩
+⟨λ x y, algebra.algebra_ext x y $ fun_like.congr_fun $ subsingleton.elim _ _⟩
 
 end rat
 

@@ -439,7 +439,7 @@ add_monoid_hom.eq_of_eq_on_mdense add_submonoid_closure_set_of_eq_monomial $
 @[ext] lemma add_hom_ext' {M : Type*} [add_monoid M] {f g : polynomial R →+ M}
   (h : ∀ n, f.comp (monomial n).to_add_monoid_hom = g.comp (monomial n).to_add_monoid_hom) :
   f = g :=
-add_hom_ext (λ n, add_monoid_hom.congr_fun (h n))
+add_hom_ext (λ n, fun_like.congr_fun (h n))
 
 @[ext] lemma lhom_ext' {M : Type*} [add_comm_monoid M] [module R M] {f g : polynomial R →ₗ[R] M}
   (h : ∀ n, f.comp (monomial n) = g.comp (monomial n)) :

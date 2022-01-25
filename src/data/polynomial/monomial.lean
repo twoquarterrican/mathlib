@@ -70,6 +70,6 @@ end
 
 @[ext] lemma ring_hom_ext' {S} [semiring S] {f g : polynomial R →+* S}
   (h₁ : f.comp C = g.comp C) (h₂ : f X = g X) : f = g :=
-ring_hom_ext (ring_hom.congr_fun h₁) h₂
+ring_hom_ext (fun_like.congr_fun h₁) h₂
 
 end polynomial

@@ -300,7 +300,7 @@ f.to_add_monoid_hom.map_sum _ _
 
 theorem to_add_monoid_hom_injective :
   function.injective (to_add_monoid_hom : (M →ₛₗ[σ] M₃) → (M →+ M₃)) :=
-λ f g h, ext $ add_monoid_hom.congr_fun h
+λ f g h, ext $ fun_like.congr_fun h
 
 /-- If two `σ`-linear maps from `R` are equal on `1`, then they are equal. -/
 @[ext] theorem ext_ring {f g : R →ₛₗ[σ] M₃} (h : f 1 = g 1) : f = g :=

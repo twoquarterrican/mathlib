@@ -174,7 +174,7 @@ open add_monoid_hom (flip_hom coe_comp comp_hom_apply_apply flip_apply flip_hom_
 
 private lemma one_mul (x : ⨁ i, A i) : 1 * x = x :=
 suffices mul_hom A 1 = add_monoid_hom.id (⨁ i, A i),
-  from add_monoid_hom.congr_fun this x,
+  from fun_like.congr_fun this x,
 begin
   apply add_hom_ext, intros i xi,
   unfold has_one.one,
@@ -184,7 +184,7 @@ end
 
 private lemma mul_one (x : ⨁ i, A i) : x * 1 = x :=
 suffices (mul_hom A).flip 1 = add_monoid_hom.id (⨁ i, A i),
-  from add_monoid_hom.congr_fun this x,
+  from fun_like.congr_fun this x,
 begin
   apply add_hom_ext, intros i xi,
   unfold has_one.one,
@@ -196,7 +196,7 @@ private lemma mul_assoc (a b c : ⨁ i, A i) : a * b * c = a * (b * c) :=
 suffices (mul_hom A).comp_hom.comp (mul_hom A)            -- `λ a b c, a * b * c` as a bundled hom
        = (add_monoid_hom.comp_hom flip_hom $              -- `λ a b c, a * (b * c)` as a bundled hom
              (mul_hom A).flip.comp_hom.comp (mul_hom A)).flip,
-  from add_monoid_hom.congr_fun (add_monoid_hom.congr_fun (add_monoid_hom.congr_fun this a) b) c,
+  from fun_like.congr_fun (fun_like.congr_fun (fun_like.congr_fun this a) b) c,
 begin
   ext ai ax bi bx ci cx : 6,
   dsimp only [coe_comp, function.comp_app, comp_hom_apply_apply, flip_apply, flip_hom_apply],
@@ -264,7 +264,7 @@ variables [Π i, add_comm_monoid (A i)] [add_comm_monoid ι] [gcomm_semiring A]
 
 private lemma mul_comm (a b : ⨁ i, A i) : a * b = b * a :=
 suffices mul_hom A = (mul_hom A).flip,
-  from add_monoid_hom.congr_fun (add_monoid_hom.congr_fun this a) b,
+  from fun_like.congr_fun (fun_like.congr_fun this a) b,
 begin
   apply add_hom_ext, intros ai ax, apply add_hom_ext, intros bi bx,
   rw [add_monoid_hom.flip_apply, mul_hom_of_of, mul_hom_of_of],

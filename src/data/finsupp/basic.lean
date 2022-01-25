@@ -990,19 +990,19 @@ verify `f (single a 1) = g (single a 1)`. -/
 @[ext] lemma add_hom_ext' [add_zero_class N] ⦃f g : (α →₀ M) →+ N⦄
   (H : ∀ x, f.comp (single_add_hom x) = g.comp (single_add_hom x)) :
   f = g :=
-add_hom_ext $ λ x, add_monoid_hom.congr_fun (H x)
+add_hom_ext $ λ x, fun_like.congr_fun (H x)
 
 lemma mul_hom_ext [mul_one_class N] ⦃f g : multiplicative (α →₀ M) →* N⦄
   (H : ∀ x y, f (multiplicative.of_add $ single x y) = g (multiplicative.of_add $ single x y)) :
   f = g :=
-monoid_hom.ext $ add_monoid_hom.congr_fun $
+monoid_hom.ext $ fun_like.congr_fun $
   @add_hom_ext α M (additive N) _ _ f.to_additive'' g.to_additive'' H
 
 @[ext] lemma mul_hom_ext' [mul_one_class N] {f g : multiplicative (α →₀ M) →* N}
   (H : ∀ x, f.comp (single_add_hom x).to_multiplicative =
     g.comp (single_add_hom x).to_multiplicative) :
   f = g :=
-mul_hom_ext $ λ x, monoid_hom.congr_fun (H x)
+mul_hom_ext $ λ x, fun_like.congr_fun (H x)
 
 lemma map_range_add [add_zero_class N]
   {f : M → N} {hf : f 0 = 0} (hf' : ∀ x y, f (x + y) = f x + f y) (v₁ v₂ : α →₀ M) :
@@ -1268,7 +1268,7 @@ lift_add_hom.to_equiv.apply_eq_iff_eq_symm_apply.2 rfl
 
 @[simp] lemma sum_single [add_comm_monoid M] (f : α →₀ M) :
   f.sum single = f :=
-add_monoid_hom.congr_fun lift_add_hom_single_add_hom f
+fun_like.congr_fun lift_add_hom_single_add_hom f
 
 @[simp] lemma lift_add_hom_apply_single [add_comm_monoid M] [add_comm_monoid N]
   (f : α → M →+ N) (a : α) (b : M) :
@@ -1278,7 +1278,7 @@ sum_single_index (f a).map_zero
 @[simp] lemma lift_add_hom_comp_single [add_comm_monoid M] [add_comm_monoid N] (f : α → M →+ N)
   (a : α) :
   (lift_add_hom f).comp (single_add_hom a) = f a :=
-add_monoid_hom.ext $ λ b, lift_add_hom_apply_single f a b
+fun_like.ext $ λ b, lift_add_hom_apply_single f a b
 
 lemma comp_lift_add_hom [add_comm_monoid M] [add_comm_monoid N] [add_comm_monoid P]
   (g : N →+ P) (f : α → M →+ N) :
@@ -1702,7 +1702,7 @@ lemma map_domain_map_range [add_comm_monoid N] (f : α → β) (v : α →₀ M)
   (h0 : g 0 = 0) (hadd : ∀ x y, g (x + y) = g x + g y) :
   map_domain f (map_range g h0 v) = map_range g h0 (map_domain f v) :=
 let g' : M →+ N := { to_fun := g, map_zero' := h0, map_add' := hadd} in
-add_monoid_hom.congr_fun (map_domain.add_monoid_hom_comp_map_range f g') v
+fun_like.congr_fun (map_domain.add_monoid_hom_comp_map_range f g') v
 
 lemma sum_update_add [add_comm_monoid α] [add_comm_monoid β]
   (f : ι →₀ α) (i : ι) (a : α) (g : ι → α → β) (hg : ∀ i, g i 0 = 0)

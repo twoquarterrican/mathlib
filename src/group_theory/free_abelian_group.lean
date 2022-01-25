@@ -107,7 +107,7 @@ end
 protected theorem unique (g : free_abelian_group α →+ β)
   (hg : ∀ x, g (of x) = f x) {x} :
   g x = lift f x :=
-add_monoid_hom.congr_fun ((lift.symm_apply_eq).mp (funext hg : g ∘ of = f)) _
+fun_like.congr_fun ((lift.symm_apply_eq).mp (funext hg : g ∘ of = f)) _
 
 /-- See note [partially-applied ext lemmas]. -/
 @[ext]
