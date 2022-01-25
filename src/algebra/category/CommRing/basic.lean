@@ -35,7 +35,7 @@ instance bundled_hom : bundled_hom assoc_ring_hom :=
 ⟨λ M N [semiring M] [semiring N], by exactI @ring_hom.to_fun M N _ _,
  λ M [semiring M], by exactI @ring_hom.id M _,
  λ M N P [semiring M] [semiring N] [semiring P], by exactI @ring_hom.comp M N P _ _ _,
- λ M N [semiring M] [semiring N], by exactI @fun_like.coe_inj _ M N _ _⟩
+ λ M N [semiring M] [semiring N], by convert fun_like.coe_injective⟩
 
 attribute [derive [large_category, concrete_category]] SemiRing
 

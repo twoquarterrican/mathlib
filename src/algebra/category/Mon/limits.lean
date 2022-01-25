@@ -77,7 +77,7 @@ def limit_cone (F : J ⥤ Mon.{u}) : cone F :=
   π :=
   { app := limit_π_monoid_hom F,
     naturality' := λ j j' f,
-      fun_like.coe_inj ((types.limit_cone (F ⋙ forget _)).π.naturality f) } }
+      fun_like.coe_injective ((types.limit_cone (F ⋙ forget _)).π.naturality f) } }
 
 /--
 Witness that the limit cone in `Mon` is a limit cone.

@@ -259,28 +259,27 @@ instance decidable_eq_embedding_fintype [decidable_eq β] [fintype α] :
 @[to_additive]
 instance decidable_eq_one_hom_fintype [decidable_eq β] [fintype α] [has_one α] [has_one β]:
   decidable_eq (one_hom α β) :=
-λ a b, decidable_of_iff ((a : α → β) = b) (injective.eq_iff fun_like.coe_inj)
+λ a b, decidable_of_iff ((a : α → β) = b) fun_like.coe_fn_eq
 
 @[to_additive]
 instance decidable_eq_mul_hom_fintype [decidable_eq β] [fintype α] [has_mul α] [has_mul β]:
   decidable_eq (mul_hom α β) :=
-λ a b, decidable_of_iff ((a : α → β) = b) (injective.eq_iff fun_like.coe_inj)
+λ a b, decidable_of_iff ((a : α → β) = b) fun_like.coe_fn_eq
 
 @[to_additive]
 instance decidable_eq_monoid_hom_fintype [decidable_eq β] [fintype α]
   [mul_one_class α] [mul_one_class β]:
   decidable_eq (α →* β) :=
-λ a b, decidable_of_iff ((a : α → β) = b) (injective.eq_iff fun_like.coe_inj)
+λ a b, decidable_of_iff ((a : α → β) = b) fun_like.coe_fn_eq
 
 instance decidable_eq_monoid_with_zero_hom_fintype [decidable_eq β] [fintype α]
   [mul_zero_one_class α] [mul_zero_one_class β]:
   decidable_eq (monoid_with_zero_hom α β) :=
-λ a b, decidable_of_iff ((a : α → β) = b) (injective.eq_iff fun_like.coe_inj)
+λ a b, decidable_of_iff ((a : α → β) = b) fun_like.coe_fn_eq
 
-instance decidable_eq_ring_hom_fintype [decidable_eq β] [fintype α]
-  [semiring α] [semiring β]:
+instance decidable_eq_ring_hom_fintype [decidable_eq β] [fintype α] [semiring α] [semiring β] :
   decidable_eq (α →+* β) :=
-λ a b, decidable_of_iff ((a : α → β) = b) (injective.eq_iff fun_like.coe_inj)
+λ a b, decidable_of_iff ((a : α → β) = b) fun_like.coe_fn_eq
 
 end bundled_homs
 

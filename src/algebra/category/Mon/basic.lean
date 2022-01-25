@@ -43,7 +43,7 @@ instance bundled_hom : bundled_hom assoc_monoid_hom :=
 ⟨λ M N [monoid M] [monoid N], by exactI @monoid_hom.to_fun M N _ _,
  λ M [monoid M], by exactI @monoid_hom.id M _,
  λ M N P [monoid M] [monoid N] [monoid P], by exactI @monoid_hom.comp M N P _ _ _,
- λ M N [monoid M] [monoid N], by exactI @fun_like.coe_inj M N _ _⟩
+ λ M N [monoid M] [monoid N], by convert fun_like.coe_injective⟩
 
 attribute [derive [large_category, concrete_category]] Mon
 attribute [to_additive] Mon.large_category Mon.concrete_category

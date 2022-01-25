@@ -74,7 +74,7 @@ def limit_cone (F : J ⥤ SemiRing.{u}) : cone F :=
   π :=
   { app := limit_π_ring_hom F,
     naturality' := λ j j' f,
-      fun_like.coe_inj ((types.limit_cone (F ⋙ forget _)).π.naturality f) } }
+      fun_like.coe_injective ((types.limit_cone (F ⋙ forget _)).π.naturality f) } }
 
 /--
 Witness that the limit cone in `SemiRing` is a limit cone.

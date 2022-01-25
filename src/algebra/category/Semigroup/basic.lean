@@ -40,7 +40,7 @@ namespace Magma
 
 @[to_additive]
 instance bundled_hom : bundled_hom @mul_hom :=
-⟨@mul_hom.to_fun, @mul_hom.id, @mul_hom.comp, @fun_like.coe_inj _⟩
+⟨@mul_hom.to_fun, @mul_hom.id, @mul_hom.comp, λ α β _ _, by convert fun_like.coe_injective⟩
 
 attribute [derive [large_category, concrete_category]] Magma
 attribute [to_additive] Magma.large_category Magma.concrete_category

@@ -116,9 +116,9 @@ def colimit_cocone : cocone F :=
 def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t, Mon.filtered_colimits.colimit_desc (F ⋙ forget₂ Group Mon)
     ((forget₂ Group Mon).map_cocone t),
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget Group)).fac ((forget Group).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget Group)).uniq ((forget Group).map_cocone t) m
     ((λ j, funext $ λ x, fun_like.congr_fun (h j) x)) }
 
@@ -176,10 +176,10 @@ def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t,
   (Group.filtered_colimits.colimit_cocone_is_colimit (F ⋙ forget₂ CommGroup Group.{v})).desc
     ((forget₂ CommGroup Group.{v}).map_cocone t),
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget CommGroup)).fac
     ((forget CommGroup).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget CommGroup)).uniq
     ((forget CommGroup).map_cocone t) m ((λ j, funext $ λ x, fun_like.congr_fun (h j) x)) }
 

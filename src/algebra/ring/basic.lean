@@ -436,10 +436,10 @@ fun_like.ext _ _ h
 ext $ λ _, rfl
 
 theorem coe_add_monoid_hom_injective : function.injective (coe : (α →+* β) → (α →+ β)) :=
-λ f g h, ext (λ x, fun_like.congr_fun h x)
+λ f g h, ext $ by convert fun_like.congr_fun h
 
 theorem coe_monoid_hom_injective : function.injective (coe : (α →+* β) → (α →* β)) :=
-λ f g h, ext (λ x, fun_like.congr_fun h x)
+λ f g h, ext $ by convert fun_like.congr_fun h
 
 /-- Ring homomorphisms map zero to zero. -/
 protected lemma map_zero (f : α →+* β) : f 0 = 0 := map_zero f

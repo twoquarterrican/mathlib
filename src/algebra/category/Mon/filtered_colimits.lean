@@ -202,7 +202,7 @@ def cocone_morphism (j : J) : F.obj j ⟶ colimit :=
 @[simp, to_additive]
 lemma cocone_naturality {j j' : J} (f : j ⟶ j') :
   F.map f ≫ (cocone_morphism j') = cocone_morphism j :=
-fun_like.coe_inj ((types.colimit_cocone (F ⋙ forget Mon)).ι.naturality f)
+fun_like.coe_injective ((types.colimit_cocone (F ⋙ forget Mon)).ι.naturality f)
 
 /-- The cocone over the proposed colimit monoid. -/
 @[to_additive "The cocone over the proposed colimit additive monoid."]
@@ -236,9 +236,9 @@ def colimit_desc (t : cocone F) : colimit ⟶ t.X :=
 @[to_additive "The proposed colimit cocone is a colimit in `AddMon`."]
 def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := colimit_desc,
-  fac' := λ t j, fun_like.coe_inj
+  fac' := λ t j, fun_like.coe_injective
     ((types.colimit_cocone_is_colimit (F ⋙ forget Mon)).fac ((forget Mon).map_cocone t) j),
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget Mon)).uniq ((forget Mon).map_cocone t) m
       (λ j, funext $ λ x, fun_like.congr_fun (h j) x) }
 
@@ -299,9 +299,9 @@ def colimit_cocone : cocone F :=
 def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t, Mon.filtered_colimits.colimit_desc (F ⋙ forget₂ CommMon Mon.{v})
     ((forget₂ CommMon Mon.{v}).map_cocone t),
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget CommMon)).fac ((forget CommMon).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
     (types.colimit_cocone_is_colimit (F ⋙ forget CommMon)).uniq ((forget CommMon).map_cocone t) m
     ((λ j, funext $ λ x, fun_like.congr_fun (h j) x)) }
 

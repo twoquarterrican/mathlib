@@ -110,7 +110,7 @@ def colimit_cocone : cocone F :=
     { ..(Mon.filtered_colimits.colimit_cocone (F ⋙ forget₂ SemiRing Mon)).ι.app j,
       ..(AddCommMon.filtered_colimits.colimit_cocone (F ⋙ forget₂ SemiRing AddCommMon)).ι.app j },
     naturality' := λ j j' f,
-      (fun_like.coe_inj ((types.colimit_cocone (F ⋙ forget SemiRing)).ι.naturality f)) } }
+      (fun_like.coe_injective ((types.colimit_cocone (F ⋙ forget SemiRing)).ι.naturality f)) } }
 
 /-- The proposed colimit cocone is a colimit in `SemiRing`. -/
 def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
@@ -119,9 +119,9 @@ def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
     (F ⋙ forget₂ SemiRing Mon)).desc ((forget₂ SemiRing Mon).map_cocone t),
     .. (AddCommMon.filtered_colimits.colimit_cocone_is_colimit
     (F ⋙ forget₂ SemiRing AddCommMon)).desc ((forget₂ SemiRing AddCommMon).map_cocone t), },
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget SemiRing)).fac ((forget SemiRing).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget SemiRing)).uniq ((forget SemiRing).map_cocone t) m
     (λ j, funext $ λ x, fun_like.congr_fun (h j) x) }
 
@@ -172,10 +172,10 @@ def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t,
   (SemiRing.filtered_colimits.colimit_cocone_is_colimit (F ⋙ forget₂ CommSemiRing SemiRing)).desc
     ((forget₂ CommSemiRing SemiRing).map_cocone t),
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget CommSemiRing)).fac
     ((forget CommSemiRing).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget CommSemiRing)).uniq
     ((forget CommSemiRing).map_cocone t) m (λ j, funext $ λ x, fun_like.congr_fun (h j) x) }
 
@@ -227,9 +227,9 @@ def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t,
   (SemiRing.filtered_colimits.colimit_cocone_is_colimit (F ⋙ forget₂ Ring SemiRing)).desc
     ((forget₂ Ring SemiRing).map_cocone t),
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget Ring)).fac ((forget Ring).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget Ring)).uniq
     ((forget Ring).map_cocone t) m (λ j, funext $ λ x, fun_like.congr_fun (h j) x) }
 
@@ -280,9 +280,9 @@ def colimit_cocone_is_colimit : is_colimit colimit_cocone :=
 { desc := λ t,
   (Ring.filtered_colimits.colimit_cocone_is_colimit (F ⋙ forget₂ CommRing Ring)).desc
     ((forget₂ CommRing Ring).map_cocone t),
-  fac' := λ t j, fun_like.coe_inj $
+  fac' := λ t j, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget CommRing)).fac ((forget CommRing).map_cocone t) j,
-  uniq' := λ t m h, fun_like.coe_inj $
+  uniq' := λ t m h, fun_like.coe_injective $
   (types.colimit_cocone_is_colimit (F ⋙ forget CommRing)).uniq
     ((forget CommRing).map_cocone t) m (λ j, funext $ λ x, fun_like.congr_fun (h j) x) }
 

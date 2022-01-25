@@ -306,7 +306,7 @@ theorem ext_rat {f g : monoid_with_zero_hom ℚ M}
   (same_on_int : f.comp (int.cast_ring_hom ℚ).to_monoid_with_zero_hom =
     g.comp (int.cast_ring_hom ℚ).to_monoid_with_zero_hom) : f = g :=
 begin
-  have same_on_int' : ∀ k : ℤ, f k = g k := congr_fun same_on_int,
+  have same_on_int' : ∀ k : ℤ, f k = g k := fun_like.congr_fun same_on_int,
   ext x,
   rw [← @rat.num_denom x, rat.mk_eq_div, f.map_div, g.map_div,
     same_on_int' x.num, same_on_int' x.denom],
