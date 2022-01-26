@@ -125,10 +125,10 @@ begin
       { rw [exp_log hz] } } }
 end
 
-lemma real.prod_rpow {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
-  ∏ x in s, f x ^ n = (∏ x in s, f x) ^ n := sorry
+--lemma real.prod_rpow {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
+ -- ∏ x in s, f x ^ n = (∏ x in s, f x) ^ n := sorry
 
-lemma real.rpow_sum {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
+lemma rpow_sum {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
   ∏ x in s, n ^ f x = n ^ (∑ x in s, f x) :=
 begin
   obtain rfl|gn := eq_or_ne n 0,
@@ -149,20 +149,82 @@ begin
     obtain hsum|hsum := eq_or_ne (∑ (x : α) in s, f x) 0,
     { rw [hsum, rpow_zero], sorry },
     rw zero_rpow hsum,
-    sorry,
-    },
+    rw prod_eq_zero_iff,
+    have := exists_ne_zero_of_sum_ne_zero hsum,
+    simpa using this },
   induction s using finset.induction_on with x s hx ih,
   {simp},
   rw [prod_insert hx, sum_insert hx, ih, rpow_add],
   sorry,
 end
 
+example : false :=
+begin
+  have := rpow_sum ({0, 1} : finset ℝ) 0 id,
+  simp at this,
+end
+
+lemma exists_ne_zero_of_sum_eq_one (w : ι → ℝ)
+  (hw' : ∑ i in s, w i = 1) :
+  ∃ i ∈ s, w i ≠ 0 :=
+begin
+  apply exists_ne_zero_of_sum_ne_zero,
+  rw hw',
+  exact one_ne_zero,
+end
+
+/-
+theorem geom_mean_eq_arith_mean_weighted (w z : ι → ℝ) (hw : ∀ i ∈ s, 0 ≤ w i)
+  (hw' : ∑ i in s, w i = 1) (hz : ∀ i ∈ s, 0 ≤ z i) :
+  (∏ i in s, (z i) ^ (w i)) = ∑ i in s, w i * z i ↔ ∃ x, ∀ i ∈ s, w i ≠ 0 → z i = x :=
+begin
+  split; intro h,
+  induction s using finset.induction_on with a s hs ih,
+  { simp at hw', exact hw'.elim },
+  simp [prod_insert hs, sum_insert hs, ih] at h,
+end
+-/
 theorem geom_meaneq_arith_mean_weighted (w z : ι → ℝ) (hw : ∀ i ∈ s, 0 ≤ w i)
   (hw' : ∑ i in s, w i = 1) (hz : ∀ i ∈ s, 0 ≤ z i) :
   (∏ i in s, (z i) ^ (w i)) = ∑ i in s, w i * z i ↔ ∃ x, ∀ i ∈ s, w i ≠ 0 → z i = x :=
 begin
+  by_cases this : ∀ i ∈ s, w i ≠ 0 → z i = 0,
+  { apply iff_of_true,
+    { calc ∏ (i : ι) in s, z i ^ w i
+          = ∏ (i : ι) in s, 0 ^ w i : _
+      ... = ∑ (i : ι) in s, 0 : _
+      ... = ∑ (i : ι) in s, w i * z i : _,
+      { apply prod_congr rfl,
+        intros i hi,
+        by_cases h : w i = 0,
+        { simp [h] },
+        { rw this i hi h }, },
+      { obtain ⟨i, himem, hinezero⟩ := exists_ne_zero_of_sum_eq_one s w hw',
+        rw [prod_eq_zero himem, sum_const, smul_zero],
+        rw zero_rpow hinezero, },
+      { apply sum_congr rfl (λ i hi, _),
+        by_cases h : w i = 0,
+        { simp [h] },
+        { rw [this i hi h, mul_zero], } } },
+    { use 0,
+      intros,
+      apply this;
+      assumption,
+    } },
+  push_neg at this,
   split, swap,
   rintro ⟨x, hx⟩,
+  have : 0 < x,
+  {
+    obtain ⟨i, imem, wi, zi⟩ := this,
+    apply lt_of_le_of_ne,
+    rw ←hx i imem wi,
+    apply hz i imem,
+
+    rintro rfl,
+    apply zi,
+    apply hx; assumption
+  },
   transitivity x,
   transitivity ∏ (i : ι) in s.filter (λ i, w i ≠ 0), z i ^ w i,
   { apply (prod_filter_of_ne _).symm,
@@ -171,19 +233,42 @@ begin
     intro hw,
     rw hw,
     rw rpow_zero },
-  { transitivity ∏ (i : ι) in filter (λ (i : ι), w i ≠ 0) s, x ^ w i,
+  {
+
+     transitivity ∏ (i : ι) in filter (λ (i : ι), w i ≠ 0) s, x ^ w i,
     apply finset.prod_congr rfl,
     intros i hi,
     rw mem_filter at hi,
     rw hx i hi.1 hi.2,
     transitivity x ^ (∑ (i : ι) in s.filter (λ i, w i ≠ 0), w i),
-    rw real.rpow_sum,
+    rw rpow_sum _ x,
     transitivity x ^ (1 : ℝ),
     congr' 1,
     rw [sum_filter_ne_zero, hw'],
     rw rpow_one, },
-  {sorry},
-  {sorry},
+  { rw ←sum_filter_ne_zero,
+    transitivity ∑ (i : ι) in filter (λ (i : ι), w i * z i ≠ 0) s, w i * x,
+    { rw ←sum_mul,
+      convert (one_mul _).symm,
+      rw ←hw',
+      rw sum_filter,
+      apply sum_congr rfl,
+      intros i hi,
+      split_ifs,
+      refl,
+
+      by_contra'  h' : 0 ≠ w i,
+      rw ← hx i hi h'.symm at this,
+      apply h,
+      apply mul_ne_zero h'.symm this.ne' },
+    { apply sum_congr rfl (λ i hi, _),
+      rw mem_filter at hi,
+      rw hx i hi.1,
+      apply left_ne_zero_of_mul hi.2, }, },
+  { intro h,
+    obtain ⟨i', himem, hinezero⟩ := exists_ne_zero_of_sum_eq_one s w hw',
+    use z i',
+    sorry},
 end
 
 end real
