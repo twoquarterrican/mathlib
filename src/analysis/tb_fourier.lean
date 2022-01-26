@@ -1,10 +1,10 @@
-import analysis.fourier
 import topology.algebra.continuous_monoid_hom
 import topology.algebra.uniform_group
 import topology.compact_open
 import topology.uniform_space.compact_convergence
+import topology.continuous_function.algebra
 
-open measure_theory
+--open measure_theory
 
 section temp
 
@@ -14,70 +14,29 @@ open filter set
 
 variables {G : Type*} [comm_group G] [topological_space G] [topological_group G]
 
-/-lemma topological_group.tends_uniformly_to
-  {ι α : Type*} (F : ι → α → G) (f : α → G) (p : filter ι) (s : set α) :
-  @tendsto_uniformly_on α G ι (topological_group.to_uniform_space G) F f p s
-    ↔ ∀ u ∈ nhds (1 : G), {i : ι | ∀ a ∈ s, F i a / f a ∈ u} ∈ p :=
-⟨λ h u hu, h _ ⟨u, hu, set.subset.rfl⟩, λ h v ⟨u, hu, hv⟩,
-  p.sets_of_superset (h u hu) (λ i hi a ha, hv (by exact hi a ha))⟩
-
-lemma topological_group.tends_uniformly_to_mul
-  {ι₁ ι₂ α : Type*} (F₁ : ι₁ → α → G) (F₂ : ι₂ → α → G)
-  (f₁ : α → G) (f₂ : α → G) (p₁ : filter ι₁) (p₂ : filter ι₂) (s : set α)
-  (h₁ : @tendsto_uniformly_on α G ι₁ (topological_group.to_uniform_space G) F₁ f₁ p₁ s)
-  (h₂ : @tendsto_uniformly_on α G ι₂ (topological_group.to_uniform_space G) F₂ f₂ p₂ s) :
-  @tendsto_uniformly_on α G (ι₁ × ι₂) (topological_group.to_uniform_space G)
-    (λ i, F₁ i.1 * F₂ i.2) (f₁ * f₂) (p₁.prod p₂) s :=
-begin
-  rw topological_group.tends_uniformly_to at *,
-  intros u hu,
-  obtain ⟨v, hv, w, hw, h⟩ := mem_nhds_prod_iff.mp (mem_map.mp
-    (continuous_mul.tendsto' ((1 : G), (1 : G)) (1 : G) (one_mul (1 : G)) hu)),
-  exact filter.mem_prod_iff.mpr ⟨_, h₁ v hv, _, h₂ w hw, λ x hx a ha, (congr_arg (∈ u)
-    (div_mul_comm _ _ _ _)).mp (prod_subset_iff.mp h _ (hx.1 a ha) _ (hx.2 a ha))⟩,
-end
-
-lemma topological_group.tends_uniformly_to_inv {ι α : Type*} (F : ι → α → G)
-  (f : α → G) (p : filter ι) (s : set α)
-  (h : @tendsto_uniformly_on α G ι (topological_group.to_uniform_space G) F f p s) :
-  @tendsto_uniformly_on α G ι (topological_group.to_uniform_space G)
-    (λ i, (F i)⁻¹) f⁻¹ p s :=
-begin
-  rw topological_group.tends_uniformly_to at *,
-  intros u hu,
-  convert h (has_inv.inv ⁻¹' u) (continuous_inv.tendsto' (1 : G) (1 : G) one_inv hu),
-  simp only [pi.inv_apply, inv_div_inv, set.mem_preimage, inv_div'],
-end-/
-
 instance {X : Type*} [topological_space X] : topological_group (continuous_map X G) :=
 { continuous_mul :=
   begin
     letI : uniform_space G := topological_group.to_uniform_space G,
+    haveI : uniform_group G := topological_group_is_uniform,
     rw continuous_iff_continuous_at,
     rintros ⟨f, g⟩,
-    rw [continuous_at, continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on],
-    -- `tendsto_iff_forall_compact_tendsto_uniformly_on` or `tendsto_of_tendsto_locally_uniformly`
-    intros K hK,
-    rw [nhds_prod_eq],
-    apply topological_group.tends_uniformly_to_mul,
-    { revert K,
-      rw ← continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on,
-      exact filter.tendsto_id },
-    { revert K,
-      rw ← continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on,
-      exact filter.tendsto_id },
+    rw [continuous_at, continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on, nhds_prod_eq],
+    exact λ K hK, (
+      (continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on.mp filter.tendsto_id K hK).prod
+      (continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on.mp filter.tendsto_id K hK)).comp'
+      uniform_continuous_mul,
   end,
   continuous_inv :=
   begin
     letI : uniform_space G := topological_group.to_uniform_space G,
+    haveI : uniform_group G := topological_group_is_uniform,
     rw continuous_iff_continuous_at,
     intro f,
     rw [continuous_at, continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on],
-    intros K hK,
-    apply topological_group.tends_uniformly_to_inv,
-    revert K,
-    rw ← continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on,
-    exact filter.tendsto_id,
+    exact λ K hK,
+      (continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on.mp filter.tendsto_id K hK).comp'
+      uniform_continuous_inv,
   end }
 
 end temp
