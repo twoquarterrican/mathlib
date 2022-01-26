@@ -125,6 +125,67 @@ begin
       { rw [exp_log hz] } } }
 end
 
+lemma real.prod_rpow {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
+  ∏ x in s, f x ^ n = (∏ x in s, f x) ^ n := sorry
+
+lemma real.rpow_sum {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
+  ∏ x in s, n ^ f x = n ^ (∑ x in s, f x) :=
+begin
+  obtain rfl|gn := eq_or_ne n 0,
+  {
+    transitivity ∏ x in s.filter (λ i, f i ≠ 0), (0 : ℝ) ^ f x,
+    rw prod_filter_of_ne,
+    intros x hx,
+    contrapose!,
+    intro h, rw [h, rpow_zero],
+
+    transitivity ∏ (x : α) in s.filter (λ (i : α), f i ≠ 0), (0 : ℝ ),
+    apply finset.prod_congr rfl,
+    intros i hi,
+    apply zero_rpow,
+    rw mem_filter at hi,
+    exact hi.2,
+
+    obtain hsum|hsum := eq_or_ne (∑ (x : α) in s, f x) 0,
+    { rw [hsum, rpow_zero], sorry },
+    rw zero_rpow hsum,
+    sorry,
+    },
+  induction s using finset.induction_on with x s hx ih,
+  {simp},
+  rw [prod_insert hx, sum_insert hx, ih, rpow_add],
+  sorry,
+end
+
+theorem geom_meaneq_arith_mean_weighted (w z : ι → ℝ) (hw : ∀ i ∈ s, 0 ≤ w i)
+  (hw' : ∑ i in s, w i = 1) (hz : ∀ i ∈ s, 0 ≤ z i) :
+  (∏ i in s, (z i) ^ (w i)) = ∑ i in s, w i * z i ↔ ∃ x, ∀ i ∈ s, w i ≠ 0 → z i = x :=
+begin
+  split, swap,
+  rintro ⟨x, hx⟩,
+  transitivity x,
+  transitivity ∏ (i : ι) in s.filter (λ i, w i ≠ 0), z i ^ w i,
+  { apply (prod_filter_of_ne _).symm,
+    intros i hi,
+    contrapose!,
+    intro hw,
+    rw hw,
+    rw rpow_zero },
+  { transitivity ∏ (i : ι) in filter (λ (i : ι), w i ≠ 0) s, x ^ w i,
+    apply finset.prod_congr rfl,
+    intros i hi,
+    rw mem_filter at hi,
+    rw hx i hi.1 hi.2,
+    transitivity x ^ (∑ (i : ι) in s.filter (λ i, w i ≠ 0), w i),
+    rw real.rpow_sum,
+    transitivity x ^ (1 : ℝ),
+    congr' 1,
+    rw [sum_filter_ne_zero, hw'],
+    rw rpow_one, },
+  {sorry},
+  {sorry},
+end
+
 end real
 
 namespace nnreal
