@@ -128,10 +128,14 @@ end
 --lemma real.prod_rpow {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
  -- ∏ x in s, f x ^ n = (∏ x in s, f x) ^ n := sorry
 
-lemma rpow_sum {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ) :
+lemma rpow_sum_of_pos {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ)
+  (hne : s.nonempty) (hn : 0 ≤ n)
+  (h' : ∀ x ∈ s, 0 < f x) :
   ∏ x in s, n ^ f x = n ^ (∑ x in s, f x) :=
 begin
-  obtain rfl|gn := eq_or_ne n 0,
+  have h : ∑ x in s, f x ≠ 0,
+  { apply ne_of_gt, exact sum_pos h' hne,},
+  obtain rfl|gn := hn.eq_or_lt,
   {
     transitivity ∏ x in s.filter (λ i, f i ≠ 0), (0 : ℝ) ^ f x,
     rw prod_filter_of_ne,
@@ -146,22 +150,49 @@ begin
     rw mem_filter at hi,
     exact hi.2,
 
-    obtain hsum|hsum := eq_or_ne (∑ (x : α) in s, f x) 0,
-    { rw [hsum, rpow_zero], sorry },
-    rw zero_rpow hsum,
+    rw zero_rpow h,
     rw prod_eq_zero_iff,
-    have := exists_ne_zero_of_sum_ne_zero hsum,
+    have := exists_ne_zero_of_sum_ne_zero h,
     simpa using this },
-  induction s using finset.induction_on with x s hx ih,
-  {simp},
-  rw [prod_insert hx, sum_insert hx, ih, rpow_add],
-  sorry,
+  --induction s using finset.induction_on with x s hx ih,
+  refine finset.nonempty.cons_induction _ _ hne,
+  { intros a, simp [prod_singleton], },
+  { intros a s h hne ih,
+    rw [prod_cons, sum_cons, ih, rpow_add gn], },
 end
 
-example : false :=
+lemma finset.mem_of_mem_filter {α : Type*} (p : α → Prop) [decidable_pred p]
+  {s : finset α} (x : α)
+  (h : x ∈ s.filter p) : x ∈ s := multiset.mem_of_mem_filter h
+
+lemma rpow_sum {α : Type*} (s : finset α) (n : ℝ) (f : α → ℝ)
+  (h : (∑ (x : α) in s, f x) ≠ 0) (hn : 0 ≤ n)
+  (h' : ∀ x ∈ s, 0 ≤ f x) :
+  ∏ x in s, n ^ f x = n ^ (∑ x in s, f x) :=
 begin
-  have := rpow_sum ({0, 1} : finset ℝ) 0 id,
-  simp at this,
+  have := rpow_sum_of_pos (s.filter (λ x, f x ≠ 0)) n f _ hn _,
+  rw sum_filter_ne_zero at this,
+  rw ←this,
+  rw prod_filter_of_ne,
+  { intros x hx,
+    contrapose!,
+    intros hfx,
+    rw hfx,
+    rw rpow_zero, },
+  { contrapose! h,
+    suffices : ∀ x ∈ s, f x = 0,
+    transitivity ∑ x in s, (0 : ℝ),
+    apply sum_congr rfl this,
+    rw [sum_const, smul_zero],
+
+    intros x hs,
+    contrapose! h,
+    use x,
+    rw mem_filter,
+    exact ⟨hs, h⟩ },
+  { intros x hx,
+    rw mem_filter at hx,
+    apply lt_of_le_of_ne (h' x hx.1) hx.2.symm, },
 end
 
 lemma exists_ne_zero_of_sum_eq_one (w : ι → ℝ)
@@ -242,6 +273,11 @@ begin
     rw hx i hi.1 hi.2,
     transitivity x ^ (∑ (i : ι) in s.filter (λ i, w i ≠ 0), w i),
     rw rpow_sum _ x,
+    { rw [sum_filter_ne_zero, hw'], exact one_ne_zero },
+    { exact this.le },
+    { refine λ i hi, _,
+      refine hw i _,
+      apply finset.mem_of_mem_filter _ _ hi },
     transitivity x ^ (1 : ℝ),
     congr' 1,
     rw [sum_filter_ne_zero, hw'],
