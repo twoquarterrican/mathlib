@@ -3,43 +3,9 @@ import topology.algebra.uniform_group
 import topology.compact_open
 import topology.uniform_space.compact_convergence
 import topology.continuous_function.algebra
+import analysis.complex.circle
 
 --open measure_theory
-
-section temp
-
-open_locale classical uniformity topological_space filter
-
-open filter set
-
-variables {G : Type*} [comm_group G] [topological_space G] [topological_group G]
-
-instance {X : Type*} [topological_space X] : topological_group (continuous_map X G) :=
-{ continuous_mul :=
-  begin
-    letI : uniform_space G := topological_group.to_uniform_space G,
-    haveI : uniform_group G := topological_group_is_uniform,
-    rw continuous_iff_continuous_at,
-    rintros ⟨f, g⟩,
-    rw [continuous_at, continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on, nhds_prod_eq],
-    exact λ K hK, (
-      (continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on.mp filter.tendsto_id K hK).prod
-      (continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on.mp filter.tendsto_id K hK)).comp'
-      uniform_continuous_mul,
-  end,
-  continuous_inv :=
-  begin
-    letI : uniform_space G := topological_group.to_uniform_space G,
-    haveI : uniform_group G := topological_group_is_uniform,
-    rw continuous_iff_continuous_at,
-    intro f,
-    rw [continuous_at, continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on],
-    exact λ K hK,
-      (continuous_map.tendsto_iff_forall_compact_tendsto_uniformly_on.mp filter.tendsto_id K hK).comp'
-      uniform_continuous_inv,
-  end }
-
-end temp
 
 section continuous_monoid_hom
 
@@ -50,14 +16,6 @@ variables (A B C D E F : Type*)
 
 namespace continuous_monoid_hom
 
-instance : topological_space (continuous_monoid_hom A B) :=
-topological_space.induced to_continuous_map continuous_map.compact_open
-
-lemma is_inducing : inducing (to_continuous_map : continuous_monoid_hom A B → C(A, B)) := ⟨rfl⟩
-
-lemma is_embedding : embedding (to_continuous_map : continuous_monoid_hom A B → C(A, B)) :=
-⟨is_inducing A B, λ _ _, ext ∘ continuous_map.ext_iff.mp⟩
-
 lemma is_closed_embedding :
   closed_embedding (to_continuous_map : continuous_monoid_hom A B → C(A, B)) :=
 ⟨is_embedding A B, begin
@@ -67,17 +25,8 @@ lemma is_closed_embedding :
   sorry
 end⟩
 
-instance [locally_compact_space A] [t2_space B] : t2_space (continuous_monoid_hom A B) :=
-(is_embedding A B).t2_space
-
 -- https://math.stackexchange.com/questions/1502405/why-is-the-pontraygin-dual-a-locally-compact-group
 -- https://math.stackexchange.com/questions/2622521/pontryagin-dual-group-inherits-local-compactness
-
-
-instance : topological_group (continuous_monoid_hom A E) :=
-let hi := is_inducing A E, hc := hi.continuous in
-{ continuous_mul := hi.continuous_iff.mpr (continuous_mul.comp (continuous.prod_map hc hc)),
-  continuous_inv := hi.continuous_iff.mpr (continuous_inv.comp hc) }
 
 variables {A B C D E F}
 
@@ -130,17 +79,17 @@ noncomputable instance : has_coe_to_fun (pontryagin_dual G) (λ _, G → circle)
 continuous_monoid_hom.ext h
 
 noncomputable instance : topological_space (pontryagin_dual G) :=
-continuous_monoid_hom.topological_space G circle
+continuous_monoid_hom.topological_space
 
 instance [locally_compact_space G] : t2_space (pontryagin_dual G) :=
-continuous_monoid_hom.t2_space G circle
+continuous_monoid_hom.t2_space
 
 -- Needs `comm_group circle` instance
 noncomputable instance : comm_group (pontryagin_dual G) :=
 continuous_monoid_hom.comm_group
 
 instance : topological_group (pontryagin_dual G) :=
-continuous_monoid_hom.topological_group G circle
+continuous_monoid_hom.topological_group
 
 variables {G H}
 
