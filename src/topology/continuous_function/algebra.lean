@@ -211,8 +211,8 @@ instance {α : Type*} {β : Type*} [topological_space α]
 { ..continuous_map.group,
   ..continuous_map.comm_monoid }
 
-instance {α : Type*} {β : Type*} [topological_space α] [topological_space β] [comm_group β]
-  [topological_group β] : topological_group C(α, β) :=
+@[to_additive] instance {α : Type*} {β : Type*} [topological_space α]
+  [topological_space β] [comm_group β] [topological_group β] : topological_group C(α, β) :=
 { continuous_mul := by
   { letI : uniform_space β := topological_group.to_uniform_space β,
     have : uniform_group β := topological_group_is_uniform,
