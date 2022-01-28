@@ -23,9 +23,11 @@ by rw [finset.sum_range_succ, finset.sum_range_succ]; ring
 end
 
 variables (p : ℕ) [hp : fact p.prime]
-variables (k : Type*) [field k] [char_p k p] [is_alg_closed k]
 include hp
+local notation `𝕎` := witt_vector p
 
+section
+variables (k : Type*) [field k] [char_p k p] [is_alg_closed k]
 /-- A field is perfect if Frobenius is surjective -/
 def perfect_ring.of_surjective (k : Type*) [field k] [char_p k p]
   (h : function.surjective $ frobenius k p) :
@@ -38,7 +40,6 @@ def perfect_ring.of_surjective (k : Type*) [field k] [char_p k p]
 instance is_alg_closed.perfect_ring : perfect_ring k p :=
 perfect_ring.of_surjective p k $ λ x, is_alg_closed.exists_pow_nat_eq _ $ fact.out _
 
-local notation `𝕎` := witt_vector p
 local notation `K` := fraction_ring (𝕎 k)
 
 lemma witt_vector.frobenius_bijective (R : Type*) [comm_ring R] [char_p R p] [perfect_ring R p] :
@@ -72,10 +73,43 @@ begin
     rw [mul_comm, ← witt_vector.verschiebung_frobenius x] },
 end
 
+end
 -- lemma witt_vector.is_Hausdorff : is_Hausdorff (𝕎 k)
 
+section
+variables (k : Type*) [comm_ring k]
+open witt_vector finset
+open_locale big_operators
 
-variable {k}
+def witt_mul' : ℕ → mv_polynomial (fin 2 × ℕ) ℚ :=
+λ i, mv_polynomial.map (int.cast_ring_hom ℚ) (witt_mul p i)
+
+noncomputable def witt_polynomial' (n : ℕ) : mv_polynomial ℕ k :=
+∑ i in range n, mv_polynomial.monomial (finsupp.single i (p ^ (n - i))) (p ^ i : k)
+
+lemma witt_polynomial_eq (n : ℕ) :
+  witt_polynomial p k n
+  = witt_polynomial' p k n + mv_polynomial.monomial (finsupp.single n 1) (p ^ n : k) :=
+begin
+  dsimp [witt_polynomial, witt_polynomial'],
+  rw finset.sum_range_succ,
+  simp,
+end
+
+example (n : ℕ) (a : k) : false :=
+begin
+  have : mv_polynomial.aeval (witt_mul' p) (witt_polynomial p ℤ n) = _
+    := witt_structure_prop p (mv_polynomial.X 0 * mv_polynomial.X 1) n,
+  simp at this,
+  rw witt_polynomial at this,
+  simp [witt_polynomial_eq, alg_hom.map_sum, mv_polynomial.rename_monomial,
+    mv_polynomial.aeval_monomial] at this,
+  sorry
+end
+
+end
+
+variables {k : Type*} [field k] [char_p k p] [is_alg_closed k]
 
 section heathers_approach
 open witt_vector finset
@@ -119,6 +153,7 @@ begin
     rw [mvpz, mv_polynomial.eval₂_C, mul_comm],
     refl },
 end
+
 
 def trunc_sub_prod_coeff (n : ℕ) (x y : truncated_witt_vector p n k) : k :=
 ∑ (i : fin n), (x * y).coeff i ^ p ^ (n - i) * ↑p ^ i.val
