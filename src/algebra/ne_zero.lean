@@ -47,10 +47,10 @@ instance char_zero [ne_zero n] [add_monoid M] [has_one M] [char_zero M] : ne_zer
 @[priority 100] instance invertible [monoid_with_zero M] [nontrivial M] [invertible x] :
   ne_zero x := ⟨nonzero_of_invertible x⟩
 
-instance coe_trans {r : R} [has_zero M] [has_coe R S] [has_coe_t S M] [h : ne_zero (r : M)] :
+lemma coe_trans {r : R} [has_zero M] [has_coe R S] [has_coe_t S M] (h : ne_zero (r : M)) :
   ne_zero ((r : S) : M) := ⟨h.out⟩
 
-lemma trans {r : R} [has_zero M] [has_coe R S] [has_coe_t S M] (h : ne_zero ((r : S) : M)) :
+instance trans {r : R} [has_zero M] [has_coe R S] [has_coe_t S M] [h : ne_zero ((r : S) : M)] :
   ne_zero (r : M) := ⟨h.out⟩
 
 lemma of_map [has_zero R] [has_zero M] [zero_hom_class F R M] (f : F) [ne_zero (f r)] :
