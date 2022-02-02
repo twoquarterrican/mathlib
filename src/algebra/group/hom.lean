@@ -738,10 +738,10 @@ lemma monoid_hom.to_mul_hom_injective [mul_one_class M] [mul_one_class N] :
   function.injective (monoid_hom.to_mul_hom : (M →* N) → mul_hom M N) :=
 λ f g h, monoid_hom.ext $ by convert fun_like.ext_iff.mp h
 lemma monoid_with_zero_hom.to_monoid_hom_injective [monoid_with_zero M] [monoid_with_zero N] :
-  function.injective (monoid_with_zero_hom.to_monoid_hom : M →*₀ N → M →* N) :=
+  function.injective (monoid_with_zero_hom.to_monoid_hom : (M →*₀ N) → M →* N) :=
 λ f g h, monoid_with_zero_hom.ext $ by convert fun_like.ext_iff.mp h
 lemma monoid_with_zero_hom.to_zero_hom_injective [monoid_with_zero M] [monoid_with_zero N] :
-  function.injective (monoid_with_zero_hom.to_zero_hom : M →*₀ N → zero_hom M N) :=
+  function.injective (monoid_with_zero_hom.to_zero_hom : (M →*₀ N) → zero_hom M N) :=
 λ f g h, monoid_with_zero_hom.ext $ by convert fun_like.ext_iff.mp h
 
 @[simp, to_additive] lemma one_hom.comp_id [has_one M] [has_one N]
