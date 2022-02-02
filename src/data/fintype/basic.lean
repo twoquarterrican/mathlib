@@ -274,7 +274,7 @@ instance decidable_eq_monoid_hom_fintype [decidable_eq β] [fintype α]
 
 instance decidable_eq_monoid_with_zero_hom_fintype [decidable_eq β] [fintype α]
   [mul_zero_one_class α] [mul_zero_one_class β]:
-  decidable_eq (monoid_with_zero_hom α β) :=
+  decidable_eq (α →*₀ β) :=
 λ a b, decidable_of_iff ((a : α → β) = b) fun_like.coe_fn_eq
 
 instance decidable_eq_ring_hom_fintype [decidable_eq β] [fintype α] [semiring α] [semiring β] :
@@ -869,6 +869,16 @@ fintype.of_equiv _ equiv.plift.symm
 @[simp] theorem fintype.card_plift (α : Type*) [fintype α] :
   fintype.card (plift α) = fintype.card α :=
 fintype.of_equiv_card _
+
+instance (α : Type*) [fintype α] : fintype (order_dual α) := ‹fintype α›
+
+@[simp] lemma fintype.card_order_dual (α : Type*) [fintype α] :
+  fintype.card (order_dual α) = fintype.card α := rfl
+
+instance (α : Type*) [fintype α] : fintype (lex α) := ‹fintype α›
+
+@[simp] lemma fintype.card_lex (α : Type*) [fintype α] :
+  fintype.card (lex α) = fintype.card α := rfl
 
 lemma univ_sum_type {α β : Type*} [fintype α] [fintype β] [fintype (α ⊕ β)] [decidable_eq (α ⊕ β)] :
   (univ : finset (α ⊕ β)) = map function.embedding.inl univ ∪ map function.embedding.inr univ :=

@@ -9,7 +9,7 @@ import algebra.group_with_zero.defs
 import data.fun_like.basic
 
 /-!
-# monoid and group homomorphisms
+# Monoid and group homomorphisms
 
 This file defines the bundled structures for monoid and group homomorphisms. Namely, we define
 `monoid_hom` (resp., `add_monoid_hom`) to be bundled homomorphisms between multiplicative (resp.,
@@ -29,10 +29,11 @@ building blocks for other homomorphisms:
 
 ## Notations
 
-* `→*` for bundled monoid homs (also use for group homs)
-* `→+` for bundled add_monoid homs (also use for add_group homs)
+* `→+`: Bundled `add_monoid` homs. Also use for `add_group` homs.
+* `→*`: Bundled `monoid` homs. Also use for `group` homs.
+* `→*₀`: Bundled `monoid_with_zero` homs. Also use for `group_with_zero` homs.
 
-## implementation notes
+## Implementation notes
 
 There's a coercion from bundled homs to fun, and the canonical
 notation is to use the bundled hom as a function via this coercion.
@@ -185,6 +186,10 @@ one_hom_class.map_one f
   (hf : function.injective f) {x : M} : f x = 1 ↔ x = 1 :=
 hf.eq_iff' (map_one f)
 
+@[to_additive]
+instance [one_hom_class F M N] : has_coe_t F (one_hom M N) :=
+⟨λ f, { to_fun := f, map_one' := map_one f }⟩
+
 end one
 
 section mul
@@ -220,6 +225,10 @@ instance mul_hom.mul_hom_class : mul_hom_class (mul_hom M N) M N :=
 @[simp, to_additive] lemma map_mul [mul_hom_class F M N] (f : F) (x y : M) :
   f (x * y) = f x * f y :=
 mul_hom_class.map_mul f x y
+
+@[to_additive]
+instance [mul_hom_class F M N] : has_coe_t F (mul_hom M N) :=
+⟨λ f, { to_fun := f, map_mul' := map_mul f }⟩
 
 end mul
 
@@ -310,7 +319,7 @@ section mul_zero_one
 
 variables [mul_zero_one_class M] [mul_zero_one_class N]
 
-/-- `monoid_with_zero_hom M N` is the type of functions `M → N` that preserve
+/-- `M →*₀ N` is the type of functions `M → N` that preserve
 the `monoid_with_zero` structure.
 
 `monoid_with_zero_hom` is also used for group homomorphisms.
@@ -327,6 +336,8 @@ structure monoid_with_zero_hom (M : Type*) (N : Type*) [mul_zero_one_class M] [m
 attribute [nolint doc_blame] monoid_with_zero_hom.to_monoid_hom
 attribute [nolint doc_blame] monoid_with_zero_hom.to_zero_hom
 
+infixr ` →*₀ `:25 := monoid_with_zero_hom
+
 /-- `monoid_with_zero_hom_class F M N` states that `F` is a type of
 `monoid_with_zero`-preserving homomorphisms.
 
@@ -337,12 +348,15 @@ class monoid_with_zero_hom_class (F : Type*) (M N : out_param $ Type*)
   extends monoid_hom_class F M N, zero_hom_class F M N
 
 instance monoid_with_zero_hom.monoid_with_zero_hom_class :
-  monoid_with_zero_hom_class (monoid_with_zero_hom M N) M N :=
+  monoid_with_zero_hom_class (M →*₀ N) M N :=
 { coe := monoid_with_zero_hom.to_fun,
   coe_injective' := λ f g h, by cases f; cases g; congr',
   map_mul := monoid_with_zero_hom.map_mul',
   map_one := monoid_with_zero_hom.map_one',
   map_zero := monoid_with_zero_hom.map_zero' }
+
+instance [monoid_with_zero_hom_class F M N] : has_coe_t F (M →*₀ N) :=
+⟨λ f, { to_fun := f, map_one' := map_one f, map_zero' := map_zero f, map_mul' := map_mul f }⟩
 
 end mul_zero_one
 
@@ -358,10 +372,10 @@ instance monoid_hom.has_coe_to_mul_hom {mM : mul_one_class M} {mN : mul_one_clas
   has_coe (M →* N) (mul_hom M N) := ⟨monoid_hom.to_mul_hom⟩
 instance monoid_with_zero_hom.has_coe_to_monoid_hom
   {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} :
-  has_coe (monoid_with_zero_hom M N) (M →* N) := ⟨monoid_with_zero_hom.to_monoid_hom⟩
+  has_coe (M →*₀ N) (M →* N) := ⟨monoid_with_zero_hom.to_monoid_hom⟩
 instance monoid_with_zero_hom.has_coe_to_zero_hom
   {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} :
-  has_coe (monoid_with_zero_hom M N) (zero_hom M N) := ⟨monoid_with_zero_hom.to_zero_hom⟩
+  has_coe (M →*₀ N) (zero_hom M N) := ⟨monoid_with_zero_hom.to_zero_hom⟩
 
 /-! The simp-normal form of morphism coercion is `f.to_..._hom`. This choice is primarily because
 this is the way things were before the above coercions were introduced. Bundled morphisms defined
@@ -374,11 +388,11 @@ lemma monoid_hom.coe_eq_to_mul_hom {mM : mul_one_class M} {mN : mul_one_class N}
   (f : mul_hom M N) = f.to_mul_hom := rfl
 @[simp]
 lemma monoid_with_zero_hom.coe_eq_to_monoid_hom
-  {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} (f : monoid_with_zero_hom M N) :
+  {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} (f : M →*₀ N) :
   (f : M →* N) = f.to_monoid_hom := rfl
 @[simp]
 lemma monoid_with_zero_hom.coe_eq_to_zero_hom
-  {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} (f : monoid_with_zero_hom M N) :
+  {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} (f : M →*₀ N) :
   (f : zero_hom M N) = f.to_zero_hom := rfl
 
 -- Fallback `has_coe_to_fun` instances to help the elaborator
@@ -392,7 +406,7 @@ instance {mM : has_mul M} {mN : has_mul N} : has_coe_to_fun (mul_hom M N) (λ _,
 instance {mM : mul_one_class M} {mN : mul_one_class N} : has_coe_to_fun (M →* N) (λ _, M → N) :=
 ⟨monoid_hom.to_fun⟩
 instance {mM : mul_zero_one_class M} {mN : mul_zero_one_class N} :
-  has_coe_to_fun (monoid_with_zero_hom M N) (λ _, M → N) :=
+  has_coe_to_fun (M →*₀ N) (λ _, M → N) :=
 ⟨monoid_with_zero_hom.to_fun⟩
 
 -- these must come after the coe_to_fun definitions
@@ -414,7 +428,7 @@ lemma monoid_hom.to_fun_eq_coe [mul_one_class M] [mul_one_class N]
   (f : M →* N) : f.to_fun = f := rfl
 @[simp]
 lemma monoid_with_zero_hom.to_fun_eq_coe [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) : f.to_fun = f := rfl
+  (f : M →*₀ N) : f.to_fun = f := rfl
 
 @[simp, to_additive]
 lemma one_hom.coe_mk [has_one M] [has_one N]
@@ -437,11 +451,11 @@ lemma monoid_hom.to_mul_hom_coe [mul_one_class M] [mul_one_class N] (f : M →* 
   (f.to_mul_hom : M → N) = f := rfl
 @[simp]
 lemma monoid_with_zero_hom.to_zero_hom_coe [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) :
+  (f : M →*₀ N) :
   (f.to_zero_hom : M → N) = f := rfl
 @[simp]
 lemma monoid_with_zero_hom.to_monoid_hom_coe [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) :
+  (f : M →*₀ N) :
   (f.to_monoid_hom : M → N) = f := rfl
 
 @[ext, to_additive]
@@ -455,8 +469,8 @@ lemma monoid_hom.ext [mul_one_class M] [mul_one_class N]
   ⦃f g : M →* N⦄ (h : ∀ x, f x = g x) : f = g :=
 fun_like.ext _ _ h
 @[ext]
-lemma monoid_with_zero_hom.ext [mul_zero_one_class M] [mul_zero_one_class N]
-  ⦃f g : monoid_with_zero_hom M N⦄ (h : ∀ x, f x = g x) : f = g :=
+lemma monoid_with_zero_hom.ext [mul_zero_one_class M] [mul_zero_one_class N] ⦃f g : M →*₀ N⦄
+  (h : ∀ x, f x = g x) : f = g :=
 fun_like.ext _ _ h
 
 @[simp, to_additive]
@@ -472,11 +486,43 @@ lemma monoid_hom.mk_coe [mul_one_class M] [mul_one_class N]
   (f : M →* N) (h1 hmul) : monoid_hom.mk f h1 hmul = f :=
 monoid_hom.ext $ λ _, rfl
 @[simp]
-lemma monoid_with_zero_hom.mk_coe [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) (h0 h1 hmul) : monoid_with_zero_hom.mk f h0 h1 hmul = f :=
+lemma monoid_with_zero_hom.mk_coe [mul_zero_one_class M] [mul_zero_one_class N] (f : M →*₀ N)
+  (h0 h1 hmul) : monoid_with_zero_hom.mk f h0 h1 hmul = f :=
 monoid_with_zero_hom.ext $ λ _, rfl
 
 end coes
+
+/-- Copy of a `one_hom` with a new `to_fun` equal to the old one. Useful to fix definitional
+equalities. -/
+@[to_additive "Copy of a `zero_hom` with a new `to_fun` equal to the old one. Useful to fix
+definitional equalities."]
+protected def one_hom.copy {hM : has_one M} {hN : has_one N} (f : one_hom M N) (f' : M → N)
+  (h : f' = f) : one_hom M N :=
+{ to_fun := f',
+  map_one' := h.symm ▸ f.map_one' }
+
+/-- Copy of a `mul_hom` with a new `to_fun` equal to the old one. Useful to fix definitional
+equalities. -/
+@[to_additive "Copy of an `add_hom` with a new `to_fun` equal to the old one. Useful to fix
+definitional equalities."]
+protected def mul_hom.copy {hM : has_mul M} {hN : has_mul N} (f : mul_hom M N) (f' : M → N)
+  (h : f' = f) : mul_hom M N :=
+{ to_fun := f',
+  map_mul' := h.symm ▸ f.map_mul' }
+
+/-- Copy of a `monoid_hom` with a new `to_fun` equal to the old one. Useful to fix
+definitional equalities. -/
+@[to_additive "Copy of an `add_monoid_hom` with a new `to_fun` equal to the old one. Useful to fix
+definitional equalities."]
+protected def monoid_hom.copy {hM : mul_one_class M} {hN : mul_one_class N} (f : M →* N)
+  (f' : M → N) (h : f' = f) : M →* N :=
+{ ..f.to_one_hom.copy f' h, ..f.to_mul_hom.copy f' h }
+
+/-- Copy of a `monoid_hom` with a new `to_fun` equal to the old one. Useful to fix
+definitional equalities. -/
+protected def monoid_with_zero_hom.copy {hM : mul_zero_one_class M} {hN : mul_zero_one_class N}
+  (f : M →*₀ N) (f' : M → N) (h : f' = f) : M →* N :=
+{ ..f.to_zero_hom.copy f' h, ..f.to_monoid_hom.copy f' h }
 
 @[to_additive]
 protected lemma one_hom.map_one [has_one M] [has_one N] (f : one_hom M N) : f 1 = 1 := f.map_one'
@@ -485,12 +531,12 @@ protected lemma one_hom.map_one [has_one M] [has_one N] (f : one_hom M N) : f 1 
 protected lemma monoid_hom.map_one [mul_one_class M] [mul_one_class N] (f : M →* N) :
   f 1 = 1 := f.map_one'
 protected lemma monoid_with_zero_hom.map_one [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) : f 1 = 1 := f.map_one'
+  (f : M →*₀ N) : f 1 = 1 := f.map_one'
 
 /-- If `f` is an additive monoid homomorphism then `f 0 = 0`. -/
 add_decl_doc add_monoid_hom.map_zero
 protected lemma monoid_with_zero_hom.map_zero [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) : f 0 = 0 := f.map_zero'
+  (f : M →*₀ N) : f 0 = 0 := f.map_zero'
 
 @[to_additive]
 protected lemma mul_hom.map_mul [has_mul M] [has_mul N]
@@ -500,7 +546,7 @@ protected lemma mul_hom.map_mul [has_mul M] [has_mul N]
 protected lemma monoid_hom.map_mul [mul_one_class M] [mul_one_class N]
   (f : M →* N) (a b : M) : f (a * b) = f a * f b := f.map_mul' a b
 protected lemma monoid_with_zero_hom.map_mul [mul_zero_one_class M] [mul_zero_one_class N]
-  (f :  monoid_with_zero_hom M N) (a b : M) : f (a * b) = f a * f b := f.map_mul' a b
+  (f :  M →*₀ N) (a b : M) : f (a * b) = f a * f b := f.map_mul' a b
 
 /-- If `f` is an additive monoid homomorphism then `f (a + b) = f a + f b`. -/
 add_decl_doc add_monoid_hom.map_add
@@ -556,7 +602,7 @@ def monoid_hom.id (M : Type*) [mul_one_class M] : M →* M :=
 { to_fun := λ x, x, map_one' := rfl, map_mul' := λ _ _, rfl, }
 /-- The identity map from a monoid_with_zero to itself. -/
 @[simps]
-def monoid_with_zero_hom.id (M : Type*) [mul_zero_one_class M] : monoid_with_zero_hom M M :=
+def monoid_with_zero_hom.id (M : Type*) [mul_zero_one_class M] : M →*₀ M :=
 { to_fun := λ x, x, map_zero' := rfl, map_one' := rfl, map_mul' := λ _ _, rfl, }
 
 /-- The identity map from an type with zero to itself. -/
@@ -585,7 +631,7 @@ def monoid_hom.comp [mul_one_class M] [mul_one_class N] [mul_one_class P]
 
 /-- Composition of `monoid_with_zero_hom`s as a `monoid_with_zero_hom`. -/
 def monoid_with_zero_hom.comp [mul_zero_one_class M] [mul_zero_one_class N] [mul_zero_one_class P]
-  (hnp : monoid_with_zero_hom N P) (hmn : monoid_with_zero_hom M N) : monoid_with_zero_hom M P :=
+  (hnp : N →*₀ P) (hmn : M →*₀ N) : M →*₀ P :=
 { to_fun := hnp ∘ hmn, map_zero' := by simp, map_one' := by simp, map_mul' := by simp, }
 
 /-- Composition of `zero_hom`s as a `zero_hom`. -/
@@ -605,8 +651,7 @@ add_decl_doc add_monoid_hom.comp
   (g : N →* P) (f : M →* N) :
   ⇑(g.comp f) = g ∘ f := rfl
 @[simp] lemma monoid_with_zero_hom.coe_comp [mul_zero_one_class M] [mul_zero_one_class N]
-  [mul_zero_one_class P]
-  (g : monoid_with_zero_hom N P) (f : monoid_with_zero_hom M N) :
+  [mul_zero_one_class P] (g : N →*₀ P) (f : M →*₀ N) :
   ⇑(g.comp f) = g ∘ f := rfl
 
 @[to_additive] lemma one_hom.comp_apply [has_one M] [has_one N] [has_one P]
@@ -618,9 +663,8 @@ add_decl_doc add_monoid_hom.comp
 @[to_additive] lemma monoid_hom.comp_apply [mul_one_class M] [mul_one_class N] [mul_one_class P]
   (g : N →* P) (f : M →* N) (x : M) :
   g.comp f x = g (f x) := rfl
-lemma monoid_with_zero_hom.comp_apply
-  [mul_zero_one_class M] [mul_zero_one_class N] [mul_zero_one_class P]
-  (g : monoid_with_zero_hom N P) (f : monoid_with_zero_hom M N) (x : M) :
+lemma monoid_with_zero_hom.comp_apply [mul_zero_one_class M] [mul_zero_one_class N]
+  [mul_zero_one_class P] (g : N →*₀ P) (f : M →*₀ N) (x : M) :
   g.comp f x = g (f x) := rfl
 
 /-- Composition of monoid homomorphisms is associative. -/
@@ -636,7 +680,7 @@ lemma monoid_with_zero_hom.comp_apply
   (h.comp g).comp f = h.comp (g.comp f) := rfl
 lemma monoid_with_zero_hom.comp_assoc {Q : Type*}
   [mul_zero_one_class M] [mul_zero_one_class N] [mul_zero_one_class P] [mul_zero_one_class Q]
-  (f : monoid_with_zero_hom M N) (g : monoid_with_zero_hom N P) (h : monoid_with_zero_hom P Q) :
+  (f : M →*₀ N) (g : N →*₀ P) (h : P →*₀ Q) :
   (h.comp g).comp f = h.comp (g.comp f) := rfl
 
 @[to_additive]
@@ -655,9 +699,8 @@ lemma monoid_hom.cancel_right
   {g₁ g₂ : N →* P} {f : M →* N} (hf : function.surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
 ⟨λ h, monoid_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
-lemma monoid_with_zero_hom.cancel_right
-  [mul_zero_one_class M] [mul_zero_one_class N] [mul_zero_one_class P]
-  {g₁ g₂ : monoid_with_zero_hom N P} {f : monoid_with_zero_hom M N} (hf : function.surjective f) :
+lemma monoid_with_zero_hom.cancel_right [mul_zero_one_class M] [mul_zero_one_class N]
+  [mul_zero_one_class P] {g₁ g₂ : N →*₀ P} {f : M →*₀ N} (hf : function.surjective f) :
   g₁.comp f = g₂.comp f ↔ g₁ = g₂ :=
 ⟨λ h, monoid_with_zero_hom.ext $ hf.forall.2 (fun_like.ext_iff.1 h), λ h, h ▸ rfl⟩
 
@@ -679,9 +722,8 @@ lemma monoid_hom.cancel_left [mul_one_class M] [mul_one_class N] [mul_one_class 
   g.comp f₁ = g.comp f₂ ↔ f₁ = f₂ :=
 ⟨λ h, monoid_hom.ext $ λ x, hg $ by rw [← monoid_hom.comp_apply, h, monoid_hom.comp_apply],
  λ h, h ▸ rfl⟩
-lemma monoid_with_zero_hom.cancel_left
-  [mul_zero_one_class M] [mul_zero_one_class N] [mul_zero_one_class P]
-  {g : monoid_with_zero_hom N P} {f₁ f₂ : monoid_with_zero_hom M N} (hg : function.injective g) :
+lemma monoid_with_zero_hom.cancel_left [mul_zero_one_class M] [mul_zero_one_class N]
+  [mul_zero_one_class P] {g : N →*₀ P} {f₁ f₂ : M →*₀ N} (hg : function.injective g) :
   g.comp f₁ = g.comp f₂ ↔ f₁ = f₂ :=
 ⟨λ h, monoid_with_zero_hom.ext $ λ x, hg $ by rw [
         ← monoid_with_zero_hom.comp_apply, h, monoid_with_zero_hom.comp_apply],
@@ -696,10 +738,10 @@ lemma monoid_hom.to_mul_hom_injective [mul_one_class M] [mul_one_class N] :
   function.injective (monoid_hom.to_mul_hom : (M →* N) → mul_hom M N) :=
 λ f g h, monoid_hom.ext $ by convert fun_like.ext_iff.mp h
 lemma monoid_with_zero_hom.to_monoid_hom_injective [monoid_with_zero M] [monoid_with_zero N] :
-  function.injective (monoid_with_zero_hom.to_monoid_hom : monoid_with_zero_hom M N → M →* N) :=
+  function.injective (monoid_with_zero_hom.to_monoid_hom : M →*₀ N → M →* N) :=
 λ f g h, monoid_with_zero_hom.ext $ by convert fun_like.ext_iff.mp h
 lemma monoid_with_zero_hom.to_zero_hom_injective [monoid_with_zero M] [monoid_with_zero N] :
-  function.injective (monoid_with_zero_hom.to_zero_hom : monoid_with_zero_hom M N → zero_hom M N) :=
+  function.injective (monoid_with_zero_hom.to_zero_hom : M →*₀ N → zero_hom M N) :=
 λ f g h, monoid_with_zero_hom.ext $ by convert fun_like.ext_iff.mp h
 
 @[simp, to_additive] lemma one_hom.comp_id [has_one M] [has_one N]
@@ -709,7 +751,7 @@ lemma monoid_with_zero_hom.to_zero_hom_injective [monoid_with_zero M] [monoid_wi
 @[simp, to_additive] lemma monoid_hom.comp_id [mul_one_class M] [mul_one_class N]
   (f : M →* N) : f.comp (monoid_hom.id M) = f := monoid_hom.ext $ λ x, rfl
 @[simp] lemma monoid_with_zero_hom.comp_id [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) : f.comp (monoid_with_zero_hom.id M) = f :=
+  (f : M →*₀ N) : f.comp (monoid_with_zero_hom.id M) = f :=
 monoid_with_zero_hom.ext $ λ x, rfl
 
 @[simp, to_additive] lemma one_hom.id_comp [has_one M] [has_one N]
@@ -719,7 +761,7 @@ monoid_with_zero_hom.ext $ λ x, rfl
 @[simp, to_additive] lemma monoid_hom.id_comp [mul_one_class M] [mul_one_class N]
   (f : M →* N) : (monoid_hom.id N).comp f = f := monoid_hom.ext $ λ x, rfl
 @[simp] lemma monoid_with_zero_hom.id_comp [mul_zero_one_class M] [mul_zero_one_class N]
-  (f : monoid_with_zero_hom M N) : (monoid_with_zero_hom.id N).comp f = f :=
+  (f : M →*₀ N) : (monoid_with_zero_hom.id N).comp f = f :=
 monoid_with_zero_hom.ext $ λ x, rfl
 
 @[to_additive add_monoid_hom.map_nsmul]
@@ -833,8 +875,7 @@ instance [has_mul M] [mul_one_class N] : inhabited (mul_hom M N) := ⟨1⟩
 @[to_additive]
 instance [mul_one_class M] [mul_one_class N] : inhabited (M →* N) := ⟨1⟩
 -- unlike the other homs, `monoid_with_zero_hom` does not have a `1` or `0`
-instance [mul_zero_one_class M] : inhabited (monoid_with_zero_hom M M) :=
-⟨monoid_with_zero_hom.id M⟩
+instance [mul_zero_one_class M] : inhabited (M →*₀ M) := ⟨monoid_with_zero_hom.id M⟩
 
 namespace monoid_hom
 variables [mM : mul_one_class M] [mN : mul_one_class N] [mP : mul_one_class P]
@@ -1000,6 +1041,14 @@ add_decl_doc add_monoid_hom.has_sub
   (f / g) x = f x / g x := rfl
 
 end monoid_hom
+
+/-- Given two monoid with zero morphisms `f`, `g` to a commutative monoid, `f * g` is the monoid
+with zero morphism sending `x` to `f x * g x`. -/
+instance {M N} {hM : mul_zero_one_class M} [comm_monoid_with_zero N] : has_mul (M →*₀ N) :=
+⟨λ f g,
+  { to_fun := λ a, f a * g a,
+    map_zero' := by rw [map_zero, zero_mul],
+    ..(f * g : M →* N) }⟩
 
 section commute
 
