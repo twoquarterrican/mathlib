@@ -350,7 +350,7 @@ rfl
 
 @[to_additive] lemma to_monoid_hom_injective {M N} [mul_one_class M] [mul_one_class N] :
   function.injective (to_monoid_hom : (M ≃* N) → M →* N) :=
-λ f g h, mul_equiv.ext (fun_like.ext_iff.1 h)
+λ f g h, mul_equiv.ext (show ∀ x, f.to_monoid_hom x = g.to_monoid_hom x, from fun_like.ext_iff.1 h)
 
 
 /--
