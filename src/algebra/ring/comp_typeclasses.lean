@@ -57,7 +57,7 @@ namespace ring_hom_comp_triple
 
 @[simp] lemma comp_apply [ring_hom_comp_triple σ₁₂ σ₂₃ σ₁₃] {x : R₁} :
   σ₂₃ (σ₁₂ x) = σ₁₃ x :=
-fun_like.congr_fun comp_eq x
+fun_like.congr_fun (comp_eq : σ₂₃.comp σ₁₂ = σ₁₃) x
 
 end ring_hom_comp_triple
 
