@@ -6,6 +6,7 @@ Authors: Mario Carneiro, Floris van Doorn, Violeta Hernández Palacios
 import logic.small
 import set_theory.ordinal
 import tactic.by_contra
+import topology.algebra.ordered.basic
 
 /-!
 # Ordinal arithmetic
@@ -339,11 +340,24 @@ by rw [lift_card, ←type_subrel_lt, card_type]
 
 /-! ### Normal ordinal functions -/
 
-/-- A normal ordinal function is a strictly increasing function which is
-  order-continuous, i.e., the image `f o` of a limit ordinal `o` is the sup of `f a` for
-  `a < o`.  -/
+/-- An ordinal function `f` is continuous when its value `f o` at a limit ordinal `o` is the
+    supremum of `f a` for all `a < o`. Note that this is strictly stronger than the topological
+    definition of continuity. -/
+protected def continuous (f : ordinal → ordinal) : Prop :=
+∀ o, is_limit o → ∀ a, f o ≤ a ↔ ∀ b < o, f b ≤ a
+
+instance : topological_space ordinal :=
+preorder.topology ordinal
+
+theorem continuous_of_continuous {f : ordinal → ordinal} (hf : ordinal.continuous f) :
+  continuous f :=
+sorry
+
+/-- A normal ordinal function is a strictly monotonic function which is continuous, i.e. the image
+  `f o` of a limit ordinal `o` is the sup of `f a` for `a < o`. Note that continuity in this sense
+  is strictly stronger than the topological definition. -/
 def is_normal (f : ordinal → ordinal) : Prop :=
-(∀ o, f o < f (succ o)) ∧ ∀ o, is_limit o → ∀ a, f o ≤ a ↔ ∀ b < o, f b ≤ a
+(∀ o, f o < f (succ o)) ∧ ∀ o, ordinal.continuous f
 
 theorem is_normal.limit_le {f} (H : is_normal f) : ∀ {o}, is_limit o →
   ∀ {a}, f o ≤ a ↔ ∀ b < o, f b ≤ a := H.2
