@@ -377,8 +377,8 @@ theorem exists_dvd_of_not_prime2 {n : ℕ} (n2 : 2 ≤ n) (np : ¬ prime n) :
 ⟨min_fac n, min_fac_dvd _, (min_fac_prime (ne_of_gt n2)).two_le,
   (not_prime_iff_min_fac_lt n2).1 np⟩
 
-theorem exists_prime_and_dvd {n : ℕ} (n2 : 2 ≤ n) : ∃ p, prime p ∧ p ∣ n :=
-⟨min_fac n, min_fac_prime (ne_of_gt n2), min_fac_dvd _⟩
+theorem exists_prime_and_dvd {n : ℕ} (hn : n ≠ 1) : ∃ p, prime p ∧ p ∣ n :=
+⟨min_fac n, min_fac_prime hn, min_fac_dvd _⟩
 
 /-- Euclid's theorem on the **infinitude of primes**.
 Here given in the form: for every `n`, there exists a prime number `p ≥ n`. -/
