@@ -1055,3 +1055,131 @@ begin
 end
 
 end
+
+/-!
+### Dirichlet and alternating series tests
+-/
+section
+
+variables {f g : ℕ → ℝ}
+variables {x : ℝ}
+
+-- The partial sum of `g` starting from 0.
+local notation `G` n:80 := ∑ i in range n, g i
+
+/-- The product of a sequence that tends to zero with a bounded sequence also tends to zero. -/
+lemma tendsto_zero_at_top_mul_of_tendsto_zero_of_bdd {ι 𝕜 𝔸 : Type*} [normed_field 𝕜]
+  [normed_group 𝔸] [normed_space 𝕜 𝔸] {l : filter ι} {ε : ι → 𝕜} {f : ι → 𝔸}
+  (hε : tendsto ε l (𝓝 0)) (hf : filter.is_bounded_under (≤) l (norm ∘ f)) :
+  tendsto (ε • f) l (𝓝 0) :=
+begin
+  rw ← is_o_one_iff 𝕜 at hε ⊢,
+  simpa using is_o.smul_is_O hε (hf.is_O_const (one_ne_zero : (1 : 𝕜) ≠ 0))
+end
+
+private lemma cauchy_seq.mul_left (hf : cauchy_seq f) : cauchy_seq (λ n, x * f n) :=
+uniform_continuous.comp_cauchy_seq real.uniform_continuous_mul_const hf
+
+/-- The **direct comparison test** for conditionally convergent series.
+See `summable_of_norm_bounded` for the same statement about absolutely convergent ones. -/
+lemma cauchy_seq_range_of_norm_bounded
+  (hf : cauchy_seq (λ n, ∑ i in range n, f i)) (hg : ∀ i, ∥g i∥ ≤ f i):
+  cauchy_seq (λ n, ∑ i in range n, g i) :=
+begin
+  rw metric.cauchy_seq_iff' at ⊢ hf,
+
+  intros ε hε,
+  cases hf ε hε with N hf,
+  use N,
+  intros n hn,
+  specialize hf n hn,
+
+  rw [real.dist_eq, ←sum_Ico_eq_sub _ hn] at ⊢ hf,
+  apply lt_of_le_of_lt (abs_sum_le_sum_abs _ _),
+  apply lt_of_le_of_lt _ hf,
+
+  have : ∀ n, 0 ≤ f n := λ n, le_trans (abs_nonneg (g n)) (hg n),
+  rw abs_sum_of_nonneg' this,
+  exact sum_le_sum (λ x _, hg x),
+end
+
+/-- **Dirichlet's Test** for monotone sequences. -/
+theorem dirichlet_test_mono
+  (hfa : monotone f) (hf0 : tendsto f at_top (𝓝 0)) (hgx : ∀ n, ∥G n∥  ≤ x) :
+  cauchy_seq (λ n, ∑ i in range (n+1), f i * g i) :=
+begin
+  simp_rw [sum_by_parts_range _ _ (nat.succ_pos _), sub_eq_add_neg],
+  simp only [nat.succ_sub_succ_eq_sub, tsub_zero],
+
+  have := tendsto.cauchy_seq (tendsto_zero_at_top_mul_of_tendsto_zero_of_bdd hf0
+    ⟨x, eventually_map.mpr (eventually_of_forall (λ n, hgx (n+1)))⟩),
+  apply cauchy_seq.add this,
+  conv { congr, funext, rw [←neg_one_mul] },
+
+  have : ∀ n, |G (n+1) * (f(n+1) - f(n))| ≤ x * |f(n+1) - f(n)| := begin
+    intro n,
+    rw abs_mul,
+    exact decidable.mul_le_mul_of_nonneg_right (hgx (n+1)) (abs_nonneg _),
+  end,
+  apply cauchy_seq.mul_left (cauchy_seq_range_of_norm_bounded _ this),
+
+  conv in (|_|) { rw abs_of_nonneg (sub_nonneg_of_le (hfa (nat.le_succ _))) },
+  simp_rw ←mul_sum,
+  apply cauchy_seq.mul_left,
+  simp_rw [sum_range_sub, sub_eq_add_neg],
+  exact cauchy_seq.add (tendsto.cauchy_seq hf0) (cauchy_seq_const (-f 0)),
+end
+
+/-- **Dirichlet's test** for antitone sequences. -/
+theorem dirichlet_test_anti
+  (hfa : antitone f) (hf0 : tendsto f at_top (𝓝 0)) (hgx : ∀ n, ∥G n∥ ≤ x) :
+  cauchy_seq (λ n, ∑ i in range (n+1), f i * g i) :=
+begin
+  have hfa': monotone (λ x, (-(f x))) := λ _ _ hab, neg_le_neg $ hfa hab,
+  have hf0': tendsto (λ x, (-(f x))) at_top (𝓝 0) := begin
+    conv in (-f _) { rw ←neg_one_mul },
+    convert filter.tendsto.const_mul _ hf0,
+    norm_num,
+  end,
+
+  conv in (_ * _) { rw [←neg_neg (f _), neg_eq_neg_one_mul, mul_assoc], },
+  simp_rw ←mul_sum,
+  exact cauchy_seq.mul_left (dirichlet_test_mono hfa' hf0' hgx),
+end
+
+lemma sum_neg_one_pow_ite (n : ℕ) : ∑ i in range n, (-1 : ℝ) ^ i = if even n then 0 else 1 :=
+begin
+  induction n with n hn,
+  { simp only [range_zero, sum_empty, nat.even_zero, if_true] },
+  rw [sum_range_succ, hn],
+
+  by_cases (even n.succ),
+  { have := nat.even_succ.mp h,
+    simp only [this, h, if_true, if_false],
+    rw nat.neg_one_pow_of_odd (nat.odd_iff_not_even.mpr this),
+    norm_num },
+  { have := (iff_not_comm.mpr (nat.even_succ)).mpr h,
+    simp only [this, h, if_true, if_false],
+    rw nat.neg_one_pow_of_even this,
+    norm_num }
+end
+
+private lemma norm_sum_neg_one_pow_le (n : ℕ) : ∥∑ i in range n, (-1 : ℝ) ^ i∥ ≤ 1 := begin
+  rw sum_neg_one_pow_ite n,
+  by_cases (even n);
+  { simp only [h, if_true, if_false], norm_num },
+end
+
+/-- The **alternating series test** for monotone sequences. -/
+theorem alternating_series_test_mono
+  (hfa : monotone f) (hf0 : tendsto f at_top (𝓝 0)) :
+  cauchy_seq (λ n, ∑ i in range (n+1), f i * (-1)^i) :=
+dirichlet_test_mono hfa hf0 norm_sum_neg_one_pow_le
+
+/-- The **alternating series test** for antitone sequences. -/
+theorem alternating_series_test_anti
+  (hfa : antitone f) (hf0 : tendsto f at_top (𝓝 0)) :
+  cauchy_seq (λ n, ∑ i in range (n+1), f i * (-1)^i) :=
+dirichlet_test_anti hfa hf0 norm_sum_neg_one_pow_le
+
+end
