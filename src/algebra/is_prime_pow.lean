@@ -161,6 +161,18 @@ begin
   simp,
 end
 
+lemma is_prime_pow_of_forall_prime_dvd_eq
+  {n p : ℕ}
+  (hn : n ≠ 1)
+  (h : ∀ {d}, nat.prime d → d ∣ n → d = p) :
+  is_prime_pow n :=
+begin
+  rw is_prime_pow_iff_unique_prime_dvd,
+  refine ⟨p, _, λ y hy, h hy.1 hy.2⟩,
+  obtain ⟨q, hq⟩ := nat.exists_prime_and_dvd hn,
+  rwa ←h hq.1 hq.2,
+end
+
 lemma is_prime_pow_pow_iff {n k : ℕ} (hk : k ≠ 0) :
   is_prime_pow (n ^ k) ↔ is_prime_pow n :=
 begin
