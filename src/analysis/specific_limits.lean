@@ -1166,8 +1166,8 @@ end
 
 private lemma norm_sum_neg_one_pow_le (n : ℕ) : ∥∑ i in range n, (-1 : ℝ) ^ i∥ ≤ 1 := begin
   rw sum_neg_one_pow_ite n,
-  by_cases (even n);
-  { simp only [h, if_true, if_false], norm_num },
+  split_ifs;
+  norm_num,
 end
 
 /-- The **alternating series test** for monotone sequences. -/
