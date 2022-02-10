@@ -108,3 +108,17 @@ by { rw eq_bot_iff, exact general_commutator_le_left ⊥ H }
 lemma general_commutator_le_inf (H₁ H₂ : subgroup G) [normal H₁] [normal H₂] :
   ⁅H₁, H₂⁆ ≤ H₁ ⊓ H₂ :=
 by simp only [general_commutator_le_left, general_commutator_le_right, le_inf_iff, and_self]
+
+lemma general_commutator_general_commutator_eq_bot_of_rotate {X Y Z : subgroup G}
+  (h1 : ⁅⁅X, Y⁆, Z⁆ = ⊥) (h2 : ⁅⁅Y, Z⁆, X⁆ = ⊥) : ⁅⁅Z, X⁆, Y⁆ = ⊥ :=
+begin
+  rw [general_commutator_eq_bot_iff_le_centralizer, general_commutator_le] at h1 h2 ⊢,
+  simp_rw [mem_centralizer_iff_commutator_eq_one] at h1 h2 ⊢,
+  intros z hz x hx y hy,
+  have key : z * x * z⁻¹ * x⁻¹ * y * (z * x * z⁻¹ * x⁻¹)⁻¹ * y⁻¹ =
+    z * x * (x⁻¹ * y * x⁻¹⁻¹ * y⁻¹ * z⁻¹ * (x⁻¹ * y * x⁻¹⁻¹ * y⁻¹)⁻¹ * z⁻¹⁻¹)⁻¹ * x⁻¹
+    * y * (y⁻¹ * z⁻¹ * y⁻¹⁻¹ * z⁻¹⁻¹ * x * (y⁻¹ * z⁻¹ * y⁻¹⁻¹ * z⁻¹⁻¹)⁻¹ * x⁻¹)⁻¹ * y⁻¹ * z⁻¹ :=
+  by group,
+  rw [key, h1 _ (X.inv_mem hx) y hy _ (Z.inv_mem hz), h2 _ (Y.inv_mem hy) _ (Z.inv_mem hz) x hx,
+    one_inv, mul_one, mul_one, mul_inv_cancel_right, mul_inv_cancel_right, mul_inv_self],
+end
