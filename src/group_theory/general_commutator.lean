@@ -110,15 +110,14 @@ lemma general_commutator_le_inf (H₁ H₂ : subgroup G) [normal H₁] [normal H
 by simp only [general_commutator_le_left, general_commutator_le_right, le_inf_iff, and_self]
 
 lemma general_commutator_general_commutator_eq_bot_of_rotate {X Y Z : subgroup G}
-  (h1 : ⁅⁅X, Y⁆, Z⁆ = ⊥) (h2 : ⁅⁅Y, Z⁆, X⁆ = ⊥) : ⁅⁅Z, X⁆, Y⁆ = ⊥ :=
+  (h1 : ⁅⁅Y, Z⁆, X⁆ = ⊥) (h2 : ⁅⁅Z, X⁆, Y⁆ = ⊥) : ⁅⁅X, Y⁆, Z⁆ = ⊥ :=
 begin
-  rw [general_commutator_eq_bot_iff_le_centralizer, general_commutator_le] at h1 h2 ⊢,
-  simp_rw [mem_centralizer_iff_commutator_eq_one] at h1 h2 ⊢,
-  intros z hz x hx y hy,
-  have key : z * x * z⁻¹ * x⁻¹ * y * (z * x * z⁻¹ * x⁻¹)⁻¹ * y⁻¹ =
-    z * x * (x⁻¹ * y * x⁻¹⁻¹ * y⁻¹ * z⁻¹ * (x⁻¹ * y * x⁻¹⁻¹ * y⁻¹)⁻¹ * z⁻¹⁻¹)⁻¹ * x⁻¹
-    * y * (y⁻¹ * z⁻¹ * y⁻¹⁻¹ * z⁻¹⁻¹ * x * (y⁻¹ * z⁻¹ * y⁻¹⁻¹ * z⁻¹⁻¹)⁻¹ * x⁻¹)⁻¹ * y⁻¹ * z⁻¹ :=
-  by group,
-  rw [key, h1 _ (X.inv_mem hx) y hy _ (Z.inv_mem hz), h2 _ (Y.inv_mem hy) _ (Z.inv_mem hz) x hx,
+  simp_rw [general_commutator_eq_bot_iff_le_centralizer, general_commutator_le,
+    mem_centralizer_iff_commutator_eq_one] at h1 h2 ⊢,
+  intros x hx y hy z hz,
+  have : z * (x * y * x⁻¹ * y⁻¹) * z⁻¹ * (x * y * x⁻¹ * y⁻¹)⁻¹ = x * z *
+    (y * (z⁻¹ * x⁻¹ * z⁻¹⁻¹ * x⁻¹⁻¹) * y⁻¹ * (z⁻¹ * x⁻¹ * z⁻¹⁻¹ * x⁻¹⁻¹)⁻¹)⁻¹ * z⁻¹ * y *
+    (x⁻¹ * (y⁻¹ * z * y⁻¹⁻¹ * z⁻¹) * x⁻¹⁻¹ * (y⁻¹ * z * y⁻¹⁻¹ * z⁻¹)⁻¹)⁻¹ * y⁻¹ * x⁻¹ := by group,
+  rw [this, h1 _ (Y.inv_mem hy) z hz _ (X.inv_mem hx), h2 _ (Z.inv_mem hz) _ (X.inv_mem hx) y hy,
     one_inv, mul_one, mul_one, mul_inv_cancel_right, mul_inv_cancel_right, mul_inv_self],
 end
