@@ -154,14 +154,51 @@ lemma filter_false_iff {α : Type*} (s : finset α) (p : α → Prop) [decidable
 
 def gen_totient (n d : ℕ) := ((Icc 1 n).filter (λ k, n.gcd k = d)).card
 
-lemma gen_totient_one (n : ℕ) : n.gen_totient 1 = n.totient :=
-begin
-  unfold gen_totient,
-  unfold totient,
+lemma zero_gen_totient (d : ℕ) : gen_totient 0 d = 0 := rfl
 
-  sorry,
+lemma gen_totient_zero (n : ℕ) : gen_totient n 0 = 0 :=
+begin
+  by_cases hn : n = 0, { simp [hn, zero_gen_totient] },
+  simp [gen_totient, hn],
 end
 
+#eval gen_totient 1 1
+#eval totient 3
+#eval range 3
+#eval Icc 1 3
+
+#eval to_bool (coprime 0 1)
+#eval to_bool (coprime 1 1)
+
+lemma gen_totient_one (n : ℕ) : n.gen_totient 1 = n.totient :=
+begin
+  by_cases hn1 : n = 1, { simp [hn1, gen_totient] },
+
+  simp only [gen_totient, totient],
+  suffices : (filter n.coprime (Icc 1 n)) = (filter n.coprime (range n)), { rw this },
+  ext,
+  simp only [mem_filter, mem_range, mem_Icc, and.congr_left_iff],
+  intros han,
+  split,
+  {
+    intros h,
+    apply lt_of_le_of_ne h.2,
+    intros H,
+    subst H,
+    simp at han,
+    contradiction,
+  },
+  {
+    intros h,
+    refine ⟨one_le_iff_ne_zero.mpr _, le_of_lt h⟩,
+    intros ha,
+    subst ha,
+    simp at han,
+    contradiction,
+  },
+end
+
+#exit
 lemma gen_totient_not_dvd_eq_zero {n d : ℕ} (hnd : ¬ d ∣ n) : n.gen_totient d = 0 :=
 begin
   unfold gen_totient,
