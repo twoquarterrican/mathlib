@@ -150,7 +150,7 @@ section general_totient
 
 -----------------------------------
 -- This is in `PR #12104`
-lemma filter_false_iff {α : Type*} (s : finset α) (p : α → Prop) [decidable_pred p] :
+lemma filter_eq_empty_iff {α : Type*} (s : finset α) (p : α → Prop) [decidable_pred p] :
    (s.filter p = ∅) ↔ ∀ x ∈ s, ¬ p x := sorry
 -----------------------------------
 
@@ -167,13 +167,13 @@ begin
   simp [gen_totient, hn],
 end
 
-#eval gen_totient 1 1
-#eval totient 3
-#eval range 3
-#eval Icc 1 3
+-- #eval gen_totient 1 1
+-- #eval totient 3
+-- #eval range 3
+-- #eval Icc 1 3
 
-#eval to_bool (coprime 0 1)
-#eval to_bool (coprime 1 1)
+-- #eval to_bool (coprime 0 1)
+-- #eval to_bool (coprime 1 1)
 
 lemma gen_totient_one (n : ℕ) : n.gen_totient 1 = n.totient :=
 begin
@@ -199,7 +199,7 @@ lemma gen_totient_not_dvd_eq_zero {n d : ℕ} (hnd : ¬ d ∣ n) : n.gen_totient
 begin
   unfold gen_totient,
   rw card_eq_zero,
-  rw filter_false_iff,
+  rw filter_eq_empty_iff,
   intros x hx,
   simp at hx,
   cases hx,
@@ -208,13 +208,13 @@ begin
   rw ←H,
   exact gcd_dvd_left n x,
 end
-#exit
+
 lemma gen_totient_dvd_eq_totient_div {n d : ℕ} (hnd : d ∣ n) : n.gen_totient d = φ (n/d) :=
 begin
-
+  simp only [gen_totient, totient],
   sorry,
 end
-
+#exit
 end general_totient
 
 lemma divisors_subset_range_gt {n m : ℕ} (hnm : n < m) : n.divisors ⊆ range m :=
