@@ -143,6 +143,12 @@ if hmn0 : m * n = 0
       fintype.card_prod]
   end
 
+-----------------------------------
+-- This is in `PR #12104`
+lemma filter_false_iff {α : Type*} (s : finset α) (p : α → Prop) [decidable_pred p] :
+   (s.filter p = ∅) ↔ ∀ x ∈ s, ¬ p x := sorry
+-----------------------------------
+
 /-- For any `d : ℕ`, `n.gen_totient d` is the number of positive natural numbers `1 ≤ k ≤ n` with
 `gcd n k = d`.  So in particular `n.gen_totient 1 = n.totient`. -/
 
@@ -170,32 +176,8 @@ begin
   sorry,
 end
 
-lemma divisors_subset_range_ge {n m : ℕ} (hnm : n ≤ m) : n.divisors ⊆ range m :=
-begin
-
-  sorry,
-end
-
--- Move this to finset/basic @1511
-lemma filter_empty_iff (s : finset ℕ) (p : ℕ → Prop) [decidable_pred p] :
-  (s.filter p = ∅) ↔ ∀ x ∈ s, ¬ p x :=
-begin
-  refine ⟨_, finset.filter_false_of_mem⟩,
-  { induction s using finset.induction_on with a t hat IH, { intros hs, simp [hs] },
-    intros ht x hx,
-    have : filter p t = ∅,
-    { rw [←subset_empty, ←ht],
-      exact filter_subset_filter p (subset_insert a t) },
-    specialize IH this,
-    cases mem_insert.mp hx,
-    { rw h,
-      rw filter_insert p a t at ht,
-      intros H,
-      simp only [H, if_true, insert_ne_empty] at ht,
-      cases ht },
-    { exact IH x h } },
-end
-
+lemma divisors_subset_range_gt {n m : ℕ} (hnm : n < m) : n.divisors ⊆ range m :=
+λ x hx, mem_range.mpr (lt_of_le_of_lt (divisor_le hx) hnm)
 
 lemma sum_totient' (n : ℕ) : n.divisors.sum φ = n :=
 begin
