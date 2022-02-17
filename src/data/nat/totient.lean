@@ -143,6 +143,11 @@ if hmn0 : m * n = 0
       fintype.card_prod]
   end
 
+
+section general_totient
+
+/-- ## A generalised totient function -/
+
 -----------------------------------
 -- This is in `PR #12104`
 lemma filter_false_iff {α : Type*} (s : finset α) (p : α → Prop) [decidable_pred p] :
@@ -189,7 +194,7 @@ begin
     exact hn1 ((coprime_zero_right n).mp han) },
 end
 
-#exit
+
 lemma gen_totient_not_dvd_eq_zero {n d : ℕ} (hnd : ¬ d ∣ n) : n.gen_totient d = 0 :=
 begin
   unfold gen_totient,
@@ -197,12 +202,14 @@ begin
 
   sorry,
 end
-
+#exit
 lemma gen_totient_dvd_eq_totient_div {n d : ℕ} (hnd : d ∣ n) : n.gen_totient d = φ (n/d) :=
 begin
 
   sorry,
 end
+
+end general_totient
 
 lemma divisors_subset_range_gt {n m : ℕ} (hnm : n < m) : n.divisors ⊆ range m :=
 λ x hx, mem_range.mpr (lt_of_le_of_lt (divisor_le hx) hnm)
