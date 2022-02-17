@@ -143,10 +143,83 @@ if hmn0 : m * n = 0
       fintype.card_prod]
   end
 
+/-- For any `d : ℕ`, `n.gen_totient d` is the number of positive natural numbers `1 ≤ k ≤ n` with
+`gcd n k = d`.  So in particular `n.gen_totient 1 = n.totient`. -/
+
+def gen_totient (n d : ℕ) := ((Icc 1 n).filter (λ k, n.gcd k = d)).card
+
+lemma gen_totient_one (n : ℕ) : n.gen_totient 1 = n.totient :=
+begin
+  unfold gen_totient,
+  unfold totient,
+
+  sorry,
+end
+
+lemma gen_totient_not_dvd_eq_zero {n d : ℕ} (hnd : ¬ d ∣ n) : n.gen_totient d = 0 :=
+begin
+  unfold gen_totient,
+  rw card_eq_zero,
+
+  sorry,
+end
+
+lemma gen_totient_dvd_eq_totient_div {n d : ℕ} (hnd : d ∣ n) : n.gen_totient d = φ (n/d) :=
+begin
+
+  sorry,
+end
+
+lemma divisors_subset_range_ge {n m : ℕ} (hnm : n ≤ m) : n.divisors ⊆ range m :=
+begin
+
+  sorry,
+end
+
+-- Move this to finset/basic @1511
+lemma filter_empty_iff (s : finset ℕ) (p : ℕ → Prop) [decidable_pred p] :
+  (s.filter p = ∅) ↔ ∀ x ∈ s, ¬ p x :=
+begin
+  refine ⟨_, finset.filter_false_of_mem⟩,
+  { induction s using finset.induction_on with a t hat IH, { intros hs, simp [hs] },
+    intros ht x hx,
+    have : filter p t = ∅,
+    { rw [←subset_empty, ←ht],
+      exact filter_subset_filter p (subset_insert a t) },
+    specialize IH this,
+    cases mem_insert.mp hx,
+    { rw h,
+      rw filter_insert p a t at ht,
+      intros H,
+      simp only [H, if_true, insert_ne_empty] at ht,
+      cases ht },
+    { exact IH x h } },
+end
+
+
 lemma sum_totient' (n : ℕ) : n.divisors.sum φ = n :=
 begin
   by_cases hn : n = 0, { simp [hn] },
   rw ←sum_div_divisors n φ,
+  suffices : ∑ (d : ℕ) in n.divisors, n.gen_totient d = n, {
+    nth_rewrite_rhs 0 ←this,
+    refine sum_congr rfl (λ x hx, _),
+    rw gen_totient_dvd_eq_totient_div,
+    exact dvd_of_mem_divisors hx },
+  -- Every number 1 .. n has a gcd with n that's a divisor of n,
+  -- so this sum just runs over an alternative partitioning of 1 .. n,
+  -- and hence the sum is equal to n
+
+
+
+-- This is a wrong turn, I think:
+  -- suffices : ∑ (d : ℕ) in range n.succ, n.gen_totient d = n, {
+  --   nth_rewrite_rhs 0 ←this,
+  --   refine finset.sum_subset_zero_on_sdiff (divisors_subset_range_ge (le_succ n)) _ (by simp),
+  --   { intros x hx,
+  --     apply gen_totient_not_dvd_eq_zero,
+  --     exact λ H, (mem_sdiff.mp hx).2 (mem_divisors.mpr ⟨H, hn⟩) } },
+
   sorry,
 end
 
