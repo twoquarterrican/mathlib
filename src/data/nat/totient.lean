@@ -9,6 +9,7 @@ import data.zmod.basic
 import ring_theory.multiplicity
 import data.nat.periodic
 import algebra.char_p.two
+import number_theory.divisors
 
 /-!
 # Euler's totient function
@@ -141,6 +142,14 @@ if hmn0 : m * n = 0
       fintype.card_congr (@mul_equiv.prod_units (zmod m) (zmod n) _ _).to_equiv,
       fintype.card_prod]
   end
+
+lemma sum_totient' (n : ℕ) : n.divisors.sum φ = n :=
+begin
+  by_cases hn : n = 0, { simp [hn] },
+  rw ←sum_div_divisors n φ,
+  sorry,
+end
+
 
 lemma sum_totient (n : ℕ) : ∑ m in (range n.succ).filter (∣ n), φ m = n :=
 if hn0 : n = 0 then by simp [hn0]
