@@ -173,29 +173,20 @@ end
 lemma gen_totient_one (n : ℕ) : n.gen_totient 1 = n.totient :=
 begin
   by_cases hn1 : n = 1, { simp [hn1, gen_totient] },
-
   simp only [gen_totient, totient],
   suffices : (filter n.coprime (Icc 1 n)) = (filter n.coprime (range n)), { rw this },
   ext,
   simp only [mem_filter, mem_range, mem_Icc, and.congr_left_iff],
   intros han,
   split,
-  {
-    intros h,
+  { intros h,
     apply lt_of_le_of_ne h.2,
-    intros H,
-    subst H,
-    simp at han,
-    contradiction,
-  },
-  {
-    intros h,
+    rintros rfl,
+    exact hn1 ((coprime_self a).mp han) },
+  { intros h,
     refine ⟨one_le_iff_ne_zero.mpr _, le_of_lt h⟩,
-    intros ha,
-    subst ha,
-    simp at han,
-    contradiction,
-  },
+    rintros rfl,
+    exact hn1 ((coprime_zero_right n).mp han) },
 end
 
 #exit
