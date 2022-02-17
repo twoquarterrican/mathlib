@@ -199,8 +199,14 @@ lemma gen_totient_not_dvd_eq_zero {n d : ℕ} (hnd : ¬ d ∣ n) : n.gen_totient
 begin
   unfold gen_totient,
   rw card_eq_zero,
-
-  sorry,
+  rw filter_false_iff,
+  intros x hx,
+  simp at hx,
+  cases hx,
+  intros H,
+  apply hnd,
+  rw ←H,
+  exact gcd_dvd_left n x,
 end
 #exit
 lemma gen_totient_dvd_eq_totient_div {n d : ℕ} (hnd : d ∣ n) : n.gen_totient d = φ (n/d) :=
