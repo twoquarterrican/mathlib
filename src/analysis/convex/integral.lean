@@ -31,7 +31,7 @@ Then we prove several forms of Jensen's inequality for integrals.
 
 ## TODO
 
-- Add versions for concave functions.
+- Use a typeclass for strict convexity of a closed ball.
 
 ## Tags
 
@@ -83,6 +83,8 @@ notation `⨍` binders ` in ` s `, ` r:(scoped:60 f, average (measure.restrict v
 
 @[simp] lemma average_zero_measure (f : α → E) : ⨍ x, f x ∂(0 : measure α) = 0 :=
 by rw [average, smul_zero, integral_zero_measure]
+
+@[simp] lemma average_neg (f : α → E) : ⨍ x, -f x ∂μ = -⨍ x, f x ∂μ := integral_neg f
 
 lemma average_def (f : α → E) : ⨍ x, f x ∂μ = ∫ x, f x ∂((μ univ)⁻¹ • μ) := rfl
 
@@ -243,16 +245,34 @@ have ht_mem : ∀ᵐ x ∂μ, (f x, g (f x)) ∈ {p : E × ℝ | p.1 ∈ s ∧ g
 by simpa only [average_pair hfi hgi]
   using hg.convex_epigraph.average_mem (hsc.epigraph hgc) hμ ht_mem (hfi.prod_mk hgi)
 
+lemma concave_on.average_mem_hypograph [is_finite_measure μ] {s : set E} {g : E → ℝ}
+  (hg : concave_on ℝ s g) (hgc : continuous_on g s) (hsc : is_closed s) (hμ : μ ≠ 0) {f : α → E}
+  (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) (hgi : integrable (g ∘ f) μ) :
+  (⨍ x, f x ∂μ, ⨍ x, g (f x) ∂μ) ∈ {p : E × ℝ | p.1 ∈ s ∧ p.2 ≤ g p.1} :=
+by simpa only [mem_set_of_eq, pi.neg_apply, average_neg, neg_le_neg_iff]
+  using hg.neg.average_mem_epigraph hgc.neg hsc hμ hfs hfi hgi.neg
+
 /-- Jensen's inequality: if a function `g : E → ℝ` is convex and continuous on a convex closed set
 `s`, `μ` is a finite non-zero measure on `α`, and `f : α → E` is a function sending `μ`-a.e. points
 to `s`, then the value of `g` at the average value of `f` is less than or equal to the average value
-of `g ∘ f` provided that both `f` and `g ∘ f` are integrable. See also `convex.map_center_mass_le`
-for a finite sum version of this lemma. -/
+of `g ∘ f` provided that both `f` and `g ∘ f` are integrable. See also
+`convex_on.map_center_mass_le` for a finite sum version of this lemma. -/
 lemma convex_on.map_average_le [is_finite_measure μ] {s : set E} {g : E → ℝ}
   (hg : convex_on ℝ s g) (hgc : continuous_on g s) (hsc : is_closed s) (hμ : μ ≠ 0) {f : α → E}
   (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) (hgi : integrable (g ∘ f) μ) :
   g (⨍ x, f x ∂μ) ≤ ⨍ x, g (f x) ∂μ :=
 (hg.average_mem_epigraph hgc hsc hμ hfs hfi hgi).2
+
+/-- Jensen's inequality: if a function `g : E → ℝ` is concave and continuous on a convex closed set
+`s`, `μ` is a finite non-zero measure on `α`, and `f : α → E` is a function sending `μ`-a.e. points
+to `s`, then the average value of `g ∘ f` is less than or equal to the value of `g` at the average
+value of `f` provided that both `f` and `g ∘ f` are integrable. See also
+`concave_on.le_map_center_mass` for a finite sum version of this lemma. -/
+lemma concave_on.le_map_average [is_finite_measure μ] {s : set E} {g : E → ℝ}
+  (hg : concave_on ℝ s g) (hgc : continuous_on g s) (hsc : is_closed s) (hμ : μ ≠ 0) {f : α → E}
+  (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) (hgi : integrable (g ∘ f) μ) :
+  ⨍ x, g (f x) ∂μ ≤ g (⨍ x, f x ∂μ) :=
+(hg.average_mem_hypograph hgc hsc hμ hfs hfi hgi).2
 
 /-- Jensen's inequality: if a function `g : E → ℝ` is convex and continuous on a convex closed set
 `s`, `μ` is a finite non-zero measure on `α`, and `f : α → E` is a function sending `μ`-a.e. points
@@ -270,6 +290,18 @@ begin
   rwa [ne.def, restrict_eq_zero]
 end
 
+/-- Jensen's inequality: if a function `g : E → ℝ` is concave and continuous on a convex closed set
+`s`, `μ` is a finite non-zero measure on `α`, and `f : α → E` is a function sending `μ`-a.e. points
+of a set `t` to `s`, then the average value of `g ∘ f` over `t` is less than or equal to the value
+of `g` at the average value of `f` over `t` provided that both `f` and `g ∘ f` are integrable. -/
+lemma concave_on.set_average_mem_hypograph {s : set E} {g : E → ℝ} (hg : concave_on ℝ s g)
+  (hgc : continuous_on g s) (hsc : is_closed s) {t : set α} (h0 : μ t ≠ 0)
+  (ht : μ t ≠ ∞) {f : α → E} (hfs : ∀ᵐ x ∂μ.restrict t, f x ∈ s) (hfi : integrable_on f t μ)
+  (hgi : integrable_on (g ∘ f) t μ) :
+  (⨍ x in t, f x ∂μ, ⨍ x in t, g (f x) ∂μ) ∈ {p : E × ℝ | p.1 ∈ s ∧ p.2 ≤ g p.1} :=
+by simpa only [mem_set_of_eq, pi.neg_apply, average_neg, neg_le_neg_iff]
+  using hg.neg.set_average_mem_epigraph hgc.neg hsc h0 ht hfs hfi hgi.neg
+
 /-- Jensen's inequality: if a function `g : E → ℝ` is convex and continuous on a convex closed set
 `s`, `μ` is a finite non-zero measure on `α`, and `f : α → E` is a function sending `μ`-a.e. points
 of a set `t` to `s`, then the value of `g` at the average value of `f` over `t` is less than or
@@ -282,6 +314,17 @@ lemma convex_on.map_set_average_le {s : set E} {g : E → ℝ} (hg : convex_on �
   g (⨍ x in t, f x ∂μ) ≤ ⨍ x in t, g (f x) ∂μ :=
 (hg.set_average_mem_epigraph hgc hsc h0 ht hfs hfi hgi).2
 
+/-- Jensen's inequality: if a function `g : E → ℝ` is concave and continuous on a convex closed set
+`s`, `μ` is a finite non-zero measure on `α`, and `f : α → E` is a function sending `μ`-a.e. points
+of a set `t` to `s`, then the average value of `g ∘ f` over `t` is less than or equal to the value
+of `g` at the average value of `f` over `t` provided that both `f` and `g ∘ f` are integrable. -/
+lemma concave_on.le_map_set_average {s : set E} {g : E → ℝ} (hg : concave_on ℝ s g)
+  (hgc : continuous_on g s) (hsc : is_closed s) {t : set α} (h0 : μ t ≠ 0)
+  (ht : μ t ≠ ∞) {f : α → E} (hfs : ∀ᵐ x ∂μ.restrict t, f x ∈ s) (hfi : integrable_on f t μ)
+  (hgi : integrable_on (g ∘ f) t μ) :
+  ⨍ x in t, g (f x) ∂μ ≤ g (⨍ x in t, f x ∂μ) :=
+(hg.set_average_mem_hypograph hgc hsc h0 ht hfs hfi hgi).2
+
 /-- Convex **Jensen's inequality**: if a function `g : E → ℝ` is convex and continuous on a convex
 closed set `s`, `μ` is a probability measure on `α`, and `f : α → E` is a function sending `μ`-a.e.
 points to `s`, then the value of `g` at the expected value of `f` is less than or equal to the
@@ -293,6 +336,17 @@ lemma convex_on.map_integral_le [is_probability_measure μ] {s : set E} {g : E �
   g (∫ x, f x ∂μ) ≤ ∫ x, g (f x) ∂μ :=
 by simpa only [average_eq_integral]
   using hg.map_average_le hgc hsc (is_probability_measure.ne_zero μ) hfs hfi hgi
+
+/-- Convex **Jensen's inequality**: if a function `g : E → ℝ` is concave and continuous on a convex
+closed set `s`, `μ` is a probability measure on `α`, and `f : α → E` is a function sending `μ`-a.e.
+points to `s`, then the expected value of `g ∘ f` is less than or equal to the value of `g` at the
+expected value of `f` provided that both `f` and `g ∘ f` are integrable. -/
+lemma concave_on.le_map_integral [is_probability_measure μ] {s : set E} {g : E → ℝ}
+  (hg : concave_on ℝ s g) (hgc : continuous_on g s) (hsc : is_closed s) {f : α → E}
+  (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) (hgi : integrable (g ∘ f) μ) :
+  ∫ x, g (f x) ∂μ ≤ g (∫ x, f x ∂μ) :=
+by simpa only [average_eq_integral]
+  using hg.le_map_average hgc hsc (is_probability_measure.ne_zero μ) hfs hfi hgi
 
 /-- If `f : α → E` is an integrable function, then either it is a.e. equal to the constant
 `⨍ x, f x ∂μ` or there exists a measurable set such that `μ s ≠ 0`, `μ sᶜ ≠ 0`, and the average
@@ -376,6 +430,16 @@ begin
     add_le_add (mul_le_mul_of_nonneg_left (this h₀).2 ha.le)
       (mul_le_mul_of_nonneg_left (this h₀').2 hb.le)
 end
+
+/-- **Jensen's inequality**, strict version: if an integrable function `f : α → E` takes values in a
+convex closed set `s`, and `g : E → ℝ` is continuous and strictly concave on `s`, then
+either `f` is a.e. equal to its average value, or `⨍ x, g (f x) ∂μ < g (⨍ x, f x ∂μ)`. -/
+lemma strict_concave_on.ae_eq_const_or_lt_map_average [is_finite_measure μ] {s : set E} {g : E → ℝ}
+  (hg : strict_concave_on ℝ s g) (hgc : continuous_on g s) (hsc : is_closed s) {f : α → E}
+  (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) (hgi : integrable (g ∘ f) μ) :
+  f =ᵐ[μ] const α (⨍ x, f x ∂μ) ∨ ⨍ x, g (f x) ∂μ < g (⨍ x, f x ∂μ) :=
+by simpa only [pi.neg_apply, average_neg, neg_lt_neg_iff]
+  using hg.neg.ae_eq_const_or_map_average_lt hgc.neg hsc hfs hfi hgi.neg
 
 /-- If the closed ball of radius `C` in a normed space `E` is strictly convex and `f : α → E` is
 a function such that `∥f x∥ ≤ C` a.e., then either either this function is a.e. equal to its
