@@ -118,27 +118,36 @@ end
 /-- **Maximum modulus principle**: if `f : E → F` is complex differentiable on a nonempty compact
 set `K`, then there exists a point `z ∈ frontier K` such that `λ z, ∥f z∥` takes it maximum value on
 `K` at `z`. -/
-lemma exists_mem_frontier_is_max_on_norm [nontrivial E] [finite_dimensional ℂ E]
-  {f : E → F} {K : set E} (hs : is_compact K)
+lemma exists_mem_frontier_is_max_on_norm [nontrivial E] {f : E → F} {K : set E} (hK : is_compact K)
   (hne : K.nonempty) (hd : differentiable_on ℂ f K) :
   ∃ z ∈ frontier K, is_max_on (norm ∘ f) K z :=
 begin
-  rcases hs.exists_forall_ge hne hd.continuous_on.norm with ⟨w, hws, hle⟩,
-  rcases exists_mem_frontier_inf_dist_compl_eq_dist hws hs.ne_univ with ⟨z, hzs, hzw⟩,
-  refine ⟨z, hzs, λ x hx, (hle x hx).trans_eq _⟩,
+  rcases hK.exists_forall_ge hne hd.continuous_on.norm with ⟨w, hwK, hle⟩,
+  rcases hK.exists_mem_frontier_inf_dist_compl_eq_dist hwK with ⟨z, hzK, hzw⟩,
+  refine ⟨z, hzK, λ x hx, (hle x hx).trans_eq _⟩,
   refine (norm_eq_norm_of_is_max_on_of_closed_ball_subset hd hle _).symm,
-  calc closed_ball w (dist z w) ⊆ closed_ball w (inf_dist w Kᶜ) :
-    closed_ball_subset_closed_ball (by rw [hzw, dist_comm])
-  ... ⊆ closure K : closed_ball_inf_dist_compl_subset_closure hws hs.ne_univ
-  ... = K : hs.is_closed.closure_eq
+  calc closed_ball w (dist z w) = closed_ball w (inf_dist w Kᶜ) : by rw [hzw, dist_comm]
+  ... ⊆ closure K : closed_ball_inf_dist_compl_subset_closure hwK hK.ne_univ
+  ... = K : hK.is_closed.closure_eq
 end
 
-/-- **Maximum modulus principle**: if `f : E → F` is complex differentiable on a compact set `s` and
-`∥f z∥ ≤ C` for any `z ∈ frontier s`, then the same is true for any `z ∈ s`. -/
-lemma norm_le_of_forall_mem_frontier_norm_le [nontrivial E] [finite_dimensional ℂ E]
-  {f : E → F} {s : set E} (hs : is_compact s) (hd : differentiable_on ℂ f s)
-  {C : ℝ} (hC : ∀ z ∈ frontier s, ∥f z∥ ≤ C) {z : E} (hz : z ∈ s) :
+/-- **Maximum modulus principle**: if `f : E → F` is complex differentiable on a compact set `K` and
+`∥f z∥ ≤ C` for any `z ∈ frontier K`, then the same is true for any `z ∈ K`. -/
+lemma norm_le_of_forall_mem_frontier_norm_le [nontrivial E] {f : E → F} {K : set E}
+  (hK : is_compact K) (hd : differentiable_on ℂ f K)
+  {C : ℝ} (hC : ∀ z ∈ frontier K, ∥f z∥ ≤ C) {z : E} (hz : z ∈ K) :
   ∥f z∥ ≤ C :=
-let ⟨w, hws, hw⟩ := exists_mem_frontier_is_max_on_norm hs ⟨z, hz⟩ hd in le_trans (hw hz) (hC w hws)
+let ⟨w, hwK, hw⟩ := exists_mem_frontier_is_max_on_norm hK ⟨z, hz⟩ hd in le_trans (hw hz) (hC w hwK)
+
+/-- If two complex differentiable functions `f g : E → F` are equal on the boundary of a compact
+set `K`, then they are equal on `K`. -/
+lemma eq_on_of_eq_on_frontier [nontrivial E] {f g : E → F} {K : set E} (hK : is_compact K)
+  (hf : differentiable_on ℂ f K) (hg : differentiable_on ℂ g K) (hfg : eq_on f g (frontier K)) :
+  eq_on f g K :=
+begin
+  suffices H : ∀ z ∈ K, ∥f z - g z∥ ≤ 0, by simpa [sub_eq_zero] using H,
+  convert λ z hz, norm_le_of_forall_mem_frontier_norm_le hK (hf.sub hg) _ hz,
+  simpa [sub_eq_zero]
+end
 
 end complex
