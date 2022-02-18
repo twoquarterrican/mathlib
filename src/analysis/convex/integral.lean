@@ -72,40 +72,45 @@ integral.
 
 For the average on a set, use `⨍ x in s, f x ∂μ` (defined as `⨍ x, f x ∂(μ.restrict s)`). For
 average w.r.t. the volume, one can omit `∂volume`. -/
-noncomputable def average (f : α → E) := (μ univ).to_real⁻¹ • ∫ x, f x ∂μ
+noncomputable def average (f : α → E) := ∫ x, f x ∂((μ univ)⁻¹ • μ)
 
 notation `⨍` binders `, ` r:(scoped:60 f, f) ` ∂` μ:70 := average μ r
 notation `⨍` binders `, ` r:(scoped:60 f, average volume f) := r
 notation `⨍` binders ` in ` s `, ` r:(scoped:60 f, f) ` ∂` μ:70 := average (measure.restrict μ s) r
 notation `⨍` binders ` in ` s `, ` r:(scoped:60 f, average (measure.restrict volume s) f) := r
 
-@[simp] lemma average_zero : ⨍ x, (0 : E) ∂μ = 0 := by rw [average, integral_zero, smul_zero]
+@[simp] lemma average_zero : ⨍ x, (0 : E) ∂μ = 0 := by rw [average, integral_zero]
 
 @[simp] lemma average_zero_measure (f : α → E) : ⨍ x, f x ∂(0 : measure α) = 0 :=
-by rw [average, integral_zero_measure, smul_zero]
+by rw [average, smul_zero, integral_zero_measure]
+
+lemma average_def (f : α → E) : ⨍ x, f x ∂μ = ∫ x, f x ∂((μ univ)⁻¹ • μ) := rfl
+
+lemma average_def' (f : α → E) : ⨍ x, f x ∂μ = (μ univ).to_real⁻¹ • ∫ x, f x ∂μ :=
+by rw [average_def, integral_smul_measure, ennreal.to_real_inv]
 
 lemma average_eq_integral [is_probability_measure μ] (f : α → E) :
   ⨍ x, f x ∂μ = ∫ x, f x ∂μ :=
-by rw [average, measure_univ, ennreal.one_to_real, inv_one, one_smul]
+by rw [average, measure_univ, ennreal.inv_one, one_smul]
 
 @[simp] lemma measure_smul_average [is_finite_measure μ] (f : α → E) :
   (μ univ).to_real • ⨍ x, f x ∂μ = ∫ x, f x ∂μ :=
 begin
   cases eq_or_ne μ 0 with hμ hμ,
   { rw [hμ, integral_zero_measure, average_zero_measure, smul_zero] },
-  { rw [average, smul_inv_smul₀],
+  { rw [average_def', smul_inv_smul₀],
     refine (ennreal.to_real_pos _ $ measure_ne_top _ _).ne',
     rwa [ne.def, measure_univ_eq_zero] }
 end
 
 lemma set_average_eq (f : α → E) (s : set α) :
   ⨍ x in s, f x ∂μ = (μ s).to_real⁻¹ • ∫ x in s, f x ∂μ :=
-by rw [average, restrict_apply_univ]
+by rw [average_def', restrict_apply_univ]
 
 variable {μ}
 
 lemma average_congr {f g : α → E} (h : f =ᵐ[μ] g) : ⨍ x, f x ∂μ = ⨍ x, g x ∂μ :=
-by simp only [average, integral_congr_ae h]
+by simp only [average_def', integral_congr_ae h]
 
 lemma average_add_measure [is_finite_measure μ] {ν : measure α} [is_finite_measure ν] {f : α → E}
   (hμ : integrable f μ) (hν : integrable f ν) :
@@ -115,12 +120,12 @@ lemma average_add_measure [is_finite_measure μ] {ν : measure α} [is_finite_me
 begin
   simp only [div_eq_inv_mul, mul_smul, measure_smul_average, ← smul_add,
     ← integral_add_measure hμ hν, ← ennreal.to_real_add (measure_ne_top μ _) (measure_ne_top ν _)],
-  rw [average, measure.add_apply]
+  rw [average_def', measure.add_apply]
 end
 
 lemma average_pair {f : α → E} {g : α → F} (hfi : integrable f μ) (hgi : integrable g μ) :
   ⨍ x, (f x, g x) ∂μ = (⨍ x, f x ∂μ, ⨍ x, g x ∂μ) :=
-by simp only [average, integral_pair hfi hgi, prod.smul_mk]
+integral_pair hfi.to_average hgi.to_average
 
 lemma measure_smul_set_average (f : α → E) {s : set α} (h : μ s ≠ ∞) :
   (μ s).to_real • ⨍ x in s, f x ∂μ = ∫ x in s, f x ∂μ :=
@@ -178,34 +183,29 @@ open measure_theory
 ### Non-strict Jensen's inequality
 -/
 
-/-- An auxiliary lemma for a more general `convex.smul_integral_mem`. -/
-protected lemma convex.average_mem_of_measurable
-  [is_finite_measure μ] {s : set E} (hs : convex ℝ s) (hsc : is_closed s)
-  (hμ : μ ≠ 0) {f : α → E} (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) (hfm : measurable f) :
-  ⨍ x, f x ∂μ ∈ s :=
+/-- If `μ` is a probability measure on `α`, `s` is a convex closed set in `E`, and `f` is an
+integrable function sending `μ`-a.e. points to `s`, then the expected value of `f` belongs to `s`:
+`∫ x, f x ∂μ ∈ s`. See also `convex.sum_mem` for a finite sum version of this lemma. -/
+lemma convex.integral_mem [is_probability_measure μ] {s : set E} (hs : convex ℝ s)
+  (hsc : is_closed s) {f : α → E} (hf : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) :
+  ∫ x, f x ∂μ ∈ s :=
 begin
-  unfreezingI { rcases eq_empty_or_nonempty s with rfl|⟨y₀, h₀⟩ },
-  { refine (hμ _).elim, simpa using hfs },
-  rw ← hsc.closure_eq at hfs,
-  have hc : integrable (λ _, y₀) μ := integrable_const _,
-  set F : ℕ → simple_func α E := simple_func.approx_on f hfm s y₀ h₀,
-  have : tendsto (λ n, (F n).integral μ) at_top (𝓝 $ ∫ x, f x ∂μ),
-  { simp only [simple_func.integral_eq_integral _
-      (simple_func.integrable_approx_on hfm hfi h₀ hc _)],
-    exact tendsto_integral_of_L1 _ hfi
-      (eventually_of_forall $ simple_func.integrable_approx_on hfm hfi h₀ hc)
-      (simple_func.tendsto_approx_on_L1_nnnorm hfm h₀ hfs (hfi.sub hc).2) },
-  refine hsc.mem_of_tendsto (tendsto_const_nhds.smul this) (eventually_of_forall $ λ n, _),
-  have : ∑ y in (F n).range, (μ ((F n) ⁻¹' {y})).to_real = (μ univ).to_real,
-    by rw [← (F n).sum_range_measure_preimage_singleton, @ennreal.to_real_sum _ _
-      (λ y, μ ((F n) ⁻¹' {y})) (λ _ _, (measure_ne_top _ _))],
-  rw [← this, simple_func.integral],
-  refine hs.center_mass_mem (λ _ _, ennreal.to_real_nonneg) _ _,
-  { rw this,
-    exact ennreal.to_real_pos (mt measure.measure_univ_eq_zero.mp hμ) (measure_ne_top _ _) },
-  { simp only [simple_func.mem_range],
-    rintros _ ⟨x, rfl⟩,
-    exact simple_func.approx_on_mem hfm h₀ n x }
+  obtain ⟨y₀, h₀⟩ : s.nonempty,
+  { rcases hf.exists with ⟨x₀, h₀⟩, exact ⟨f x₀, h₀⟩ },
+  rcases hfi.ae_measurable with ⟨g, hgm, hfg⟩,
+  rw [integral_congr_ae hfg], rw [integrable_congr hfg] at hfi,
+  have hg : ∀ᵐ x ∂μ, g x ∈ closure s,
+    from (hfg.rw (λ x y, y ∈ s) hf).mono (λ x hx, subset_closure hx),
+  set G : ℕ → simple_func α E := simple_func.approx_on _ hgm s y₀ h₀,
+  have : tendsto (λ n, (G n).integral μ) at_top (𝓝 $ ∫ x, g x ∂μ),
+    from tendsto_integral_approx_on_of_measurable hfi _ hg _ (integrable_const _),
+  refine hsc.mem_of_tendsto this (eventually_of_forall $ λ n, hs.sum_mem _ _ _),
+  { exact λ _ _, ennreal.to_real_nonneg },
+  { rw [← ennreal.to_real_sum, (G n).sum_range_measure_preimage_singleton, measure_univ,
+      ennreal.one_to_real],
+    exact λ _ _, measure_ne_top _ _ },
+  { simp only [simple_func.mem_range, forall_range_iff],
+    exact λ x, simple_func.approx_on_mem hgm _ _ _ },
 end
 
 /-- If `μ` is a non-zero finite measure on `α`, `s` is a convex closed set in `E`, and `f` is an
@@ -215,12 +215,10 @@ lemma convex.average_mem [is_finite_measure μ] {s : set E} (hs : convex ℝ s) 
   (hμ : μ ≠ 0) {f : α → E} (hfs : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) :
   ⨍ x, f x ∂μ ∈ s :=
 begin
-  have : ∀ᵐ (x : α) ∂μ, hfi.ae_measurable.mk f x ∈ s,
-  { filter_upwards [hfs, hfi.ae_measurable.ae_eq_mk] with a ha h,
-    rwa ← h },
-  rw average_congr hfi.ae_measurable.ae_eq_mk,
-  exact convex.average_mem_of_measurable hs hsc hμ this
-    (hfi.congr hfi.ae_measurable.ae_eq_mk) hfi.ae_measurable.measurable_mk
+  haveI : is_probability_measure ((μ univ)⁻¹ • μ),
+    from is_probability_measure_smul hμ,
+  refine hs.integral_mem hsc (ae_mono' _ hfs) hfi.to_average,
+  exact absolutely_continuous.smul (refl _) _
 end
 
 /-- If `μ` is a non-zero finite measure on `α`, `s` is a convex closed set in `E`, and `f` is an
@@ -235,14 +233,6 @@ begin
   refine hs.average_mem hsc _ hfs hfi,
   rwa [ne.def, restrict_eq_zero]
 end
-
-/-- If `μ` is a probability measure on `α`, `s` is a convex closed set in `E`, and `f` is an
-integrable function sending `μ`-a.e. points to `s`, then the expected value of `f` belongs to `s`:
-`∫ x, f x ∂μ ∈ s`. See also `convex.sum_mem` for a finite sum version of this lemma. -/
-lemma convex.integral_mem [is_probability_measure μ] {s : set E} (hs : convex ℝ s)
-  (hsc : is_closed s) {f : α → E} (hf : ∀ᵐ x ∂μ, f x ∈ s) (hfi : integrable f μ) :
-  ∫ x, f x ∂μ ∈ s :=
-average_eq_integral μ f ▸ hs.average_mem hsc (is_probability_measure.ne_zero _) hf hfi
 
 lemma convex_on.average_mem_epigraph [is_finite_measure μ] {s : set E} {g : E → ℝ}
   (hg : convex_on ℝ s g) (hgc : continuous_on g s) (hsc : is_closed s) (hμ : μ ≠ 0) {f : α → E}
@@ -408,7 +398,7 @@ begin
   replace h_le : ∀ᵐ x ∂μ, f x ∈ closed_ball (0 : E) C, by simpa only [mem_closed_ball_zero_iff],
   have hμ' : 0 < (μ univ).to_real,
     from ennreal.to_real_pos (mt measure_univ_eq_zero.1 hμ) (measure_ne_top _ _),
-  simpa only [interior_closed_ball _ hC0, mem_ball_zero_iff, average, norm_smul,
+  simpa only [interior_closed_ball _ hC0, mem_ball_zero_iff, average_def', norm_smul,
     real.norm_eq_abs, abs_inv, abs_of_pos hμ', ← div_eq_inv_mul, div_lt_iff' hμ']
     using h_convex.ae_eq_const_or_average_mem_interior is_closed_ball h_le hfi,
 end
